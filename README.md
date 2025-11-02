@@ -1,73 +1,135 @@
-# Welcome to your Lovable project
+# مركز إقرأ (Eqraa Center Hub)
 
-## Project info
+نظام إدارة متقدم للمراكز القرآنية والتعليمية الإسلامية
 
-**URL**: https://lovable.dev/projects/d2dd6402-bca8-4c15-bd55-a0fa66cd7635
+## 📋 حالة المشروع
 
-## How can I edit this code?
+### ✅ المرحلة 1: مكتملة
 
-There are several ways of editing your application.
+- نظام الأيقونات المتداخل
+- دعم اللغة العربية الكامل (RTL)
+- 6 أقسام رئيسية
+- تصميم متجاوب
+- وضع داكن/فاتح
 
-**Use Lovable**
+### 🚧 المرحلة 2: قيد التنفيذ
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d2dd6402-bca8-4c15-bd55-a0fa66cd7635) and start prompting.
+- إدارة المشايخ
+- إدارة الطلاب مع البحث
+- نظام المقترحات
+- تتبع التقدم
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🏗️ التقنيات المستخدمة
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + Vite + TypeScript
+- **UI**: Tailwind CSS + Shadcn/UI Components
+- **Routing**: React Router DOM
+- **State Management**: React Context
+- **Icons**: Emojis + Lucide React
+- **Fonts**: Noto Sans Arabic
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📁 هيكل المشروع
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```
+src/
+├── components/          # المكونات القابلة لإعادة الاستخدام
+│   ├── ui/             # مكونات واجهة المستخدم الأساسية
+│   ├── IconButton.tsx   # أيقونة التنقل
+│   └── PageHeader.tsx  # رأس الصفحة
+├── pages/              # صفحات التطبيق
+│   ├── Index.tsx        # الصفحة الرئيسية
+│   ├── Admin.tsx       # قسم الإدارة
+│   ├── Quran.tsx       # قسم القرآن
+│   ├── Tajweed.tsx     # قسم التجويد
+│   ├── Educational.tsx  # قسم التربوي
+│   ├── Meetings.tsx     # قسم الاجتماعات
+│   └── Suggestions.tsx # قسم المقترحات
+├── App.tsx             # التطبيق الرئيسي
+├── main.tsx            # نقطة الدخول
+└── index.css           # الأنماط العامة
+```
 
-Follow these steps:
+## 🎯 الأقسام الرئيسية
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 1. الإدارة 👥
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+إدارة المستخدمين والصلاحيات والتقارير
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 2. القرآن 📖
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+إدارة جلسات القرآن وتتبع تقدم الطلاب
+
+### 3. التجويد 🎯
+
+إدارة دروس التجويد والتقييمات
+
+### 4. التربوي 📚
+
+المواد والمناهج التربوية
+
+### 5. الاجتماعات 🤝
+
+إدارة اجتماعات المركز
+
+### 6. المقترحات 💡
+
+نظام إدارة المقترحات والأفكار
+
+## 🚀 البدء بالتطوير
+
+### المتطلبات
+
+- Node.js 18+
+- npm أو yarn
+
+### التثبيت
+
+```bash
+npm install
+```
+
+### التشغيل
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### البناء
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+```
 
-**Use GitHub Codespaces**
+## 🌍 دعم اللغة العربية
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- اتجاه النص من اليمين لليسار (RTL)
+- خط Noto Sans Arabic
+- واجهة مستخدم مصممة بالكامل باللغة العربية
+- أرقام وتنسيق عربي
 
-## What technologies are used for this project?
+## 📱 التصميم المتجاوب
 
-This project is built with:
+- تصميم متجاوب يعمل على جميع الأجهزة
+- واجهة محسنة للأجهزة المحمولة
+- دعم الوضع الداكن والفاتح
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔧 Git Workflow
 
-## How can I deploy this project?
+```bash
+main          # الإصدار النهائي (مرحلة 1)
+├── v1.0-phase1  # وسوم المراحل
+└── develop      # فرع التطوير
+    └── feature/phase-2-management-system  # فرع الميزات
+```
 
-Simply open [Lovable](https://lovable.dev/projects/d2dd6402-bca8-4c15-bd55-a0fa66cd7635) and click on Share -> Publish.
+## 📄 الترخيص
 
-## Can I connect a custom domain to my Lovable project?
+مشروع مفتوح المصدر - سيتم تحديد الرخصة لاحقاً
 
-Yes, you can!
+## 🤝 المساهمة
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+المشروع مفتوح للمساهمات. يرجى اتباع معايير الكود والالتزام بالدعم الكامل للغة العربية.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+**مركز إقرأ** - حل تقني متكامل لإدارة المراكز القرآنية
