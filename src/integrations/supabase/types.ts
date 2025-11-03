@@ -14,7 +14,265 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      meetings: {
+        Row: {
+          agenda: string[] | null
+          attendees: string[] | null
+          created_at: string | null
+          description: string
+          id: string
+          meeting_date: string
+          notes: string | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          agenda?: string[] | null
+          attendees?: string[] | null
+          created_at?: string | null
+          description: string
+          id?: string
+          meeting_date: string
+          notes?: string | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          agenda?: string[] | null
+          attendees?: string[] | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          meeting_date?: string
+          notes?: string | null
+          status?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      quran_sessions: {
+        Row: {
+          attendance: boolean | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          performance_rating: number | null
+          session_date: string | null
+          student_id: string | null
+          surah_name: string
+          teacher_id: string | null
+          verses_from: number
+          verses_to: number
+        }
+        Insert: {
+          attendance?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          surah_name: string
+          teacher_id?: string | null
+          verses_from: number
+          verses_to: number
+        }
+        Update: {
+          attendance?: boolean | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          surah_name?: string
+          teacher_id?: string | null
+          verses_from?: number
+          verses_to?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quran_sessions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quran_sessions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          age: number
+          attendance: number | null
+          created_at: string | null
+          current_progress: string | null
+          department: string
+          grade: string
+          id: string
+          is_active: boolean | null
+          name: string
+          parent_name: string | null
+          parent_phone: string | null
+          parts_memorized: number | null
+          previous_progress: string | null
+          teacher_id: string | null
+        }
+        Insert: {
+          age: number
+          attendance?: number | null
+          created_at?: string | null
+          current_progress?: string | null
+          department: string
+          grade: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          parent_name?: string | null
+          parent_phone?: string | null
+          parts_memorized?: number | null
+          previous_progress?: string | null
+          teacher_id?: string | null
+        }
+        Update: {
+          age?: number
+          attendance?: number | null
+          created_at?: string | null
+          current_progress?: string | null
+          department?: string
+          grade?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          parent_name?: string | null
+          parent_phone?: string | null
+          parts_memorized?: number | null
+          previous_progress?: string | null
+          teacher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suggestions: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          priority: string | null
+          status: string
+          suggested_by: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          status?: string
+          suggested_by?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          status?: string
+          suggested_by?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      tajweed_lessons: {
+        Row: {
+          attendees: string[] | null
+          created_at: string | null
+          description: string
+          id: string
+          lesson_date: string | null
+          resources: string[] | null
+          teacher_id: string | null
+          topic: string
+        }
+        Insert: {
+          attendees?: string[] | null
+          created_at?: string | null
+          description: string
+          id?: string
+          lesson_date?: string | null
+          resources?: string[] | null
+          teacher_id?: string | null
+          topic: string
+        }
+        Update: {
+          attendees?: string[] | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          lesson_date?: string | null
+          resources?: string[] | null
+          teacher_id?: string | null
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tajweed_lessons_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teachers: {
+        Row: {
+          created_at: string | null
+          department: string
+          email: string | null
+          experience: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          specialization: string
+        }
+        Insert: {
+          created_at?: string | null
+          department: string
+          email?: string | null
+          experience?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          specialization: string
+        }
+        Update: {
+          created_at?: string | null
+          department?: string
+          email?: string | null
+          experience?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          specialization?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
