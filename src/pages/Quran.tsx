@@ -45,6 +45,7 @@ const Quran = () => {
   const [studentName, setStudentName] = useState("");
   const [studentAge, setStudentAge] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [teacherSearchValue, setTeacherSearchValue] = useState("");
   const [openTeacherCombo, setOpenTeacherCombo] = useState(false);
   const [surahName, setSurahName] = useState("");
   const [versesFrom, setVersesFrom] = useState("");
@@ -83,16 +84,49 @@ const Quran = () => {
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentName || !studentAge || !selectedTeacher) return;
+    if (!studentName || !studentAge) return;
 
     setIsLoading(true);
+    
+    let teacherId = selectedTeacher;
+    
+    // إذا لم يكن هناك شيخ محدد ولكن هناك نص مكتوب، أضف الشيخ أولاً
+    if (!teacherId && teacherSearchValue.trim()) {
+      const { data: newTeacher, error: teacherError } = await supabase
+        .from("teachers")
+        .insert([
+          {
+            name: teacherSearchValue.trim(),
+            department: "quran",
+            specialization: "تحفيظ القرآن",
+          },
+        ])
+        .select()
+        .single();
+
+      if (teacherError) {
+        toast({ title: "خطأ في إضافة الشيخ", variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+      
+      teacherId = newTeacher.id;
+      toast({ title: "تم إضافة الشيخ الجديد" });
+    }
+
+    if (!teacherId) {
+      toast({ title: "الرجاء اختيار أو إضافة شيخ", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await supabase.from("students").insert([
       {
         name: studentName,
         age: parseInt(studentAge),
         grade: "تحفيظ",
         department: "quran",
-        teacher_id: selectedTeacher,
+        teacher_id: teacherId,
         parts_memorized: 0,
         current_progress: "بداية الحفظ",
         previous_progress: "",
@@ -106,6 +140,7 @@ const Quran = () => {
       setStudentName("");
       setStudentAge("");
       setSelectedTeacher("");
+      setTeacherSearchValue("");
       loadData();
     }
     setIsLoading(false);
@@ -298,34 +333,61 @@ const Quran = () => {
                           >
                             {selectedTeacher
                               ? teachers.find((teacher) => teacher.id === selectedTeacher)?.name
-                              : "اختر الشيخ أو اكتب الاسم..."}
+                              : teacherSearchValue || "اختر الشيخ أو اكتب الاسم..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="ابحث عن الشيخ..." />
+                          <Command shouldFilter={false}>
+                            <CommandInput 
+                              placeholder="ابحث عن الشيخ أو اكتب اسماً جديداً..." 
+                              value={teacherSearchValue}
+                              onValueChange={setTeacherSearchValue}
+                            />
                             <CommandList>
-                              <CommandEmpty>لا يوجد شيخ بهذا الاسم</CommandEmpty>
+                              <CommandEmpty>
+                                <div className="p-2 text-center">
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    لا يوجد شيخ بهذا الاسم
+                                  </p>
+                                  {teacherSearchValue && (
+                                    <Button
+                                      variant="ghost"
+                                      className="w-full"
+                                      onClick={() => {
+                                        setSelectedTeacher("");
+                                        setOpenTeacherCombo(false);
+                                      }}
+                                    >
+                                      إضافة "{teacherSearchValue}" كشيخ جديد
+                                    </Button>
+                                  )}
+                                </div>
+                              </CommandEmpty>
                               <CommandGroup>
-                                {teachers.map((teacher) => (
-                                  <CommandItem
-                                    key={teacher.id}
-                                    value={teacher.name}
-                                    onSelect={() => {
-                                      setSelectedTeacher(teacher.id);
-                                      setOpenTeacherCombo(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        selectedTeacher === teacher.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {teacher.name}
-                                  </CommandItem>
-                                ))}
+                                {teachers
+                                  .filter((teacher) =>
+                                    teacher.name.toLowerCase().includes(teacherSearchValue.toLowerCase())
+                                  )
+                                  .map((teacher) => (
+                                    <CommandItem
+                                      key={teacher.id}
+                                      value={teacher.name}
+                                      onSelect={() => {
+                                        setSelectedTeacher(teacher.id);
+                                        setTeacherSearchValue(teacher.name);
+                                        setOpenTeacherCombo(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          selectedTeacher === teacher.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {teacher.name}
+                                    </CommandItem>
+                                  ))}
                               </CommandGroup>
                             </CommandList>
                           </Command>
