@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Teacher {
   id: string;
@@ -41,6 +45,7 @@ const Quran = () => {
   const [studentName, setStudentName] = useState("");
   const [studentAge, setStudentAge] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [openTeacherCombo, setOpenTeacherCombo] = useState(false);
   const [surahName, setSurahName] = useState("");
   const [versesFrom, setVersesFrom] = useState("");
   const [versesTo, setVersesTo] = useState("");
@@ -283,19 +288,49 @@ const Quran = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">الشيخ المحفظ</label>
-                      <select
-                        value={selectedTeacher}
-                        onChange={(e) => setSelectedTeacher(e.target.value)}
-                        className="w-full p-2 border rounded-md bg-background"
-                        required
-                      >
-                        <option value="">اختر الشيخ</option>
-                        {teachers.map((teacher) => (
-                          <option key={teacher.id} value={teacher.id}>
-                            {teacher.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Popover open={openTeacherCombo} onOpenChange={setOpenTeacherCombo}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openTeacherCombo}
+                            className="w-full justify-between"
+                          >
+                            {selectedTeacher
+                              ? teachers.find((teacher) => teacher.id === selectedTeacher)?.name
+                              : "اختر الشيخ أو اكتب الاسم..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="ابحث عن الشيخ..." />
+                            <CommandList>
+                              <CommandEmpty>لا يوجد شيخ بهذا الاسم</CommandEmpty>
+                              <CommandGroup>
+                                {teachers.map((teacher) => (
+                                  <CommandItem
+                                    key={teacher.id}
+                                    value={teacher.name}
+                                    onSelect={() => {
+                                      setSelectedTeacher(teacher.id);
+                                      setOpenTeacherCombo(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedTeacher === teacher.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {teacher.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <Button type="submit" disabled={isLoading} className="w-full">
                       {isLoading ? "جاري الإضافة..." : "إضافة الطالب"}
