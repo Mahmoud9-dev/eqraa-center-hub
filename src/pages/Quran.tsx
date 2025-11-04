@@ -8,12 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface Teacher {
+  id: string;
+  name: string;
+}
+
 interface Student {
   id: string;
   name: string;
   age: number;
   parts_memorized: number;
   current_progress: string;
+  teacher_id: string | null;
+  teachers?: { name: string };
 }
 
 interface QuranSession {
@@ -29,9 +36,11 @@ interface QuranSession {
 
 const Quran = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [sessions, setSessions] = useState<QuranSession[]>([]);
   const [studentName, setStudentName] = useState("");
   const [studentAge, setStudentAge] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState("");
   const [surahName, setSurahName] = useState("");
   const [versesFrom, setVersesFrom] = useState("");
   const [versesTo, setVersesTo] = useState("");
@@ -43,6 +52,12 @@ const Quran = () => {
   const loadData = async () => {
     const { data: studentsData } = await supabase
       .from("students")
+      .select("*, teachers(name)")
+      .eq("department", "quran")
+      .order("name");
+
+    const { data: teachersData } = await supabase
+      .from("teachers")
       .select("*")
       .eq("department", "quran")
       .order("name");
@@ -53,6 +68,7 @@ const Quran = () => {
       .order("session_date", { ascending: false });
 
     if (studentsData) setStudents(studentsData as Student[]);
+    if (teachersData) setTeachers(teachersData as Teacher[]);
     if (sessionsData) setSessions(sessionsData as QuranSession[]);
   };
 
@@ -62,7 +78,7 @@ const Quran = () => {
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentName || !studentAge) return;
+    if (!studentName || !studentAge || !selectedTeacher) return;
 
     setIsLoading(true);
     const { error } = await supabase.from("students").insert([
@@ -71,6 +87,7 @@ const Quran = () => {
         age: parseInt(studentAge),
         grade: "تحفيظ",
         department: "quran",
+        teacher_id: selectedTeacher,
         parts_memorized: 0,
         current_progress: "بداية الحفظ",
         previous_progress: "",
@@ -83,6 +100,7 @@ const Quran = () => {
       toast({ title: "تم إضافة الطالب بنجاح" });
       setStudentName("");
       setStudentAge("");
+      setSelectedTeacher("");
       loadData();
     }
     setIsLoading(false);
@@ -263,6 +281,22 @@ const Quran = () => {
                         required
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">الشيخ المحفظ</label>
+                      <select
+                        value={selectedTeacher}
+                        onChange={(e) => setSelectedTeacher(e.target.value)}
+                        className="w-full p-2 border rounded-md bg-background"
+                        required
+                      >
+                        <option value="">اختر الشيخ</option>
+                        {teachers.map((teacher) => (
+                          <option key={teacher.id} value={teacher.id}>
+                            {teacher.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <Button type="submit" disabled={isLoading} className="w-full">
                       {isLoading ? "جاري الإضافة..." : "إضافة الطالب"}
                     </Button>
@@ -288,6 +322,11 @@ const Quran = () => {
                             <p className="text-sm text-muted-foreground">
                               العمر: {student.age} سنة
                             </p>
+                            {student.teachers && (
+                              <p className="text-sm text-primary font-medium mt-1">
+                                الشيخ: {student.teachers.name}
+                              </p>
+                            )}
                           </div>
                           <div className="text-left">
                             <p className="text-sm font-medium">الأجزاء المحفوظة</p>

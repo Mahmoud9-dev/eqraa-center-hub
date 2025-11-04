@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      educational_sessions: {
+        Row: {
+          attendance: boolean | null
+          created_at: string | null
+          description: string
+          id: string
+          notes: string | null
+          performance_rating: number | null
+          session_date: string | null
+          student_id: string | null
+          teacher_id: string | null
+          topic: string
+        }
+        Insert: {
+          attendance?: boolean | null
+          created_at?: string | null
+          description: string
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          topic: string
+        }
+        Update: {
+          attendance?: boolean | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "educational_sessions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "educational_sessions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           agenda: string[] | null

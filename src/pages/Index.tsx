@@ -13,12 +13,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="مركز إقرأ" showBack={false} />
+      <PageHeader title="معهد فاطمة الزهراء" showBack={false} />
       
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-3">
-            مرحباً بك في نظام إدارة مركز القرآن الكريم
+            مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية
           </h2>
           <p className="text-xl text-muted-foreground">
             اختر القسم المناسب للبدء
@@ -40,7 +40,7 @@ const Index = () => {
       <footer className="bg-card border-t border-border py-6 mt-16">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">
-            © {new Date().getFullYear()} مركز إقرأ - جميع الحقوق محفوظة
+            © {new Date().getFullYear()} معهد فاطمة الزهراء للعلوم الشرعية - جميع الحقوق محفوظة
           </p>
         </div>
       </footer>
