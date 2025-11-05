@@ -7,8 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +64,10 @@ const Quran = () => {
   const [selectedStudent, setSelectedStudent] = useState("");
   const [rating, setRating] = useState("5");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [isPlaying, setIsPlaying] = useState(false);
   const { toast } = useToast();
 
   const loadData = async () => {
@@ -87,9 +102,9 @@ const Quran = () => {
     if (!studentName || !studentAge) return;
 
     setIsLoading(true);
-    
+
     let teacherId = selectedTeacher;
-    
+
     // إذا لم يكن هناك شيخ محدد ولكن هناك نص مكتوب، أضف الشيخ أولاً
     if (!teacherId && teacherSearchValue.trim()) {
       const { data: newTeacher, error: teacherError } = await supabase
@@ -109,7 +124,7 @@ const Quran = () => {
         setIsLoading(false);
         return;
       }
-      
+
       teacherId = newTeacher.id;
       toast({ title: "تم إضافة الشيخ الجديد" });
     }
@@ -174,6 +189,66 @@ const Quran = () => {
     setIsLoading(false);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast({ title: "بدء التسجيل الصوتي" });
+    } catch (error) {
+      toast({
+        title: "خطأ في التسجيل",
+        description: "يرجى السماح بالوصول للميكروفون",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    toast({ title: "تم إيقاف التسجيل" });
+  };
+
+  const playAudio = () => {
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.play();
+      setIsPlaying(true);
+      audio.addEventListener("ended", () => setIsPlaying(false));
+    }
+  };
+
+  const pauseAudio = () => {
+    setIsPlaying(false);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAudioUrl(url);
+      setAudioBlob(file);
+      toast({ title: "تم رفع الملف الصوتي" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="القرآن الكريم" />
@@ -188,12 +263,16 @@ const Quran = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card className="border-primary/20">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-primary">تسجيل جلسة تحفيظ</CardTitle>
+                  <CardTitle className="text-2xl text-primary">
+                    تسجيل جلسة تحفيظ
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddSession} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">الطالب</label>
+                      <label className="block text-sm font-medium mb-2">
+                        الطالب
+                      </label>
                       <select
                         value={selectedStudent}
                         onChange={(e) => setSelectedStudent(e.target.value)}
@@ -209,7 +288,9 @@ const Quran = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">السورة</label>
+                      <label className="block text-sm font-medium mb-2">
+                        السورة
+                      </label>
                       <Input
                         value={surahName}
                         onChange={(e) => setSurahName(e.target.value)}
@@ -219,7 +300,9 @@ const Quran = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">من آية</label>
+                        <label className="block text-sm font-medium mb-2">
+                          من آية
+                        </label>
                         <Input
                           type="number"
                           value={versesFrom}
@@ -229,7 +312,9 @@ const Quran = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">إلى آية</label>
+                        <label className="block text-sm font-medium mb-2">
+                          إلى آية
+                        </label>
                         <Input
                           type="number"
                           value={versesTo}
@@ -252,7 +337,11 @@ const Quran = () => {
                         className="w-full"
                       />
                     </div>
-                    <Button type="submit" disabled={isLoading} className="w-full">
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full"
+                    >
                       {isLoading ? "جاري التسجيل..." : "تسجيل الجلسة"}
                     </Button>
                   </form>
@@ -260,7 +349,9 @@ const Quran = () => {
               </Card>
 
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-primary">الجلسات الأخيرة</h3>
+                <h3 className="text-2xl font-bold text-primary">
+                  الجلسات الأخيرة
+                </h3>
                 {sessions.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
@@ -269,20 +360,27 @@ const Quran = () => {
                   </Card>
                 ) : (
                   sessions.slice(0, 10).map((session) => (
-                    <Card key={session.id} className="border-r-4 border-r-primary">
+                    <Card
+                      key={session.id}
+                      className="border-r-4 border-r-primary"
+                    >
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-lg">{session.students.name}</h4>
+                          <h4 className="font-bold text-lg">
+                            {session.students.name}
+                          </h4>
                           <span className="text-sm bg-primary/10 px-3 py-1 rounded-full">
                             {session.performance_rating}/10
                           </span>
                         </div>
                         <p className="text-muted-foreground">
-                          {session.surah_name} - الآيات {session.verses_from} إلى{" "}
-                          {session.verses_to}
+                          {session.surah_name} - الآيات {session.verses_from}{" "}
+                          إلى {session.verses_to}
                         </p>
                         <p className="text-sm text-muted-foreground mt-2">
-                          {new Date(session.session_date).toLocaleDateString("ar")}
+                          {new Date(session.session_date).toLocaleDateString(
+                            "ar"
+                          )}
                         </p>
                       </CardContent>
                     </Card>
@@ -296,12 +394,16 @@ const Quran = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card className="border-primary/20">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-primary">إضافة طالب جديد</CardTitle>
+                  <CardTitle className="text-2xl text-primary">
+                    إضافة طالب جديد
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddStudent} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">اسم الطالب</label>
+                      <label className="block text-sm font-medium mb-2">
+                        اسم الطالب
+                      </label>
                       <Input
                         value={studentName}
                         onChange={(e) => setStudentName(e.target.value)}
@@ -310,7 +412,9 @@ const Quran = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">العمر</label>
+                      <label className="block text-sm font-medium mb-2">
+                        العمر
+                      </label>
                       <Input
                         type="number"
                         value={studentAge}
@@ -322,8 +426,13 @@ const Quran = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">الشيخ المحفظ</label>
-                      <Popover open={openTeacherCombo} onOpenChange={setOpenTeacherCombo}>
+                      <label className="block text-sm font-medium mb-2">
+                        الشيخ المحفظ
+                      </label>
+                      <Popover
+                        open={openTeacherCombo}
+                        onOpenChange={setOpenTeacherCombo}
+                      >
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -332,15 +441,18 @@ const Quran = () => {
                             className="w-full justify-between"
                           >
                             {selectedTeacher
-                              ? teachers.find((teacher) => teacher.id === selectedTeacher)?.name
-                              : teacherSearchValue || "اختر الشيخ أو اكتب الاسم..."}
+                              ? teachers.find(
+                                  (teacher) => teacher.id === selectedTeacher
+                                )?.name
+                              : teacherSearchValue ||
+                                "اختر الشيخ أو اكتب الاسم..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0">
                           <Command shouldFilter={false}>
-                            <CommandInput 
-                              placeholder="ابحث عن الشيخ أو اكتب اسماً جديداً..." 
+                            <CommandInput
+                              placeholder="ابحث عن الشيخ أو اكتب اسماً جديداً..."
                               value={teacherSearchValue}
                               onValueChange={setTeacherSearchValue}
                             />
@@ -367,7 +479,11 @@ const Quran = () => {
                               <CommandGroup>
                                 {teachers
                                   .filter((teacher) =>
-                                    teacher.name.toLowerCase().includes(teacherSearchValue.toLowerCase())
+                                    teacher.name
+                                      .toLowerCase()
+                                      .includes(
+                                        teacherSearchValue.toLowerCase()
+                                      )
                                   )
                                   .map((teacher) => (
                                     <CommandItem
@@ -382,7 +498,9 @@ const Quran = () => {
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          selectedTeacher === teacher.id ? "opacity-100" : "opacity-0"
+                                          selectedTeacher === teacher.id
+                                            ? "opacity-100"
+                                            : "opacity-0"
                                         )}
                                       />
                                       {teacher.name}
@@ -394,7 +512,11 @@ const Quran = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <Button type="submit" disabled={isLoading} className="w-full">
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full"
+                    >
                       {isLoading ? "جاري الإضافة..." : "إضافة الطالب"}
                     </Button>
                   </form>
@@ -402,7 +524,9 @@ const Quran = () => {
               </Card>
 
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-primary">قائمة الطلاب</h3>
+                <h3 className="text-2xl font-bold text-primary">
+                  قائمة الطلاب
+                </h3>
                 {students.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
@@ -411,32 +535,107 @@ const Quran = () => {
                   </Card>
                 ) : (
                   students.map((student) => (
-                    <Card key={student.id} className="border-r-4 border-r-secondary">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-lg">{student.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              العمر: {student.age} سنة
-                            </p>
-                            {student.teachers && (
-                              <p className="text-sm text-primary font-medium mt-1">
-                                الشيخ: {student.teachers.name}
+                    <div key={student.id} className="space-y-4">
+                      {/* المربع الرئيسي */}
+                      <Card className="border-r-4 border-r-primary">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg">
+                                {student.name}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                العمر: {student.age} سنة
                               </p>
-                            )}
+                              {student.teachers && (
+                                <p className="text-sm text-primary font-medium mt-1">
+                                  الشيخ: {student.teachers.name}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-medium">
+                                الأجزاء المحفوظة
+                              </p>
+                              <p className="text-2xl font-bold text-primary">
+                                {student.parts_memorized}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-left">
-                            <p className="text-sm font-medium">الأجزاء المحفوظة</p>
-                            <p className="text-2xl font-bold text-primary">
-                              {student.parts_memorized}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {student.current_progress}
-                        </p>
-                      </CardContent>
-                    </Card>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {student.current_progress}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      {/* المربعات الفرعية */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* الماضي القريب */}
+                        <Card className="border-r-4 border-r-blue-500">
+                          <CardContent className="p-4">
+                            <h5 className="font-bold text-blue-700 mb-2">
+                              الماضي القريب
+                            </h5>
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                <span className="font-medium">السورة:</span>{" "}
+                                البقرة
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">من آية:</span> 150
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">إلى آية:</span>{" "}
+                                200
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* الماضي البعيد */}
+                        <Card className="border-r-4 border-r-green-500">
+                          <CardContent className="p-4">
+                            <h5 className="font-bold text-green-700 mb-2">
+                              الماضي البعيد
+                            </h5>
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                <span className="font-medium">السورة:</span>{" "}
+                                الفاتحة
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">من آية:</span> 1
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">إلى آية:</span> 7
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* الجديد */}
+                        <Card className="border-r-4 border-r-orange-500">
+                          <CardContent className="p-4">
+                            <h5 className="font-bold text-orange-700 mb-2">
+                              الجديد
+                            </h5>
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                <span className="font-medium">السورة:</span> آل
+                                عمران
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">من آية:</span> 50
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-medium">إلى آية:</span>{" "}
+                                100
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>
