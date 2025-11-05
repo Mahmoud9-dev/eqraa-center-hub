@@ -7,11 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useUserRole } from "@/hooks/useUserRole";
 import { teacherSchema } from "@/lib/validations";
-import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Teacher {
   id: string;
@@ -40,8 +36,6 @@ const Admin = () => {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { isAdmin, loading } = useUserRole();
-  const navigate = useNavigate();
 
   const loadData = async () => {
     const { data: teachersData } = await supabase
@@ -116,33 +110,6 @@ const Admin = () => {
   const totalStudents = students.length;
   const totalTeachers = teachers.length;
   const quranStudents = students.filter((s) => s.department === "quran").length;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageHeader title="الإدارة" />
-        <main className="container mx-auto px-4 py-12">
-          <p className="text-center">جاري التحميل...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageHeader title="الإدارة" />
-        <main className="container mx-auto px-4 py-12">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              عذراً، هذه الصفحة متاحة للمديرين فقط
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
