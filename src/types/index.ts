@@ -10,6 +10,32 @@ export type Department = "quran" | "tajweed" | "tarbawi";
 export type SuggestionStatus = "تم" | "لم يتم";
 export type Priority = "عالي" | "متوسط" | "منخفض";
 
+// User role types
+export type UserRole = "admin" | "teacher" | "student" | "parent" | "viewer";
+
+// Exam types
+export type ExamType = "قرآن" | "تجويد" | "تربوي";
+
+// Subject types
+export type Subject =
+  | "عقيدة"
+  | "فقه"
+  | "سيرة"
+  | "تفسير"
+  | "حديث"
+  | "تربية"
+  | "لغة عربية";
+
+// Resource types
+export type ResourceType = "فيديو" | "صوت" | "PDF" | "رابط";
+
+// Notification types
+export type NotificationType =
+  | "إعلان عام"
+  | "تنبيه"
+  | "موعد حلقة"
+  | "موعد اختبار";
+
 /**
  * Teacher interface
  * Represents instructors in various Islamic educational departments
@@ -135,6 +161,195 @@ export interface BehavioralNote {
   date: Date;
   resolved: boolean;
   resolution?: string;
+}
+
+/**
+ * Exam interface
+ * Represents exams for Quran, Tajweed, and Tarbawi evaluation
+ */
+export interface Exam {
+  id: string;
+  type: ExamType;
+  title: string;
+  description?: string;
+  date: Date;
+  duration: number; // in minutes
+  totalMarks: number;
+  passingMarks: number;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Exam result interface
+ * Tracks student performance in exams
+ */
+export interface ExamResult {
+  id: string;
+  examId: string;
+  studentId: string;
+  marks: number;
+  percentage: number;
+  status: "ناجح" | "راسب" | "غائب";
+  notes?: string;
+  evaluatedBy: string;
+  evaluatedAt: Date;
+}
+
+/**
+ * Subject interface
+ * Represents Islamic educational subjects
+ */
+export interface SubjectData {
+  id: string;
+  name: Subject;
+  description?: string;
+  teacherId: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Lesson interface
+ * Represents lessons within subjects
+ */
+export interface Lesson {
+  id: string;
+  subjectId: string;
+  title: string;
+  description: string;
+  type: ResourceType;
+  contentUrl?: string;
+  order: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Assignment interface
+ * Represents homework and assignments
+ */
+export interface Assignment {
+  id: string;
+  subjectId: string;
+  title: string;
+  description: string;
+  dueDate: Date;
+  totalMarks: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Schedule interface
+ * Represents class schedules and timetables
+ */
+export interface Schedule {
+  id: string;
+  title: string;
+  description?: string;
+  dayOfWeek: number; // 0-6 (Sunday to Saturday)
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+  location?: string;
+  teacherId: string;
+  subjectId?: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Quran circle interface
+ * Represents Quran memorization circles
+ */
+export interface QuranCircle {
+  id: string;
+  name: string;
+  supervisorId: string;
+  description?: string;
+  dailyMemorization: string;
+  dailyRevision: string;
+  weeklyEvaluation: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Circle member interface
+ * Represents students in Quran circles
+ */
+export interface CircleMember {
+  id: string;
+  circleId: string;
+  studentId: string;
+  joinDate: Date;
+  isActive: boolean;
+}
+
+/**
+ * Memorization record interface
+ * Tracks student memorization progress
+ */
+export interface MemorizationRecord {
+  id: string;
+  studentId: string;
+  circleId: string;
+  date: Date;
+  surahName: string;
+  versesFrom: number;
+  versesTo: number;
+  memorizationType: "حفظ جديد" | "مراجعة";
+  evaluation: number; // 1-10
+  notes?: string;
+  evaluatedBy: string;
+}
+
+/**
+ * Announcement interface
+ * Represents announcements and notifications
+ */
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  type: NotificationType;
+  targetAudience: UserRole[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  scheduledFor?: Date;
+}
+
+/**
+ * Library resource interface
+ * Represents resources in the digital library
+ */
+export interface LibraryResource {
+  id: string;
+  title: string;
+  author?: string;
+  description?: string;
+  type: ResourceType;
+  category: string;
+  url?: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+/**
+ * User settings interface
+ * Represents user preferences and settings
+ */
+export interface UserSettings {
+  id: string;
+  userId: string;
+  theme: "فاتح" | "داكن";
+  notifications: boolean;
+  language: "ar" | "en";
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  updatedAt: Date;
 }
 
 // Utility types for API responses
