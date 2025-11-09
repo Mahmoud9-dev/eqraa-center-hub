@@ -37,9 +37,16 @@ All colors MUST be HSL.
     --ring: 174 45% 32%;
 
     --radius: 0.75rem;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(174 45% 32%), hsl(174 55% 42%));
-    --gradient-secondary: linear-gradient(135deg, hsl(42 85% 55%), hsl(42 90% 65%));
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(174 45% 32%) hsl(174 55% 42%)
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(42 85% 55%),
+      hsl(42 90% 65%)
+    );
     --shadow-soft: 0 4px 20px -4px hsl(174 45% 32% / 0.15);
     --shadow-hover: 0 8px 30px -6px hsl(174 45% 32% / 0.25);
 
@@ -108,8 +115,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-arabic;
     direction: rtl;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-arabic;
   }
 }

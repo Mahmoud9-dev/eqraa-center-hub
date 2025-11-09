@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      educational_sessions: {
+        Row: {
+          attendance: boolean | null
+          created_at: string | null
+          description: string
+          id: string
+          notes: string | null
+          performance_rating: number | null
+          session_date: string | null
+          student_id: string | null
+          teacher_id: string | null
+          topic: string
+        }
+        Insert: {
+          attendance?: boolean | null
+          created_at?: string | null
+          description: string
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          topic: string
+        }
+        Update: {
+          attendance?: boolean | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "educational_sessions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "educational_sessions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           agenda: string[] | null
@@ -273,15 +327,43 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "teacher" | "student" | "parent" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -408,6 +490,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "teacher", "student", "parent", "viewer"],
+    },
   },
 } as const

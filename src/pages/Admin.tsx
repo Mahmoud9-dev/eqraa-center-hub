@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { teacherSchema } from "@/lib/validations";
 
 interface Teacher {
   id: string;
@@ -57,21 +58,35 @@ const Admin = () => {
 
   const handleAddTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !specialization) return;
+
+    // Validate input
+    const validation = teacherSchema.safeParse({
+      name: teacherName,
+      specialization,
+      department,
+      email: email || "",
+      phone: phone || "",
+    });
+
+    if (!validation.success) {
+      const errors = validation.error.issues.map(e => e.message).join(", ");
+      toast({ title: "خطأ في البيانات", description: errors, variant: "destructive" });
+      return;
+    }
 
     setIsLoading(true);
     const { error } = await supabase.from("teachers").insert([
       {
-        name: teacherName,
-        specialization,
-        department,
-        email: email || null,
-        phone: phone || null,
+        name: validation.data.name,
+        specialization: validation.data.specialization,
+        department: validation.data.department,
+        email: validation.data.email || null,
+        phone: validation.data.phone || null,
       },
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة المعلم", variant: "destructive" });
+      toast({ title: "خطأ في إضافة المعلم", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "تم إضافة المعلم بنجاح" });
       setTeacherName("");
