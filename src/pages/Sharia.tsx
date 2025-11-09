@@ -1,13 +1,13 @@
 import PageHeader from "@/components/PageHeader";
 
-const Schedule = () => {
+const Sharia = () => {
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الجدول الدراسي" />
+      <PageHeader title="الدروس الشرعية" />
       <main className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            الجدول الدراسي
+            الدروس الشرعية
           </h2>
           <p className="text-muted-foreground">سيتم تطوير هذا القسم قريباً</p>
         </div>
@@ -16,4 +16,4 @@ const Schedule = () => {
   );
 };
 
-export default Schedule;
+export default Sharia;
