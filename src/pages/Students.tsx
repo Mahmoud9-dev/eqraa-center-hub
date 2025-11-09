@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -40,7 +40,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { Department, Student } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
 
 const Students = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,58 +47,62 @@ const Students = () => {
     "all"
   );
   const [activeTab, setActiveTab] = useState("all");
-  const [students, setStudents] = useState<Student[]>([]);
-  const [teachers, setTeachers] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState<Student[]>([
+    {
+      id: "1",
+      name: "أحمد محمد علي",
+      age: 12,
+      grade: "السادس ابتدائي",
+      department: "quran" as Department,
+      teacherId: "teacher1",
+      partsMemorized: 5,
+      currentProgress: "سورة آل عمران - الآية 50",
+      previousProgress: "سورة البقرة - الآية 200",
+      attendance: 85,
+      parentName: "محمد علي",
+      parentPhone: "01234567890",
+      isActive: true,
+      createdAt: new Date(),
+    },
+    {
+      id: "2",
+      name: "عمر خالد حسن",
+      age: 14,
+      grade: "الثالث إعدادي",
+      department: "tajweed" as Department,
+      teacherId: "teacher2",
+      partsMemorized: 8,
+      currentProgress: "سورة النساء - الآية 100",
+      previousProgress: "سورة آل عمران - الآية 50",
+      attendance: 92,
+      parentName: "خالد حسن",
+      parentPhone: "01234567891",
+      isActive: true,
+      createdAt: new Date(),
+    },
+    {
+      id: "3",
+      name: "محمد سعيد أحمد",
+      age: 11,
+      grade: "الخامس ابتدائي",
+      department: "tarbawi" as Department,
+      teacherId: "teacher3",
+      partsMemorized: 3,
+      currentProgress: "سورة البقرة - الآية 150",
+      previousProgress: "سورة البقرة - الآية 100",
+      attendance: 78,
+      parentName: "سعيد أحمد",
+      parentPhone: "01234567892",
+      isActive: true,
+      createdAt: new Date(),
+    },
+  ]);
 
-  // Load data from Supabase
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    
-    // Load students
-    const { data: studentsData } = await supabase
-      .from("students")
-      .select("*")
-      .order("name");
-
-    if (studentsData) {
-      const mappedStudents: Student[] = studentsData.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        age: s.age,
-        grade: s.grade,
-        department: s.department as Department,
-        teacherId: s.teacher_id || "",
-        partsMemorized: s.parts_memorized || 0,
-        currentProgress: s.current_progress || "",
-        previousProgress: s.previous_progress || "",
-        attendance: s.attendance || 0,
-        parentName: s.parent_name,
-        parentPhone: s.parent_phone,
-        isActive: s.is_active,
-        createdAt: new Date(s.created_at),
-      }));
-      setStudents(mappedStudents);
-    }
-
-    // Load teachers
-    const { data: teachersData } = await supabase
-      .from("teachers")
-      .select("id, name");
-
-    if (teachersData) {
-      const teachersMap: Record<string, string> = {};
-      teachersData.forEach((t: any) => {
-        teachersMap[t.id] = t.name;
-      });
-      setTeachers(teachersMap);
-    }
-
-    setLoading(false);
+  // Mock teacher data for display
+  const teachers = {
+    teacher1: "الشيخ خالد أحمد",
+    teacher2: "الشيخ أحمد محمد",
+    teacher3: "الشيخ محمد حسن",
   };
 
   // Mock grades and notes data
@@ -219,7 +222,7 @@ const Students = () => {
   };
 
   // Functions for CRUD operations
-  const handleAddStudent = async () => {
+  const handleAddStudent = () => {
     if (!newStudent.name || !newStudent.grade || !newStudent.teacherId) {
       toast({
         title: "خطأ",
@@ -229,32 +232,24 @@ const Students = () => {
       return;
     }
 
-    const { error } = await supabase.from("students").insert([
-      {
-        name: newStudent.name || "",
-        age: newStudent.age || 0,
-        grade: newStudent.grade || "",
-        department: newStudent.department,
-        teacher_id: newStudent.teacherId || null,
-        parts_memorized: newStudent.partsMemorized || 0,
-        current_progress: newStudent.currentProgress || "",
-        previous_progress: newStudent.previousProgress || "",
-        attendance: newStudent.attendance || 0,
-        parent_name: newStudent.parentName,
-        parent_phone: newStudent.parentPhone,
-        is_active: newStudent.isActive !== undefined ? newStudent.isActive : true,
-      },
-    ]);
+    const student: Student = {
+      id: Date.now().toString(),
+      name: newStudent.name || "",
+      age: newStudent.age || 0,
+      grade: newStudent.grade || "",
+      department: newStudent.department as Department,
+      teacherId: newStudent.teacherId || "",
+      partsMemorized: newStudent.partsMemorized || 0,
+      currentProgress: newStudent.currentProgress || "",
+      previousProgress: newStudent.previousProgress || "",
+      attendance: newStudent.attendance || 0,
+      parentName: newStudent.parentName,
+      parentPhone: newStudent.parentPhone,
+      isActive: newStudent.isActive || true,
+      createdAt: new Date(),
+    };
 
-    if (error) {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setStudents([...students, student]);
     setNewStudent({
       name: "",
       age: 0,
@@ -274,10 +269,9 @@ const Students = () => {
       title: "تم الإضافة",
       description: "تم إضافة الطالب بنجاح",
     });
-    loadData();
   };
 
-  const handleEditStudent = async () => {
+  const handleEditStudent = () => {
     if (
       !selectedStudent ||
       !newStudent.name ||
@@ -292,32 +286,34 @@ const Students = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from("students")
-      .update({
-        name: newStudent.name,
-        age: newStudent.age,
-        grade: newStudent.grade,
-        department: newStudent.department,
-        teacher_id: newStudent.teacherId || null,
-        parts_memorized: newStudent.partsMemorized,
-        current_progress: newStudent.currentProgress,
-        previous_progress: newStudent.previousProgress,
-        attendance: newStudent.attendance,
-        parent_name: newStudent.parentName,
-        parent_phone: newStudent.parentPhone,
-        is_active: newStudent.isActive,
-      })
-      .eq("id", selectedStudent.id);
-
-    if (error) {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
+    setStudents(
+      students.map((student) =>
+        student.id === selectedStudent.id
+          ? {
+              ...student,
+              name: newStudent.name || student.name,
+              age: newStudent.age || student.age,
+              grade: newStudent.grade || student.grade,
+              department:
+                (newStudent.department as Department) || student.department,
+              teacherId: newStudent.teacherId || student.teacherId,
+              partsMemorized:
+                newStudent.partsMemorized || student.partsMemorized,
+              currentProgress:
+                newStudent.currentProgress || student.currentProgress,
+              previousProgress:
+                newStudent.previousProgress || student.previousProgress,
+              attendance: newStudent.attendance || student.attendance,
+              parentName: newStudent.parentName || student.parentName,
+              parentPhone: newStudent.parentPhone || student.parentPhone,
+              isActive:
+                newStudent.isActive !== undefined
+                  ? newStudent.isActive
+                  : student.isActive,
+            }
+          : student
+      )
+    );
 
     setIsEditDialogOpen(false);
     setSelectedStudent(null);
@@ -339,33 +335,20 @@ const Students = () => {
       title: "تم التعديل",
       description: "تم تعديل بيانات الطالب بنجاح",
     });
-    loadData();
   };
 
-  const handleDeleteStudent = async () => {
+  const handleDeleteStudent = () => {
     if (!selectedStudent) return;
 
-    const { error } = await supabase
-      .from("students")
-      .delete()
-      .eq("id", selectedStudent.id);
-
-    if (error) {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setStudents(
+      students.filter((student) => student.id !== selectedStudent.id)
+    );
     setIsDeleteDialogOpen(false);
     setSelectedStudent(null);
     toast({
       title: "تم الحذف",
       description: "تم حذف الطالب بنجاح",
     });
-    loadData();
   };
 
   const openEditDialog = (student: Student) => {
