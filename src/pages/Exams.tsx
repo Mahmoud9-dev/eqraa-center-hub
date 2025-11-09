@@ -41,7 +41,7 @@ import PageHeader from "@/components/PageHeader";
 import { ExamType, Exam, ExamResult } from "@/types";
 
 const Exams = () => {
-  const [activeTab, setActiveTab] = useState<ExamType>("قرآن");
+  const [activeTab, setActiveTab] = useState<ExamType | "results">("قرآن");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -556,7 +556,7 @@ const Exams = () => {
 
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as ExamType)}
+          onValueChange={(value) => setActiveTab(value as ExamType | "results")}
         >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="قرآن">امتحانات القرآن</TabsTrigger>
