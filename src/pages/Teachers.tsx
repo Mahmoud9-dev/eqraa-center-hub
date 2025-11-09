@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -40,6 +40,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { Department, Teacher } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const Teachers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,55 +52,38 @@ const Teachers = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Mock data - will be replaced with actual data from Supabase
-  const [teachers, setTeachers] = useState<Teacher[]>([
-    {
-      id: "1",
-      name: "الشيخ أحمد محمد علي",
-      specialization: "حفظ القرآن الكريم وتجويد",
-      department: "quran" as Department,
-      email: "ahmed@example.com",
-      phone: "01234567890",
-      experience: 15,
-      isActive: true,
-      createdAt: new Date("2020-09-01"),
-    },
-    {
-      id: "2",
-      name: "الشيخ خالد حسن محمد",
-      specialization: "الفقه والعقيدة",
-      department: "tarbawi" as Department,
-      email: "khaled@example.com",
-      phone: "01234567891",
-      experience: 10,
-      isActive: true,
-      createdAt: new Date("2021-03-15"),
-    },
-    {
-      id: "3",
-      name: "الشيخ محمد سعيد أحمد",
-      specialization: "السيرة والحديث",
-      department: "tarbawi" as Department,
-      email: "mohammed@example.com",
-      phone: "01234567892",
-      experience: 8,
-      isActive: true,
-      createdAt: new Date("2022-01-10"),
-    },
-    {
-      id: "4",
-      name: "الشيخ عمر عبدالله",
-      specialization: "التجويد والقراءات",
-      department: "tajweed" as Department,
-      email: "omar@example.com",
-      phone: "01234567893",
-      experience: 12,
-      isActive: true,
-      createdAt: new Date("2019-11-20"),
-    },
-  ]);
+  // Load data from Supabase
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    const { data: teachersData } = await supabase
+      .from("teachers")
+      .select("*")
+      .order("name");
+
+    if (teachersData) {
+      const mappedTeachers: Teacher[] = teachersData.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        specialization: t.specialization,
+        department: t.department as Department,
+        email: t.email,
+        phone: t.phone,
+        experience: t.experience,
+        isActive: t.is_active,
+        createdAt: new Date(t.created_at),
+      }));
+      setTeachers(mappedTeachers);
+    }
+    setLoading(false);
+  };
 
   // Extended teacher data for display
   const teachersExtended = teachers.map((teacher) => ({
@@ -171,7 +155,7 @@ const Teachers = () => {
   };
 
   // CRUD functions
-  const handleAddTeacher = () => {
+  const handleAddTeacher = async () => {
     if (
       !newTeacher.name ||
       !newTeacher.specialization ||
@@ -185,19 +169,27 @@ const Teachers = () => {
       return;
     }
 
-    const teacher: Teacher = {
-      id: Date.now().toString(),
-      name: newTeacher.name || "",
-      specialization: newTeacher.specialization || "",
-      department: newTeacher.department as Department,
-      email: newTeacher.email,
-      phone: newTeacher.phone,
-      experience: newTeacher.experience || 0,
-      isActive: newTeacher.isActive || true,
-      createdAt: new Date(),
-    };
+    const { error } = await supabase.from("teachers").insert([
+      {
+        name: newTeacher.name || "",
+        specialization: newTeacher.specialization || "",
+        department: newTeacher.department,
+        email: newTeacher.email || null,
+        phone: newTeacher.phone || null,
+        experience: newTeacher.experience || 0,
+        is_active: newTeacher.isActive !== undefined ? newTeacher.isActive : true,
+      },
+    ]);
 
-    setTeachers([...teachers, teacher]);
+    if (error) {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setNewTeacher({
       name: "",
       specialization: "",
@@ -212,9 +204,10 @@ const Teachers = () => {
       title: "تم الإضافة",
       description: "تم إضافة المدرس بنجاح",
     });
+    loadData();
   };
 
-  const handleEditTeacher = () => {
+  const handleEditTeacher = async () => {
     if (
       !selectedTeacher ||
       !newTeacher.name ||
@@ -229,27 +222,27 @@ const Teachers = () => {
       return;
     }
 
-    setTeachers(
-      teachers.map((teacher) =>
-        teacher.id === selectedTeacher.id
-          ? {
-              ...teacher,
-              name: newTeacher.name || teacher.name,
-              specialization:
-                newTeacher.specialization || teacher.specialization,
-              department:
-                (newTeacher.department as Department) || teacher.department,
-              email: newTeacher.email || teacher.email,
-              phone: newTeacher.phone || teacher.phone,
-              experience: newTeacher.experience || teacher.experience,
-              isActive:
-                newTeacher.isActive !== undefined
-                  ? newTeacher.isActive
-                  : teacher.isActive,
-            }
-          : teacher
-      )
-    );
+    const { error } = await supabase
+      .from("teachers")
+      .update({
+        name: newTeacher.name,
+        specialization: newTeacher.specialization,
+        department: newTeacher.department,
+        email: newTeacher.email || null,
+        phone: newTeacher.phone || null,
+        experience: newTeacher.experience,
+        is_active: newTeacher.isActive,
+      })
+      .eq("id", selectedTeacher.id);
+
+    if (error) {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsEditDialogOpen(false);
     setSelectedTeacher(null);
@@ -266,20 +259,33 @@ const Teachers = () => {
       title: "تم التعديل",
       description: "تم تعديل بيانات المدرس بنجاح",
     });
+    loadData();
   };
 
-  const handleDeleteTeacher = () => {
+  const handleDeleteTeacher = async () => {
     if (!selectedTeacher) return;
 
-    setTeachers(
-      teachers.filter((teacher) => teacher.id !== selectedTeacher.id)
-    );
+    const { error } = await supabase
+      .from("teachers")
+      .delete()
+      .eq("id", selectedTeacher.id);
+
+    if (error) {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsDeleteDialogOpen(false);
     setSelectedTeacher(null);
     toast({
       title: "تم الحذف",
       description: "تم حذف المدرس بنجاح",
     });
+    loadData();
   };
 
   const openEditDialog = (teacher: Teacher) => {
