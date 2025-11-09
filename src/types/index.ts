@@ -4,11 +4,81 @@
  */
 
 // Department types
-export type Department = "quran" | "tajweed" | "tarbawi";
+export type Department = "quran" | "tajweed" | "tarbawi" | "sharia";
 
 // Status types
 export type SuggestionStatus = "تم" | "لم يتم";
 export type Priority = "عالي" | "متوسط" | "منخفض";
+
+// User role types
+export type UserRole = "طالب" | "مدرس" | "مشرف" | "إدارة";
+
+// Attendance status types
+export type AttendanceStatus = "حاضر" | "غائب" | "متأخر" | "انصراف مبكر";
+
+// Exam subject types
+export type ExamSubject = "قرآن" | "تجويد" | "تربوي";
+
+// Content category types
+export type ContentCategory =
+  | "عقيدة"
+  | "فقه"
+  | "سيرة"
+  | "تفسير"
+  | "حديث"
+  | "تربية"
+  | "لغة عربية";
+
+// Content type types
+export type ContentType = "فيديو" | "صوت" | "PDF" | "مقال" | "صورة";
+
+// Schedule type types
+export type ScheduleType =
+  | "حلقة قرآن"
+  | "درس تجويد"
+  | "محاضرة تربوية"
+  | "اجتماع"
+  | "امتحان";
+
+// Recurring type types
+export type RecurringType = "يومي" | "أسبوعي" | "شهري" | "مرة واحدة";
+
+// Session type types
+export type SessionType = "ماضي بعيد" | "ماضي قريب" | "جديد";
+
+// Question type types
+export type QuestionType = "نصي" | "اختياري" | "تلاوة";
+
+// Library item type types
+export type LibraryItemType =
+  | "كتاب PDF"
+  | "مقطع صوتي"
+  | "فيديو"
+  | "مقال"
+  | "رابط خارجي";
+
+// Announcement type types
+export type AnnouncementType = "عام" | "للمشايخ" | "للطلاب" | "للإدارة";
+
+/**
+ * User interface
+ * Represents all users in system with role-based access
+ */
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  permissions?: string[];
+  isActive: boolean;
+  lastLogin?: Date;
+  emailVerified?: boolean;
+  phone?: string;
+  avatarUrl?: string;
+  preferences?: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 /**
  * Teacher interface
@@ -21,9 +91,12 @@ export interface Teacher {
   department: Department;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
   email?: string;
   phone?: string;
   experience?: number;
+  bio?: string;
+  userId?: string;
 }
 
 /**
@@ -35,6 +108,7 @@ export interface Student {
   name: string;
   age: number;
   grade: string;
+  gradeLevel?: string; // "ابتدائي أول"، "ابتدائي ثاني"، etc.
   teacherId: string;
   department: Department;
   partsMemorized: number;
@@ -42,9 +116,11 @@ export interface Student {
   previousProgress: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
   parentName?: string;
   parentPhone?: string;
   attendance?: number;
+  userId?: string;
 }
 
 /**
@@ -76,6 +152,75 @@ export interface QuranSession {
   performanceRating: number;
   notes?: string;
   attendance: boolean;
+  sessionType?: SessionType;
+  audioRecordingUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Attendance interface
+ * Tracks attendance for students and teachers
+ */
+export interface Attendance {
+  id: string;
+  userId: string;
+  userType: "student" | "teacher";
+  date: Date;
+  checkIn?: Date;
+  checkOut?: Date;
+  status: AttendanceStatus;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Exam interface
+ * Represents exams for different subjects
+ */
+export interface Exam {
+  id: string;
+  title: string;
+  subject: ExamSubject;
+  description?: string;
+  examDate: Date;
+  maxScore: number;
+  durationMinutes?: number;
+  teacherId: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Exam result interface
+ * Represents student exam results
+ */
+export interface ExamResult {
+  id: string;
+  examId: string;
+  studentId: string;
+  score: number;
+  maxScore: number;
+  notes?: string;
+  evaluatedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Exam question interface
+ * Represents questions within an exam
+ */
+export interface ExamQuestion {
+  id: string;
+  examId: string;
+  questionText: string;
+  questionType: QuestionType;
+  maxScore: number;
+  orderIndex: number;
+  createdAt: Date;
 }
 
 /**
@@ -94,17 +239,157 @@ export interface TajweedLesson {
 
 /**
  * Educational content interface
- * Represents Tarbawi (educational) content including Aqeedah, Seerah, Fiqh, etc.
+ * Represents educational content in various categories
  */
 export interface EducationalContent {
   id: string;
-  teacherId: string;
-  category: "عقيدة" | "سيرة" | "فقه" | "أخلاقيات" | "آداب" | "مواعظ عامة";
+  category: ContentCategory;
   title: string;
-  description: string;
-  date: Date;
-  attendees?: string[];
-  resources?: string[];
+  description?: string;
+  contentType: ContentType;
+  contentUrl: string;
+  thumbnailUrl?: string;
+  teacherId?: string;
+  durationMinutes?: number;
+  fileSize?: number;
+  tags?: string[];
+  isActive: boolean;
+  viewCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Assignment interface
+ * Represents assignments related to educational content
+ */
+export interface Assignment {
+  id: string;
+  contentId: string;
+  title: string;
+  description?: string;
+  dueDate?: Date;
+  maxScore: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Assignment submission interface
+ * Represents student assignment submissions
+ */
+export interface AssignmentSubmission {
+  id: string;
+  assignmentId: string;
+  studentId: string;
+  submissionText?: string;
+  fileUrl?: string;
+  score?: number;
+  notes?: string;
+  submittedAt: Date;
+  evaluatedAt?: Date;
+  evaluatedBy?: string;
+}
+
+/**
+ * Schedule interface
+ * Represents schedules for various activities
+ */
+export interface Schedule {
+  id: string;
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+  recurringType: RecurringType;
+  recurringDays?: number[];
+  location?: string;
+  teacherId?: string;
+  scheduleType: ScheduleType;
+  isActive: boolean;
+  notificationsEnabled: boolean;
+  notificationMinutesBefore: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Schedule participant interface
+ * Represents participants in schedules
+ */
+export interface ScheduleParticipant {
+  id: string;
+  scheduleId: string;
+  participantId: string;
+  participantType: "student" | "teacher";
+  isRequired: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Library item interface
+ * Represents items in digital library
+ */
+export interface LibraryItem {
+  id: string;
+  title: string;
+  author?: string;
+  description?: string;
+  itemType: LibraryItemType;
+  fileUrl?: string;
+  externalUrl?: string;
+  thumbnailUrl?: string;
+  category: ContentCategory;
+  tags?: string[];
+  language?: string;
+  fileSize?: number;
+  durationMinutes?: number;
+  pagesCount?: number;
+  isActive: boolean;
+  downloadCount: number;
+  viewCount: number;
+  addedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Announcement interface
+ * Represents announcements and notifications
+ */
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  announcementType: AnnouncementType;
+  priority: Priority;
+  isActive: boolean;
+  showPopup: boolean;
+  startDate: Date;
+  endDate?: Date;
+  targetAudience?: string[];
+  attachments?: string[];
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Activity log interface
+ * Represents activity logs for auditing
+ */
+export interface ActivityLog {
+  id: string;
+  userId?: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  oldValues?: Record<string, any>;
+  newValues?: Record<string, any>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: Date;
 }
 
 /**
