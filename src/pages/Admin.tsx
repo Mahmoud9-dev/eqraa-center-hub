@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { teacherSchema } from "@/lib/validations";
 
 interface Teacher {
@@ -31,7 +37,9 @@ const Admin = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [teacherName, setTeacherName] = useState("");
   const [specialization, setSpecialization] = useState("");
-  const [department, setDepartment] = useState<"quran" | "tajweed" | "tarbawi">("quran");
+  const [department, setDepartment] = useState<"quran" | "tajweed" | "tarbawi">(
+    "quran"
+  );
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -69,8 +77,12 @@ const Admin = () => {
     });
 
     if (!validation.success) {
-      const errors = validation.error.issues.map(e => e.message).join(", ");
-      toast({ title: "خطأ في البيانات", description: errors, variant: "destructive" });
+      const errors = validation.error.issues.map((e) => e.message).join(", ");
+      toast({
+        title: "خطأ في البيانات",
+        description: errors,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -86,7 +98,11 @@ const Admin = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة المعلم", description: error.message, variant: "destructive" });
+      toast({
+        title: "خطأ في إضافة المعلم",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       toast({ title: "تم إضافة المعلم بنجاح" });
       setTeacherName("");
@@ -151,12 +167,16 @@ const Admin = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card className="border-primary/20">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-primary">إضافة معلم جديد</CardTitle>
+                  <CardTitle className="text-2xl text-primary">
+                    إضافة معلم جديد
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddTeacher} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">اسم المعلم</label>
+                      <label className="block text-sm font-medium mb-2">
+                        اسم المعلم
+                      </label>
                       <Input
                         value={teacherName}
                         onChange={(e) => setTeacherName(e.target.value)}
@@ -165,7 +185,9 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">التخصص</label>
+                      <label className="block text-sm font-medium mb-2">
+                        التخصص
+                      </label>
                       <Input
                         value={specialization}
                         onChange={(e) => setSpecialization(e.target.value)}
@@ -174,7 +196,9 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">القسم</label>
+                      <label className="block text-sm font-medium mb-2">
+                        القسم
+                      </label>
                       <Select
                         value={department}
                         onValueChange={(v) => setDepartment(v as any)}
@@ -211,7 +235,11 @@ const Admin = () => {
                         placeholder="05xxxxxxxx"
                       />
                     </div>
-                    <Button type="submit" disabled={isLoading} className="w-full">
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full"
+                    >
                       {isLoading ? "جاري الإضافة..." : "إضافة المعلم"}
                     </Button>
                   </form>
@@ -219,7 +247,9 @@ const Admin = () => {
               </Card>
 
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-primary">قائمة المعلمين</h3>
+                <h3 className="text-2xl font-bold text-primary">
+                  قائمة المعلمين
+                </h3>
                 {teachers.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
@@ -228,9 +258,14 @@ const Admin = () => {
                   </Card>
                 ) : (
                   teachers.map((teacher) => (
-                    <Card key={teacher.id} className="border-r-4 border-r-primary">
+                    <Card
+                      key={teacher.id}
+                      className="border-r-4 border-r-primary"
+                    >
                       <CardContent className="p-6">
-                        <h4 className="font-bold text-lg mb-1">{teacher.name}</h4>
+                        <h4 className="font-bold text-lg mb-1">
+                          {teacher.name}
+                        </h4>
                         <p className="text-sm text-muted-foreground mb-1">
                           {teacher.specialization}
                         </p>
@@ -238,10 +273,14 @@ const Admin = () => {
                           قسم {getDepartmentLabel(teacher.department)}
                         </p>
                         {teacher.email && (
-                          <p className="text-sm text-muted-foreground">📧 {teacher.email}</p>
+                          <p className="text-sm text-muted-foreground">
+                            📧 {teacher.email}
+                          </p>
                         )}
                         {teacher.phone && (
-                          <p className="text-sm text-muted-foreground">📱 {teacher.phone}</p>
+                          <p className="text-sm text-muted-foreground">
+                            📱 {teacher.phone}
+                          </p>
                         )}
                       </CardContent>
                     </Card>
@@ -253,7 +292,9 @@ const Admin = () => {
 
           <TabsContent value="students">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-primary mb-4">جميع الطلاب</h3>
+              <h3 className="text-2xl font-bold text-primary mb-4">
+                جميع الطلاب
+              </h3>
               {students.length === 0 ? (
                 <Card>
                   <CardContent className="p-8 text-center text-muted-foreground">
@@ -263,9 +304,14 @@ const Admin = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {students.map((student) => (
-                    <Card key={student.id} className="border-r-4 border-r-secondary">
+                    <Card
+                      key={student.id}
+                      className="border-r-4 border-r-secondary"
+                    >
                       <CardContent className="p-6">
-                        <h4 className="font-bold text-lg mb-1">{student.name}</h4>
+                        <h4 className="font-bold text-lg mb-1">
+                          {student.name}
+                        </h4>
                         <p className="text-sm text-muted-foreground mb-2">
                           العمر: {student.age} سنة
                         </p>
