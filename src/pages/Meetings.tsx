@@ -7,7 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Meeting {
   id: string;
@@ -24,6 +38,8 @@ const Meetings = () => {
   const [description, setDescription] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const { toast } = useToast();
 
   const loadMeetings = async () => {
@@ -67,7 +83,10 @@ const Meetings = () => {
     setIsLoading(false);
   };
 
-  const updateStatus = async (id: string, newStatus: "مجدولة" | "مكتملة" | "ملغاة") => {
+  const updateStatus = async (
+    id: string,
+    newStatus: "مجدولة" | "مكتملة" | "ملغاة"
+  ) => {
     const { error } = await supabase
       .from("meetings")
       .update({ status: newStatus })
@@ -79,6 +98,29 @@ const Meetings = () => {
     }
   };
 
+  const deleteMeeting = async () => {
+    if (!selectedMeeting) return;
+
+    const { error } = await supabase
+      .from("meetings")
+      .delete()
+      .eq("id", selectedMeeting.id);
+
+    if (error) {
+      toast({ title: "خطأ في حذف الاجتماع", variant: "destructive" });
+    } else {
+      toast({ title: "تم حذف الاجتماع بنجاح" });
+      loadMeetings();
+    }
+    setIsDeleteDialogOpen(false);
+    setSelectedMeeting(null);
+  };
+
+  const openDeleteDialog = (meeting: Meeting) => {
+    setSelectedMeeting(meeting);
+    setIsDeleteDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الاجتماعات" />
@@ -86,12 +128,16 @@ const Meetings = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <Card className="border-primary/20">
             <CardHeader>
-              <CardTitle className="text-2xl text-primary">جدولة اجتماع جديد</CardTitle>
+              <CardTitle className="text-2xl text-primary">
+                جدولة اجتماع جديد
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">عنوان الاجتماع</label>
+                  <label className="block text-sm font-medium mb-2">
+                    عنوان الاجتماع
+                  </label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -100,7 +146,9 @@ const Meetings = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">التفاصيل</label>
+                  <label className="block text-sm font-medium mb-2">
+                    التفاصيل
+                  </label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -110,7 +158,9 @@ const Meetings = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">تاريخ ووقت الاجتماع</label>
+                  <label className="block text-sm font-medium mb-2">
+                    تاريخ ووقت الاجتماع
+                  </label>
                   <Input
                     type="datetime-local"
                     value={meetingDate}
@@ -128,28 +178,36 @@ const Meetings = () => {
           <div className="bg-card p-6 rounded-xl shadow-[var(--shadow-soft)] border border-border">
             <div className="flex items-center gap-3 mb-4">
               <div className="text-4xl">🤝</div>
-              <h3 className="text-xl font-semibold text-primary">أنواع الاجتماعات</h3>
+              <h3 className="text-xl font-semibold text-primary">
+                أنواع الاجتماعات
+              </h3>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
                 <div className="text-2xl">👨‍🏫</div>
                 <div>
                   <h4 className="font-semibold">اجتماعات المعلمين</h4>
-                  <p className="text-sm text-muted-foreground">تنسيق وتخطيط الحلقات</p>
+                  <p className="text-sm text-muted-foreground">
+                    تنسيق وتخطيط الحلقات
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
                 <div className="text-2xl">👥</div>
                 <div>
                   <h4 className="font-semibold">اجتماعات أولياء الأمور</h4>
-                  <p className="text-sm text-muted-foreground">متابعة تقدم الأبناء</p>
+                  <p className="text-sm text-muted-foreground">
+                    متابعة تقدم الأبناء
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
                 <div className="text-2xl">⚙️</div>
                 <div>
                   <h4 className="font-semibold">اجتماعات إدارية</h4>
-                  <p className="text-sm text-muted-foreground">قرارات وتطوير المركز</p>
+                  <p className="text-sm text-muted-foreground">
+                    قرارات وتطوير المركز
+                  </p>
                 </div>
               </div>
             </div>
@@ -157,7 +215,9 @@ const Meetings = () => {
         </div>
 
         <div>
-          <h3 className="text-2xl font-bold text-primary mb-6">الاجتماعات المجدولة</h3>
+          <h3 className="text-2xl font-bold text-primary mb-6">
+            الاجتماعات المجدولة
+          </h3>
           {meetings.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground">
@@ -183,7 +243,9 @@ const Meetings = () => {
                         {meeting.status}
                       </Badge>
                     </div>
-                    <p className="text-muted-foreground mb-2">{meeting.description}</p>
+                    <p className="text-muted-foreground mb-2">
+                      {meeting.description}
+                    </p>
                     <p className="text-sm text-muted-foreground mb-4">
                       {new Date(meeting.meeting_date).toLocaleString("ar")}
                     </p>
@@ -209,6 +271,13 @@ const Meetings = () => {
                       >
                         ملغاة
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => openDeleteDialog(meeting)}
+                      >
+                        حذف
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -217,6 +286,30 @@ const Meetings = () => {
           )}
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من حذف الاجتماع "{selectedMeeting?.title}"؟ لا يمكن
+              التراجع عن هذا الإجراء.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button variant="destructive" onClick={deleteMeeting}>
+              حذف
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
