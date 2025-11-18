@@ -53,6 +53,20 @@ export interface Teacher {
 }
 
 /**
+ * Student images interface
+ * Represents multiple Quran memorization images for tracking student progress
+ */
+export interface StudentImages {
+  new: string;
+  recent1: string;
+  recent2: string;
+  recent3: string;
+  distant1: string;
+  distant2: string;
+  distant3: string;
+}
+
+/**
  * Student interface
  * Represents students enrolled in Quran memorization and Islamic education programs
  */
@@ -71,6 +85,7 @@ export interface Student {
   parentName?: string;
   parentPhone?: string;
   attendance?: number;
+  images?: StudentImages;
 }
 
 /**

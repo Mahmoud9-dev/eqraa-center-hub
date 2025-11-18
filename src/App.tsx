@@ -9,6 +9,12 @@ import Admin from "./pages/Admin";
 import Quran from "./pages/Quran";
 import Tajweed from "./pages/Tajweed";
 import Educational from "./pages/Educational";
+import EducationalIslamicLessons from "./pages/EducationalIslamicLessons";
+import EducationalEthicsBehavior from "./pages/EducationalEthicsBehavior";
+import EducationalLifeSkills from "./pages/EducationalLifeSkills";
+import EducationalStudentActivities from "./pages/EducationalStudentActivities";
+import EducationalFamilyPrograms from "./pages/EducationalFamilyPrograms";
+import EducationalGuidanceCounseling from "./pages/EducationalGuidanceCounseling";
 import Meetings from "./pages/Meetings";
 import Suggestions from "./pages/Suggestions";
 import Exams from "./pages/Exams";
@@ -81,6 +87,54 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Educational />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/islamic-lessons"
+              element={
+                <ProtectedRoute>
+                  <EducationalIslamicLessons />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/ethics-behavior"
+              element={
+                <ProtectedRoute>
+                  <EducationalEthicsBehavior />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/life-skills"
+              element={
+                <ProtectedRoute>
+                  <EducationalLifeSkills />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/student-activities"
+              element={
+                <ProtectedRoute>
+                  <EducationalStudentActivities />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/family-programs"
+              element={
+                <ProtectedRoute>
+                  <EducationalFamilyPrograms />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educational/guidance-counseling"
+              element={
+                <ProtectedRoute>
+                  <EducationalGuidanceCounseling />
                 </ProtectedRoute>
               }
             />

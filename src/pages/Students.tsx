@@ -39,7 +39,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import { Department, Student } from "@/types";
+import { Department, Student, StudentImages } from "@/types";
 
 const Students = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,6 +63,16 @@ const Students = () => {
       parentPhone: "01234567890",
       isActive: true,
       createdAt: new Date(),
+      // إضافة خانات الصور المتعددة
+      images: {
+        new: "سورة النساء - الآية 1-30",
+        recent1: "سورة آل عمران - الآية 1-50",
+        recent2: "سورة البقرة - الآية 200-250",
+        recent3: "سورة البقرة - الآية 150-200",
+        distant1: "سورة البقرة - الآية 100-150",
+        distant2: "سورة البقرة - الآية 50-100",
+        distant3: "سورة الفاتحة",
+      },
     },
     {
       id: "2",
@@ -79,6 +89,16 @@ const Students = () => {
       parentPhone: "01234567891",
       isActive: true,
       createdAt: new Date(),
+      // إضافة خانات الصور المتعددة
+      images: {
+        new: "سورة المائدة - الآية 1-20",
+        recent1: "سورة النساء - الآية 50-100",
+        recent2: "سورة آل عمران - الآية 50-100",
+        recent3: "سورة آل عمران - الآية 1-50",
+        distant1: "سورة البقرة - الآية 200-285",
+        distant2: "سورة البقرة - الآية 150-200",
+        distant3: "سورة البقرة - الآية 100-150",
+      },
     },
     {
       id: "3",
@@ -95,6 +115,16 @@ const Students = () => {
       parentPhone: "01234567892",
       isActive: true,
       createdAt: new Date(),
+      // إضافة خانات الصور المتعددة
+      images: {
+        new: "سورة الأنعام - الآية 1-30",
+        recent1: "سورة البقرة - الآية 150-200",
+        recent2: "سورة البقرة - الآية 100-150",
+        recent3: "سورة البقرة - الآية 50-100",
+        distant1: "سورة البقرة - الآية 1-50",
+        distant2: "سورة الفاتحة",
+        distant3: "",
+      },
     },
   ]);
 
@@ -170,6 +200,16 @@ const Students = () => {
     parentName: "",
     parentPhone: "",
     isActive: true,
+    // إضافة خانات الصور المتعددة
+    images: {
+      new: "",
+      recent1: "",
+      recent2: "",
+      recent3: "",
+      distant1: "",
+      distant2: "",
+      distant3: "",
+    },
   });
   const { toast } = useToast();
 
@@ -247,6 +287,7 @@ const Students = () => {
       parentPhone: newStudent.parentPhone,
       isActive: newStudent.isActive || true,
       createdAt: new Date(),
+      images: newStudent.images,
     };
 
     setStudents([...students, student]);
@@ -263,6 +304,15 @@ const Students = () => {
       parentName: "",
       parentPhone: "",
       isActive: true,
+      images: {
+        new: "",
+        recent1: "",
+        recent2: "",
+        recent3: "",
+        distant1: "",
+        distant2: "",
+        distant3: "",
+      },
     });
     setIsAddDialogOpen(false);
     toast({
@@ -310,6 +360,7 @@ const Students = () => {
                 newStudent.isActive !== undefined
                   ? newStudent.isActive
                   : student.isActive,
+              images: newStudent.images || student.images,
             }
           : student
       )
@@ -330,6 +381,15 @@ const Students = () => {
       parentName: "",
       parentPhone: "",
       isActive: true,
+      images: {
+        new: "",
+        recent1: "",
+        recent2: "",
+        recent3: "",
+        distant1: "",
+        distant2: "",
+        distant3: "",
+      },
     });
     toast({
       title: "تم التعديل",
@@ -366,6 +426,15 @@ const Students = () => {
       parentName: student.parentName,
       parentPhone: student.parentPhone,
       isActive: student.isActive,
+      images: student.images || {
+        new: "",
+        recent1: "",
+        recent2: "",
+        recent3: "",
+        distant1: "",
+        distant2: "",
+        distant3: "",
+      },
     });
     setIsEditDialogOpen(true);
   };
@@ -547,6 +616,122 @@ const Students = () => {
                       className="col-span-3"
                     />
                   </div>
+
+                  {/* إضافة خانات الصور المتعددة */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right font-medium">
+                      الصور الجديدة
+                    </Label>
+                    <div className="col-span-3 space-y-2">
+                      <Input
+                        placeholder="الصورة الجديدة"
+                        value={newStudent.images?.new || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              new: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right font-medium">
+                      الماضي القريب
+                    </Label>
+                    <div className="col-span-3 space-y-2">
+                      <Input
+                        placeholder="الماضي القريب 1"
+                        value={newStudent.images?.recent1 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              recent1: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        placeholder="الماضي القريب 2"
+                        value={newStudent.images?.recent2 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              recent2: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        placeholder="الماضي القريب 3"
+                        value={newStudent.images?.recent3 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              recent3: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right font-medium">
+                      الماضي البعيد
+                    </Label>
+                    <div className="col-span-3 space-y-2">
+                      <Input
+                        placeholder="الماضي البعيد 1"
+                        value={newStudent.images?.distant1 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              distant1: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        placeholder="الماضي البعيد 2"
+                        value={newStudent.images?.distant2 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              distant2: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        placeholder="الماضي البعيد 3"
+                        value={newStudent.images?.distant3 || ""}
+                        onChange={(e) =>
+                          setNewStudent({
+                            ...newStudent,
+                            images: {
+                              ...newStudent.images,
+                              distant3: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button
@@ -563,10 +748,11 @@ const Students = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all">جميع الطلاب</TabsTrigger>
             <TabsTrigger value="attendance">الحضور والغياب</TabsTrigger>
             <TabsTrigger value="grades">الدرجات</TabsTrigger>
+            <TabsTrigger value="images">الصور المحفوظة</TabsTrigger>
             <TabsTrigger value="notes">الملاحظات</TabsTrigger>
           </TabsList>
 
@@ -737,6 +923,117 @@ const Students = () => {
                             </div>
                           )
                         )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="images" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>الصور المحفوظة للطلاب</CardTitle>
+                <CardDescription>
+                  عرض ومتابعة صور القرآن المحفوظة لكل طالب
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {filteredStudents.map((student) => (
+                    <div key={student.id} className="p-4 border rounded-lg">
+                      <h3 className="font-medium mb-4 flex items-center gap-2">
+                        {student.name}
+                        <Badge variant="outline" className="text-xs">
+                          {getDepartmentName(student.department)}
+                        </Badge>
+                      </h3>
+
+                      {student.images && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* الصورة الجديدة */}
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-green-700 bg-green-50 p-2 rounded border border-green-200">
+                              📖 الصورة الجديدة
+                            </h4>
+                            <div className="p-3 bg-green-100 rounded border border-green-300 min-h-[60px]">
+                              <p className="text-sm text-green-800">
+                                {student.images.new ||
+                                  "لم يتم تسجيل صورة جديدة"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* الماضي القريب */}
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-blue-700 bg-blue-50 p-2 rounded border border-blue-200">
+                              📚 الماضي القريب
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="p-2 bg-blue-100 rounded border border-blue-300">
+                                <p className="text-xs text-blue-600">1:</p>
+                                <p className="text-sm text-blue-800">
+                                  {student.images.recent1 || "لا يوجد"}
+                                </p>
+                              </div>
+                              <div className="p-2 bg-blue-100 rounded border border-blue-300">
+                                <p className="text-xs text-blue-600">2:</p>
+                                <p className="text-sm text-blue-800">
+                                  {student.images.recent2 || "لا يوجد"}
+                                </p>
+                              </div>
+                              <div className="p-2 bg-blue-100 rounded border border-blue-300">
+                                <p className="text-xs text-blue-600">3:</p>
+                                <p className="text-sm text-blue-800">
+                                  {student.images.recent3 || "لا يوجد"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* الماضي البعيد */}
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-orange-700 bg-orange-50 p-2 rounded border border-orange-200">
+                              📜 الماضي البعيد
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="p-2 bg-orange-100 rounded border border-orange-300">
+                                <p className="text-xs text-orange-600">1:</p>
+                                <p className="text-sm text-orange-800">
+                                  {student.images.distant1 || "لا يوجد"}
+                                </p>
+                              </div>
+                              <div className="p-2 bg-orange-100 rounded border border-orange-300">
+                                <p className="text-xs text-orange-600">2:</p>
+                                <p className="text-sm text-orange-800">
+                                  {student.images.distant2 || "لا يوجد"}
+                                </p>
+                              </div>
+                              <div className="p-2 bg-orange-100 rounded border border-orange-300">
+                                <p className="text-xs text-orange-600">3:</p>
+                                <p className="text-sm text-orange-800">
+                                  {student.images.distant3 || "لا يوجد"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {!student.images && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>لا توجد صور مسجلة لهذا الطالب</p>
+                        </div>
+                      )}
+
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="flex justify-between items-center text-sm text-muted-foreground">
+                          <span>
+                            إجمالي الأجزاء المحفوظة: {student.partsMemorized}
+                          </span>
+                          <span>التقدم الحالي: {student.currentProgress}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
