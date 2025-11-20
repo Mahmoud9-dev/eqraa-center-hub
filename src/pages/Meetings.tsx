@@ -30,6 +30,7 @@ interface Meeting {
   meeting_date: string;
   status: "مجدولة" | "مكتملة" | "ملغاة";
   notes?: string;
+  type?: "المعلمين" | "أولياء الأمور" | "إدارية";
 }
 
 const Meetings = () => {
@@ -37,9 +38,13 @@ const Meetings = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
+  const [meetingType, setMeetingType] = useState<
+    "المعلمين" | "أولياء الأمور" | "إدارية"
+  >("المعلمين");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+  const [filterType, setFilterType] = useState<string>("all");
   const { toast } = useToast();
 
   const loadMeetings = async () => {
@@ -68,6 +73,7 @@ const Meetings = () => {
         description,
         meeting_date: new Date(meetingDate).toISOString(),
         status: "مجدولة",
+        type: meetingType,
       },
     ]);
 
@@ -78,6 +84,7 @@ const Meetings = () => {
       setTitle("");
       setDescription("");
       setMeetingDate("");
+      setMeetingType("المعلمين");
       loadMeetings();
     }
     setIsLoading(false);
@@ -121,6 +128,12 @@ const Meetings = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  // Filter meetings based on selected type
+  const filteredMeetings =
+    filterType === "all"
+      ? meetings
+      : meetings.filter((meeting) => meeting.type === filterType);
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الاجتماعات" />
@@ -145,6 +158,30 @@ const Meetings = () => {
                     className="text-base sm:text-sm"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    نوع الاجتماع
+                  </label>
+                  <Select
+                    value={meetingType}
+                    onValueChange={(
+                      value: "المعلمين" | "أولياء الأمور" | "إدارية"
+                    ) => setMeetingType(value)}
+                  >
+                    <SelectTrigger className="text-base sm:text-sm">
+                      <SelectValue placeholder="اختر نوع الاجتماع" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="المعلمين">
+                        اجتماعات المعلمين
+                      </SelectItem>
+                      <SelectItem value="أولياء الأمور">
+                        اجتماعات أولياء الأمور
+                      </SelectItem>
+                      <SelectItem value="إدارية">اجتماعات إدارية</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -190,7 +227,16 @@ const Meetings = () => {
               </h3>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+              <div
+                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                  filterType === "المعلمين" || filterType === "all"
+                    ? "bg-primary/20 border border-primary/30"
+                    : "bg-primary/5 hover:bg-primary/10"
+                }`}
+                onClick={() =>
+                  setFilterType(filterType === "المعلمين" ? "all" : "المعلمين")
+                }
+              >
                 <div className="text-xl sm:text-2xl">👨‍🏫</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
@@ -201,7 +247,18 @@ const Meetings = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+              <div
+                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                  filterType === "أولياء الأمور" || filterType === "all"
+                    ? "bg-primary/20 border border-primary/30"
+                    : "bg-primary/5 hover:bg-primary/10"
+                }`}
+                onClick={() =>
+                  setFilterType(
+                    filterType === "أولياء الأمور" ? "all" : "أولياء الأمور"
+                  )
+                }
+              >
                 <div className="text-xl sm:text-2xl">👥</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
@@ -212,7 +269,16 @@ const Meetings = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+              <div
+                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                  filterType === "إدارية" || filterType === "all"
+                    ? "bg-primary/20 border border-primary/30"
+                    : "bg-primary/5 hover:bg-primary/10"
+                }`}
+                onClick={() =>
+                  setFilterType(filterType === "إدارية" ? "all" : "إدارية")
+                }
+              >
                 <div className="text-xl sm:text-2xl">⚙️</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
@@ -228,24 +294,48 @@ const Meetings = () => {
         </div>
 
         <div>
-          <h3 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">
-            الاجتماعات المجدولة
-          </h3>
-          {meetings.length === 0 ? (
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h3 className="text-xl sm:text-2xl font-bold text-primary">
+              الاجتماعات المجدولة
+            </h3>
+            {filterType !== "all" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilterType("all")}
+                className="text-xs sm:text-sm"
+              >
+                عرض جميع الاجتماعات
+              </Button>
+            )}
+          </div>
+          {filteredMeetings.length === 0 ? (
             <Card>
               <CardContent className="p-6 sm:p-8 text-center text-muted-foreground">
-                لا توجد اجتماعات مجدولة
+                {filterType === "all"
+                  ? "لا توجد اجتماعات مجدولة"
+                  : `لا توجد اجتماعات من نوع "${filterType}" مجدولة`}
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3 sm:space-y-4">
-              {meetings.map((meeting) => (
+              {filteredMeetings.map((meeting) => (
                 <Card key={meeting.id} className="border-r-4 border-r-primary">
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
-                      <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-0">
-                        {meeting.title}
-                      </h4>
+                      <div>
+                        <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-0">
+                          {meeting.title}
+                        </h4>
+                        {meeting.type && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs mb-2 sm:mb-0"
+                          >
+                            {meeting.type}
+                          </Badge>
+                        )}
+                      </div>
                       <Badge
                         variant={
                           meeting.status === "مكتملة"

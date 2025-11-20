@@ -598,15 +598,57 @@ const Subjects = () => {
                                       </p>
                                       <div className="flex justify-between items-center">
                                         <div className="flex space-x-1 space-x-reverse">
-                                          <Button variant="outline" size="sm">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              toast({
+                                                title: "عرض الدرس",
+                                                description:
+                                                  "جاري فتح الدرس...",
+                                              });
+                                              window.open(
+                                                lesson.contentUrl,
+                                                "_blank"
+                                              );
+                                            }}
+                                          >
                                             عرض
                                           </Button>
-                                          <Button variant="outline" size="sm">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              toast({
+                                                title: "تعديل الدرس",
+                                                description:
+                                                  "جاري فتح نافذة التعديل...",
+                                              });
+                                              // هنا يمكن إضافة منطق التعديل
+                                            }}
+                                          >
                                             تعديل
                                           </Button>
                                           <Button
                                             variant="destructive"
                                             size="sm"
+                                            onClick={() => {
+                                              toast({
+                                                title: "حذف الدرس",
+                                                description:
+                                                  "جاري حذف الدرس...",
+                                              });
+                                              setLessons(
+                                                lessons.filter(
+                                                  (l) => l.id !== lesson.id
+                                                )
+                                              );
+                                              toast({
+                                                title: "تم الحذف",
+                                                description:
+                                                  "تم حذف الدرس بنجاح",
+                                              });
+                                            }}
                                           >
                                             حذف
                                           </Button>
@@ -815,13 +857,52 @@ const Subjects = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex space-x-2 space-x-reverse">
-                                  <Button variant="outline" size="sm">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      toast({
+                                        title: "عرض الواجب",
+                                        description: "جاري فتح الواجب...",
+                                      });
+                                      // هنا يمكن إضافة منطق العرض
+                                    }}
+                                  >
                                     عرض
                                   </Button>
-                                  <Button variant="outline" size="sm">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      toast({
+                                        title: "تعديل الواجب",
+                                        description:
+                                          "جاري فتح نافذة التعديل...",
+                                      });
+                                      // هنا يمكن إضافة منطق التعديل
+                                    }}
+                                  >
                                     تعديل
                                   </Button>
-                                  <Button variant="destructive" size="sm">
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      toast({
+                                        title: "حذف الواجب",
+                                        description: "جاري حذف الواجب...",
+                                      });
+                                      setAssignments(
+                                        assignments.filter(
+                                          (a) => a.id !== assignment.id
+                                        )
+                                      );
+                                      toast({
+                                        title: "تم الحذف",
+                                        description: "تم حذف الواجب بنجاح",
+                                      });
+                                    }}
+                                  >
                                     حذف
                                   </Button>
                                 </div>
@@ -846,7 +927,18 @@ const Subjects = () => {
                       <p className="text-muted-foreground mb-4">
                         لا توجد أسئلة حالياً
                       </p>
-                      <Button variant="outline">طرح سؤال جديد</Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: "طرح سؤال",
+                            description: "جاري فتح نافذة طرح السؤال...",
+                          });
+                          // هنا يمكن إضافة منطق طرح السؤال
+                        }}
+                      >
+                        طرح سؤال جديد
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

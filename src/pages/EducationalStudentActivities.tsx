@@ -139,6 +139,35 @@ const EducationalStudentActivities = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRecording = (activity: any) => {
+    if (activity.recording === "available") {
+      toast({
+        title: "فتح التسجيل",
+        description: "جاري فتح تسجيل النشاط...",
+      });
+      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
+      window.open("#", "_blank");
+    } else {
+      toast({
+        title: "التسجيل غير متاح",
+        description: "هذا النشاط قيد المعالجة وسيكون متاحاً قريباً",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadMaterial = (activity: any) => {
+    toast({
+      title: "تحميل المادة",
+      description: "جاري تحميل مادة النشاط...",
+    });
+    // هنا يمكن إضافة رابط التحميل
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `${activity.title}.pdf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الأنشطة الطلابية" showBack={true} />
@@ -331,12 +360,19 @@ const EducationalStudentActivities = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button className="flex-1 text-sm">
+                  <Button
+                    className="flex-1 text-sm"
+                    onClick={() => handleViewRecording(activity)}
+                  >
                     {activity.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline" className="text-sm">
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => handleDownloadMaterial(activity)}
+                  >
                     تحميل المادة
                   </Button>
                   <Button

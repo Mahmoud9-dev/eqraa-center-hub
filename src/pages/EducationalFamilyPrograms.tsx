@@ -140,6 +140,35 @@ const EducationalFamilyPrograms = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRecording = (program: any) => {
+    if (program.recording === "available") {
+      toast({
+        title: "فتح التسجيل",
+        description: "جاري فتح تسجيل البرنامج...",
+      });
+      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
+      window.open("#", "_blank");
+    } else {
+      toast({
+        title: "التسجيل غير متاح",
+        description: "هذا البرنامج قيد المعالجة وسيكون متاحاً قريباً",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadMaterial = (program: any) => {
+    toast({
+      title: "تحميل المادة",
+      description: "جاري تحميل مادة البرنامج...",
+    });
+    // هنا يمكن إضافة رابط التحميل
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `${program.title}.pdf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="برامج الأسرة" showBack={true} />
@@ -326,12 +355,19 @@ const EducationalFamilyPrograms = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button className="flex-1 text-sm">
+                  <Button
+                    className="flex-1 text-sm"
+                    onClick={() => handleViewRecording(program)}
+                  >
                     {program.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline" className="text-sm">
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => handleDownloadMaterial(program)}
+                  >
                     تحميل المادة
                   </Button>
                   <Button

@@ -139,6 +139,37 @@ All colors MUST be HSL.
       font-size: 16px;
       line-height: 1.5;
     }
+
+    /* Improve table responsiveness on mobile */
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Better dialog handling on mobile */
+    .dialog-mobile {
+      width: 95vw;
+      max-width: 95vw;
+      margin: 1rem;
+    }
+
+    /* Improve card layouts on mobile */
+    .mobile-card-stack {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Better button spacing on mobile */
+    .mobile-button-group {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Improve form layouts on mobile */
+    .mobile-form-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
   }
 
   /* Touch-friendly tap targets */
@@ -149,6 +180,55 @@ All colors MUST be HSL.
     select,
     textarea {
       min-height: 44px;
+    }
+
+    /* Increase touch targets for small screens */
+    @media (max-width: 640px) {
+      .touch-target {
+        min-height: 48px;
+        min-width: 48px;
+      }
+    }
+  }
+
+  /* Improve horizontal scrolling on mobile */
+  .horizontal-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Better responsive text */
+  @media (max-width: 640px) {
+    .responsive-text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    .responsive-text-base {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+
+    .responsive-text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  /* Improve grid layouts on mobile */
+  @media (max-width: 768px) {
+    .mobile-grid-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .mobile-grid-2 {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 }

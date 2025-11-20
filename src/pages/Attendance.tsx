@@ -149,28 +149,46 @@ const Attendance = () => {
     },
   ]);
 
-  const [attendanceRecords] = useState<AttendanceRecord[]>([
-    {
-      id: "1",
-      studentId: "1",
-      teacherId: "teacher1",
-      date: "2025-11-05",
-      status: "حاضر",
-      notes: "حضور ممتاز",
-      student: students[0],
-      teacher: teachers[0],
-    },
-    {
-      id: "2",
-      studentId: "2",
-      teacherId: "teacher2",
-      date: "2025-11-05",
-      status: "غائب",
-      notes: "غياب بعذر",
-      student: students[1],
-      teacher: teachers[1],
-    },
-  ]);
+  const [attendanceRecords, setAttendanceRecords] = useState<
+    AttendanceRecord[]
+  >(() => {
+    // Try to load from localStorage first
+    const savedRecords = localStorage.getItem("attendanceRecords");
+    if (savedRecords) {
+      try {
+        return JSON.parse(savedRecords);
+      } catch (error) {
+        console.error(
+          "Error loading attendance records from localStorage:",
+          error
+        );
+      }
+    }
+
+    // Default records if no saved data
+    return [
+      {
+        id: "1",
+        studentId: "1",
+        teacherId: "teacher1",
+        date: "2025-11-05",
+        status: "حاضر",
+        notes: "حضور ممتاز",
+        student: students[0],
+        teacher: teachers[0],
+      },
+      {
+        id: "2",
+        studentId: "2",
+        teacherId: "teacher2",
+        date: "2025-11-05",
+        status: "غائب",
+        notes: "غياب بعذر",
+        student: students[1],
+        teacher: teachers[1],
+      },
+    ];
+  });
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch = student.name
@@ -209,13 +227,42 @@ const Attendance = () => {
 
   const handleRecordAttendance = () => {
     setIsRecording(true);
-    // Here you would normally save to database
+
+    // Create new attendance records for selected students
+    const newRecords: AttendanceRecord[] = Object.entries(selectedStudents).map(
+      ([studentId, status]) => {
+        const student = students.find((s) => s.id === studentId);
+        return {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          studentId,
+          teacherId: student?.teacherId || "",
+          date: selectedDate.toISOString().split("T")[0],
+          status,
+          notes:
+            status === "حاضر"
+              ? "حضور منتظم"
+              : status === "غائب"
+              ? "غياب بدون عذر"
+              : "غياب بعذر",
+          student,
+          teacher: teachers.find((t) => t.id === student?.teacherId),
+        };
+      }
+    );
+
+    // Add new records to existing ones
+    const updatedRecords = [...attendanceRecords, ...newRecords];
+    setAttendanceRecords(updatedRecords);
+
+    // Save to localStorage for persistence
+    localStorage.setItem("attendanceRecords", JSON.stringify(updatedRecords));
+
     setTimeout(() => {
       setIsRecording(false);
       setSelectedStudents({});
       toast({
         title: "تم تسجيل الحضور",
-        description: "تم تسجيل حضور الطلاب بنجاح",
+        description: `تم تسجيل حضور ${newRecords.length} طالب بنجاح وحفظ البيانات`,
       });
     }, 1000);
   };
@@ -242,13 +289,41 @@ const Attendance = () => {
 
   const handleRecordTeacherAttendance = () => {
     setIsRecording(true);
-    // Here you would normally save to database
+
+    // Create new attendance records for selected teachers
+    const newRecords: AttendanceRecord[] = Object.entries(selectedTeachers).map(
+      ([teacherId, status]) => {
+        const teacher = teachers.find((t) => t.id === teacherId);
+        return {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          studentId: "", // No student for teacher attendance
+          teacherId,
+          date: selectedDate.toISOString().split("T")[0],
+          status: status as "حاضر" | "غائب" | "مأذون",
+          notes:
+            status === "حاضر"
+              ? "حضور منتظم"
+              : status === "غائب"
+              ? "غياب بدون عذر"
+              : "إجازة معتمدة",
+          teacher,
+        };
+      }
+    );
+
+    // Add new records to existing ones
+    const updatedRecords = [...attendanceRecords, ...newRecords];
+    setAttendanceRecords(updatedRecords);
+
+    // Save to localStorage for persistence
+    localStorage.setItem("attendanceRecords", JSON.stringify(updatedRecords));
+
     setTimeout(() => {
       setIsRecording(false);
       setSelectedTeachers({});
       toast({
         title: "تم تسجيل الحضور",
-        description: "تم تسجيل حضور المعلمين بنجاح",
+        description: `تم تسجيل حضور ${newRecords.length} معلم بنجاح وحفظ البيانات`,
       });
     }, 1000);
   };

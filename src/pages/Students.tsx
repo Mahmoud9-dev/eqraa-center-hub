@@ -47,86 +47,99 @@ const Students = () => {
     "all"
   );
   const [activeTab, setActiveTab] = useState("all");
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: "1",
-      name: "أحمد محمد علي",
-      age: 12,
-      grade: "السادس ابتدائي",
-      department: "quran" as Department,
-      teacherId: "teacher1",
-      partsMemorized: 5,
-      currentProgress: "سورة آل عمران - الآية 50",
-      previousProgress: "سورة البقرة - الآية 200",
-      attendance: 85,
-      parentName: "محمد علي",
-      parentPhone: "01234567890",
-      isActive: true,
-      createdAt: new Date(),
-      // إضافة خانات الصور المتعددة
-      images: {
-        new: "سورة النساء - الآية 1-30",
-        recent1: "سورة آل عمران - الآية 1-50",
-        recent2: "سورة البقرة - الآية 200-250",
-        recent3: "سورة البقرة - الآية 150-200",
-        distant1: "سورة البقرة - الآية 100-150",
-        distant2: "سورة البقرة - الآية 50-100",
-        distant3: "سورة الفاتحة",
+  const [students, setStudents] = useState<Student[]>(() => {
+    // محاولة استرجاع البيانات من localStorage عند تحميل الصفحة
+    const savedStudents = localStorage.getItem("students");
+    if (savedStudents) {
+      try {
+        return JSON.parse(savedStudents);
+      } catch (error) {
+        console.error("Error loading students from localStorage:", error);
+      }
+    }
+
+    // البيانات الافتراضية إذا لم توجد بيانات محفوظة
+    return [
+      {
+        id: "1",
+        name: "أحمد محمد علي",
+        age: 12,
+        grade: "السادس ابتدائي",
+        department: "quran" as Department,
+        teacherId: "teacher1",
+        partsMemorized: 5,
+        currentProgress: "سورة آل عمران - الآية 50",
+        previousProgress: "سورة البقرة - الآية 200",
+        attendance: 85,
+        parentName: "محمد علي",
+        parentPhone: "01234567890",
+        isActive: true,
+        createdAt: new Date(),
+        // إضافة خانات الصور المتعددة
+        images: {
+          new: "سورة النساء - الآية 1-30",
+          recent1: "سورة آل عمران - الآية 1-50",
+          recent2: "سورة البقرة - الآية 200-250",
+          recent3: "سورة البقرة - الآية 150-200",
+          distant1: "سورة البقرة - الآية 100-150",
+          distant2: "سورة البقرة - الآية 50-100",
+          distant3: "سورة الفاتحة",
+        },
       },
-    },
-    {
-      id: "2",
-      name: "عمر خالد حسن",
-      age: 14,
-      grade: "الثالث إعدادي",
-      department: "tajweed" as Department,
-      teacherId: "teacher2",
-      partsMemorized: 8,
-      currentProgress: "سورة النساء - الآية 100",
-      previousProgress: "سورة آل عمران - الآية 50",
-      attendance: 92,
-      parentName: "خالد حسن",
-      parentPhone: "01234567891",
-      isActive: true,
-      createdAt: new Date(),
-      // إضافة خانات الصور المتعددة
-      images: {
-        new: "سورة المائدة - الآية 1-20",
-        recent1: "سورة النساء - الآية 50-100",
-        recent2: "سورة آل عمران - الآية 50-100",
-        recent3: "سورة آل عمران - الآية 1-50",
-        distant1: "سورة البقرة - الآية 200-285",
-        distant2: "سورة البقرة - الآية 150-200",
-        distant3: "سورة البقرة - الآية 100-150",
+      {
+        id: "2",
+        name: "عمر خالد حسن",
+        age: 14,
+        grade: "الثالث إعدادي",
+        department: "tajweed" as Department,
+        teacherId: "teacher2",
+        partsMemorized: 8,
+        currentProgress: "سورة النساء - الآية 100",
+        previousProgress: "سورة آل عمران - الآية 50",
+        attendance: 92,
+        parentName: "خالد حسن",
+        parentPhone: "01234567891",
+        isActive: true,
+        createdAt: new Date(),
+        // إضافة خانات الصور المتعددة
+        images: {
+          new: "سورة المائدة - الآية 1-20",
+          recent1: "سورة النساء - الآية 50-100",
+          recent2: "سورة آل عمران - الآية 50-100",
+          recent3: "سورة آل عمران - الآية 1-50",
+          distant1: "سورة البقرة - الآية 200-285",
+          distant2: "سورة البقرة - الآية 150-200",
+          distant3: "سورة البقرة - الآية 100-150",
+        },
       },
-    },
-    {
-      id: "3",
-      name: "محمد سعيد أحمد",
-      age: 11,
-      grade: "الخامس ابتدائي",
-      department: "tarbawi" as Department,
-      teacherId: "teacher3",
-      partsMemorized: 3,
-      currentProgress: "سورة البقرة - الآية 150",
-      previousProgress: "سورة البقرة - الآية 100",
-      attendance: 78,
-      parentName: "سعيد أحمد",
-      parentPhone: "01234567892",
-      isActive: true,
-      createdAt: new Date(),
-      // إضافة خانات الصور المتعددة
-      images: {
-        new: "سورة الأنعام - الآية 1-30",
-        recent1: "سورة البقرة - الآية 150-200",
-        recent2: "سورة البقرة - الآية 100-150",
-        recent3: "سورة البقرة - الآية 50-100",
-        distant1: "سورة البقرة - الآية 1-50",
-        distant2: "سورة الفاتحة",
-        distant3: "",
+      {
+        id: "3",
+        name: "محمد سعيد أحمد",
+        age: 11,
+        grade: "الخامس ابتدائي",
+        department: "tarbawi" as Department,
+        teacherId: "teacher3",
+        partsMemorized: 3,
+        currentProgress: "سورة البقرة - الآية 150",
+        previousProgress: "سورة البقرة - الآية 100",
+        attendance: 78,
+        parentName: "سعيد أحمد",
+        parentPhone: "01234567892",
+        isActive: true,
+        createdAt: new Date(),
+        // إضافة خانات الصور المتعددة
+        images: {
+          new: "سورة الأنعام - الآية 1-30",
+          recent1: "سورة البقرة - الآية 150-200",
+          recent2: "سورة البقرة - الآية 100-150",
+          recent3: "سورة البقرة - الآية 50-100",
+          distant1: "سورة البقرة - الآية 1-50",
+          distant2: "سورة الفاتحة",
+          distant3: "",
+        },
       },
-    },
-  ]);
+    ];
+  });
 
   // Mock teacher data for display
   const teachers = {
@@ -154,39 +167,67 @@ const Students = () => {
     ],
   };
 
-  const studentsNotes = {
-    "1": [
-      {
-        id: "1",
-        type: "إيجابي",
-        content: "مشاركة ممتازة في الحلقة",
-        date: "2025-11-01",
-        teacher: "الشيخ خالد",
-      },
-      {
-        id: "2",
-        type: "سلبي",
-        content: "تأخير في الحضور",
-        date: "2025-10-28",
-        teacher: "الشيخ خالد",
-      },
-    ],
-    "2": [
-      {
-        id: "3",
-        type: "إيجابي",
-        content: "حفظ ممتاز للأحكام",
-        date: "2025-11-02",
-        teacher: "الشيخ أحمد",
-      },
-    ],
-    "3": [],
-  };
+  const [studentsNotes, setStudentsNotes] = useState<{ [key: string]: any[] }>(
+    () => {
+      // محاولة استرجاع بيانات الملاحظات من localStorage
+      const savedNotes = localStorage.getItem("studentsNotes");
+      if (savedNotes) {
+        try {
+          return JSON.parse(savedNotes);
+        } catch (error) {
+          console.error("Error loading notes from localStorage:", error);
+        }
+      }
+
+      // البيانات الافتراضية إذا لم توجد بيانات محفوظة
+      return {
+        "1": [
+          {
+            id: "1",
+            type: "إيجابي",
+            content: "مشاركة ممتازة في الحلقة",
+            date: "2025-11-01",
+            teacher: "الشيخ خالد",
+          },
+          {
+            id: "2",
+            type: "سلبي",
+            content: "تأخير في الحضور",
+            date: "2025-10-28",
+            teacher: "الشيخ خالد",
+          },
+        ],
+        "2": [
+          {
+            id: "3",
+            type: "إيجابي",
+            content: "حفظ ممتاز للأحكام",
+            date: "2025-11-02",
+            teacher: "الشيخ أحمد",
+          },
+        ],
+        "3": [],
+      };
+    }
+  );
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditImagesDialogOpen, setIsEditImagesDialogOpen] = useState(false);
+  const [isAddNoteDialogOpen, setIsAddNoteDialogOpen] = useState(false);
+  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedNote, setSelectedNote] = useState<any>(null);
+  const [editingImageType, setEditingImageType] = useState<
+    "new" | "recent" | "distant"
+  >("new");
+  const [newNote, setNewNote] = useState({
+    type: "إيجابي" as "إيجابي" | "سلبي",
+    content: "",
+    date: new Date().toISOString().split("T")[0],
+    teacher: "المعلم الحالي",
+  });
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     name: "",
     age: 0,
@@ -290,7 +331,12 @@ const Students = () => {
       images: newStudent.images,
     };
 
-    setStudents([...students, student]);
+    const updatedStudents = [...students, student];
+    setStudents(updatedStudents);
+
+    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
+    localStorage.setItem("students", JSON.stringify(updatedStudents));
+
     setNewStudent({
       name: "",
       age: 0,
@@ -317,7 +363,7 @@ const Students = () => {
     setIsAddDialogOpen(false);
     toast({
       title: "تم الإضافة",
-      description: "تم إضافة الطالب بنجاح",
+      description: "تم إضافة الطالب بنجاح وحفظ البيانات",
     });
   };
 
@@ -336,35 +382,37 @@ const Students = () => {
       return;
     }
 
-    setStudents(
-      students.map((student) =>
-        student.id === selectedStudent.id
-          ? {
-              ...student,
-              name: newStudent.name || student.name,
-              age: newStudent.age || student.age,
-              grade: newStudent.grade || student.grade,
-              department:
-                (newStudent.department as Department) || student.department,
-              teacherId: newStudent.teacherId || student.teacherId,
-              partsMemorized:
-                newStudent.partsMemorized || student.partsMemorized,
-              currentProgress:
-                newStudent.currentProgress || student.currentProgress,
-              previousProgress:
-                newStudent.previousProgress || student.previousProgress,
-              attendance: newStudent.attendance || student.attendance,
-              parentName: newStudent.parentName || student.parentName,
-              parentPhone: newStudent.parentPhone || student.parentPhone,
-              isActive:
-                newStudent.isActive !== undefined
-                  ? newStudent.isActive
-                  : student.isActive,
-              images: newStudent.images || student.images,
-            }
-          : student
-      )
+    const updatedStudents = students.map((student) =>
+      student.id === selectedStudent.id
+        ? {
+            ...student,
+            name: newStudent.name || student.name,
+            age: newStudent.age || student.age,
+            grade: newStudent.grade || student.grade,
+            department:
+              (newStudent.department as Department) || student.department,
+            teacherId: newStudent.teacherId || student.teacherId,
+            partsMemorized: newStudent.partsMemorized || student.partsMemorized,
+            currentProgress:
+              newStudent.currentProgress || student.currentProgress,
+            previousProgress:
+              newStudent.previousProgress || student.previousProgress,
+            attendance: newStudent.attendance || student.attendance,
+            parentName: newStudent.parentName || student.parentName,
+            parentPhone: newStudent.parentPhone || student.parentPhone,
+            isActive:
+              newStudent.isActive !== undefined
+                ? newStudent.isActive
+                : student.isActive,
+            images: newStudent.images || student.images,
+          }
+        : student
     );
+
+    setStudents(updatedStudents);
+
+    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
+    localStorage.setItem("students", JSON.stringify(updatedStudents));
 
     setIsEditDialogOpen(false);
     setSelectedStudent(null);
@@ -393,21 +441,26 @@ const Students = () => {
     });
     toast({
       title: "تم التعديل",
-      description: "تم تعديل بيانات الطالب بنجاح",
+      description: "تم تعديل بيانات الطالب بنجاح وحفظ البيانات",
     });
   };
 
   const handleDeleteStudent = () => {
     if (!selectedStudent) return;
 
-    setStudents(
-      students.filter((student) => student.id !== selectedStudent.id)
+    const updatedStudents = students.filter(
+      (student) => student.id !== selectedStudent.id
     );
+    setStudents(updatedStudents);
+
+    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
+    localStorage.setItem("students", JSON.stringify(updatedStudents));
+
     setIsDeleteDialogOpen(false);
     setSelectedStudent(null);
     toast({
       title: "تم الحذف",
-      description: "تم حذف الطالب بنجاح",
+      description: "تم حذف الطالب بنجاح وحفظ البيانات",
     });
   };
 
@@ -442,6 +495,164 @@ const Students = () => {
   const openDeleteDialog = (student: Student) => {
     setSelectedStudent(student);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openEditImagesDialog = (
+    student: Student,
+    imageType: "new" | "recent" | "distant"
+  ) => {
+    setSelectedStudent(student);
+    setEditingImageType(imageType);
+    setIsEditImagesDialogOpen(true);
+  };
+
+  const handleEditImages = () => {
+    if (!selectedStudent) return;
+
+    const updatedStudents = students.map((student) =>
+      student.id === selectedStudent.id
+        ? { ...student, images: newStudent.images || student.images }
+        : student
+    );
+
+    setStudents(updatedStudents);
+
+    // Save to localStorage
+    localStorage.setItem("students", JSON.stringify(updatedStudents));
+
+    setIsEditImagesDialogOpen(false);
+    setSelectedStudent(null);
+    toast({
+      title: "تم التعديل",
+      description: "تم تعديل السور المحفوظة بنجاح وحفظ البيانات",
+    });
+  };
+
+  // Functions for notes operations
+  const handleAddNote = () => {
+    if (!selectedStudent || !newNote.content.trim()) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال محتوى الملاحظة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const note = {
+      id: Date.now().toString(),
+      type: newNote.type,
+      content: newNote.content,
+      date: newNote.date,
+      teacher: newNote.teacher,
+    };
+
+    const updatedNotes = {
+      ...studentsNotes,
+      [selectedStudent.id]: [
+        ...(studentsNotes[selectedStudent.id] || []),
+        note,
+      ],
+    };
+
+    setStudentsNotes(updatedNotes);
+    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+
+    setNewNote({
+      type: "إيجابي",
+      content: "",
+      date: new Date().toISOString().split("T")[0],
+      teacher: "المعلم الحالي",
+    });
+
+    setIsAddNoteDialogOpen(false);
+    toast({
+      title: "تم الإضافة",
+      description: "تم إضافة الملاحظة بنجاح وحفظ البيانات",
+    });
+  };
+
+  const handleEditNote = () => {
+    if (!selectedStudent || !selectedNote || !newNote.content.trim()) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال محتوى الملاحظة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedNotes = {
+      ...studentsNotes,
+      [selectedStudent.id]: studentsNotes[selectedStudent.id].map((note) =>
+        note.id === selectedNote.id
+          ? {
+              ...note,
+              type: newNote.type,
+              content: newNote.content,
+              date: newNote.date,
+              teacher: newNote.teacher,
+            }
+          : note
+      ),
+    };
+
+    setStudentsNotes(updatedNotes);
+    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+
+    setNewNote({
+      type: "إيجابي",
+      content: "",
+      date: new Date().toISOString().split("T")[0],
+      teacher: "المعلم الحالي",
+    });
+
+    setIsEditNoteDialogOpen(false);
+    setSelectedNote(null);
+    toast({
+      title: "تم التعديل",
+      description: "تم تعديل الملاحظة بنجاح وحفظ البيانات",
+    });
+  };
+
+  const handleDeleteNote = (studentId: string, noteId: string) => {
+    const updatedNotes = {
+      ...studentsNotes,
+      [studentId]: studentsNotes[studentId].filter(
+        (note) => note.id !== noteId
+      ),
+    };
+
+    setStudentsNotes(updatedNotes);
+    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+
+    toast({
+      title: "تم الحذف",
+      description: "تم حذف الملاحظة بنجاح وحفظ البيانات",
+    });
+  };
+
+  const openAddNoteDialog = (student: Student) => {
+    setSelectedStudent(student);
+    setNewNote({
+      type: "إيجابي",
+      content: "",
+      date: new Date().toISOString().split("T")[0],
+      teacher: "المعلم الحالي",
+    });
+    setIsAddNoteDialogOpen(true);
+  };
+
+  const openEditNoteDialog = (student: Student, note: any) => {
+    setSelectedStudent(student);
+    setSelectedNote(note);
+    setNewNote({
+      type: note.type,
+      content: note.content,
+      date: note.date,
+      teacher: note.teacher,
+    });
+    setIsEditNoteDialogOpen(true);
   };
 
   return (
@@ -879,6 +1090,13 @@ const Students = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => {
+                                  toast({
+                                    title: "عرض تفاصيل الطالب",
+                                    description: `جاري عرض تفاصيل الطالب ${student.name}...`,
+                                  });
+                                  setActiveTab("images");
+                                }}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
                                 عرض
@@ -1009,9 +1227,21 @@ const Students = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {/* الصورة الجديدة */}
                           <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-green-700 bg-green-50 p-2 rounded border border-green-200">
-                              📖 الصورة الجديدة
-                            </h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-semibold text-green-700 bg-green-50 p-2 rounded border border-green-200">
+                                📖 الصورة الجديدة
+                              </h4>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  openEditImagesDialog(student, "new")
+                                }
+                                className="text-xs px-2 py-1 h-6"
+                              >
+                                تعديل
+                              </Button>
+                            </div>
                             <div className="p-3 bg-green-100 rounded border border-green-300 min-h-[60px]">
                               <p className="text-sm text-green-800">
                                 {student.images.new ||
@@ -1022,9 +1252,21 @@ const Students = () => {
 
                           {/* الماضي القريب */}
                           <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-blue-700 bg-blue-50 p-2 rounded border border-blue-200">
-                              📚 الماضي القريب
-                            </h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-semibold text-blue-700 bg-blue-50 p-2 rounded border border-blue-200">
+                                📚 الماضي القريب
+                              </h4>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  openEditImagesDialog(student, "recent")
+                                }
+                                className="text-xs px-2 py-1 h-6"
+                              >
+                                تعديل
+                              </Button>
+                            </div>
                             <div className="space-y-2">
                               <div className="p-2 bg-blue-100 rounded border border-blue-300">
                                 <p className="text-xs text-blue-600">1:</p>
@@ -1049,9 +1291,21 @@ const Students = () => {
 
                           {/* الماضي البعيد */}
                           <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-orange-700 bg-orange-50 p-2 rounded border border-orange-200">
-                              📜 الماضي البعيد
-                            </h4>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-semibold text-orange-700 bg-orange-50 p-2 rounded border border-orange-200">
+                                📜 الماضي البعيد
+                              </h4>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  openEditImagesDialog(student, "distant")
+                                }
+                                className="text-xs px-2 py-1 h-6"
+                              >
+                                تعديل
+                              </Button>
+                            </div>
                             <div className="space-y-2">
                               <div className="p-2 bg-orange-100 rounded border border-orange-300">
                                 <p className="text-xs text-orange-600">1:</p>
@@ -1129,10 +1383,22 @@ const Students = () => {
                                 <p>{note.content}</p>
                               </div>
                               <div className="flex space-x-2 space-x-reverse">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    openEditNoteDialog(student, note)
+                                  }
+                                >
                                   تعديل
                                 </Button>
-                                <Button variant="destructive" size="sm">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteNote(student.id, note.id)
+                                  }
+                                >
                                   حذف
                                 </Button>
                               </div>
@@ -1144,7 +1410,11 @@ const Students = () => {
                           لا توجد ملاحظات لهذا الطالب
                         </p>
                       )}
-                      <Button variant="outline" className="mt-3">
+                      <Button
+                        variant="outline"
+                        className="mt-3"
+                        onClick={() => openAddNoteDialog(student)}
+                      >
                         إضافة ملاحظة جديدة
                       </Button>
                     </div>
@@ -1163,7 +1433,7 @@ const Students = () => {
             <DialogTitle>تعديل بيانات الطالب</DialogTitle>
             <DialogDescription>قم بتعديل بيانات الطالب</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-name" className="text-right">
                 الاسم
@@ -1276,6 +1546,175 @@ const Students = () => {
                 className="col-span-3"
               />
             </div>
+
+            {/* إضافة حقول الصور في نافذة التعديل */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">الأجزاء المحفوظة</Label>
+              <Input
+                type="number"
+                value={newStudent.partsMemorized}
+                onChange={(e) =>
+                  setNewStudent({
+                    ...newStudent,
+                    partsMemorized: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">التقدم الحالي</Label>
+              <Input
+                value={newStudent.currentProgress}
+                onChange={(e) =>
+                  setNewStudent({
+                    ...newStudent,
+                    currentProgress: e.target.value,
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">التقدم السابق</Label>
+              <Input
+                value={newStudent.previousProgress}
+                onChange={(e) =>
+                  setNewStudent({
+                    ...newStudent,
+                    previousProgress: e.target.value,
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">نسبة الحضور</Label>
+              <Input
+                type="number"
+                value={newStudent.attendance}
+                onChange={(e) =>
+                  setNewStudent({
+                    ...newStudent,
+                    attendance: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+
+            {/* إضافة خانات الصور المتعددة */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">الصورة الجديدة</Label>
+              <div className="col-span-3 space-y-2">
+                <Input
+                  placeholder="الصورة الجديدة"
+                  value={newStudent.images?.new || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        new: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">الماضي القريب</Label>
+              <div className="col-span-3 space-y-2">
+                <Input
+                  placeholder="الماضي القريب 1"
+                  value={newStudent.images?.recent1 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        recent1: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="الماضي القريب 2"
+                  value={newStudent.images?.recent2 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        recent2: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="الماضي القريب 3"
+                  value={newStudent.images?.recent3 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        recent3: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right font-medium">الماضي البعيد</Label>
+              <div className="col-span-3 space-y-2">
+                <Input
+                  placeholder="الماضي البعيد 1"
+                  value={newStudent.images?.distant1 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        distant1: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="الماضي البعيد 2"
+                  value={newStudent.images?.distant2 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        distant2: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <Input
+                  placeholder="الماضي البعيد 3"
+                  value={newStudent.images?.distant3 || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        distant3: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -1308,6 +1747,187 @@ const Students = () => {
             </Button>
             <Button variant="destructive" onClick={handleDeleteStudent}>
               حذف
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Images Dialog */}
+      <Dialog
+        open={isEditImagesDialogOpen}
+        onOpenChange={setIsEditImagesDialogOpen}
+      >
+        <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-base">
+              تعديل السور المحفوظة
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-xs">
+              تعديل سور {selectedStudent?.name} -{" "}
+              {editingImageType === "new"
+                ? "السورة الجديدة"
+                : editingImageType === "recent"
+                ? "الماضي القريب"
+                : "الماضي البعيد"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
+            {editingImageType === "new" && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-new" className="text-right">
+                  السورة الجديدة
+                </Label>
+                <Input
+                  id="edit-new"
+                  value={newStudent.images?.new || ""}
+                  onChange={(e) =>
+                    setNewStudent({
+                      ...newStudent,
+                      images: {
+                        ...newStudent.images,
+                        new: e.target.value,
+                      },
+                    })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+            )}
+
+            {editingImageType === "recent" && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-recent1" className="text-right">
+                    الماضي القريب 1
+                  </Label>
+                  <Input
+                    id="edit-recent1"
+                    value={newStudent.images?.recent1 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          recent1: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-recent2" className="text-right">
+                    الماضي القريب 2
+                  </Label>
+                  <Input
+                    id="edit-recent2"
+                    value={newStudent.images?.recent2 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          recent2: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-recent3" className="text-right">
+                    الماضي القريب 3
+                  </Label>
+                  <Input
+                    id="edit-recent3"
+                    value={newStudent.images?.recent3 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          recent3: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+              </>
+            )}
+
+            {editingImageType === "distant" && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-distant1" className="text-right">
+                    الماضي البعيد 1
+                  </Label>
+                  <Input
+                    id="edit-distant1"
+                    value={newStudent.images?.distant1 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          distant1: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-distant2" className="text-right">
+                    الماضي البعيد 2
+                  </Label>
+                  <Input
+                    id="edit-distant2"
+                    value={newStudent.images?.distant2 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          distant2: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-distant3" className="text-right">
+                    الماضي البعيد 3
+                  </Label>
+                  <Input
+                    id="edit-distant3"
+                    value={newStudent.images?.distant3 || ""}
+                    onChange={(e) =>
+                      setNewStudent({
+                        ...newStudent,
+                        images: {
+                          ...newStudent.images,
+                          distant3: e.target.value,
+                        },
+                      })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditImagesDialogOpen(false)}
+              className="text-sm"
+            >
+              إلغاء
+            </Button>
+            <Button onClick={handleEditImages} className="text-sm">
+              حفظ التعديلات
             </Button>
           </DialogFooter>
         </DialogContent>

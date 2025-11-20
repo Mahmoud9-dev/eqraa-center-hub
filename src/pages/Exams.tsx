@@ -565,170 +565,481 @@ const Exams = () => {
             <TabsTrigger value="results">النتائج والإحصائيات</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-6">
-            {activeTab !== "results" &&
-              activeTab !== "قرآن" &&
-              activeTab !== "تجويد" &&
-              activeTab !== "تربوي" && (
-                <div className="space-y-6">
-                  {/* عرض الامتحانات حسب الحالة */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {["قادم", "اليوم", "منتهي"].map((status) => {
-                      const statusExams = filteredExams.filter((exam) => {
-                        const examDate = new Date(exam.date);
-                        const today = new Date();
+          <TabsContent value="قرآن" className="mt-6">
+            <div className="space-y-6">
+              {/* عرض الامتحانات حسب الحالة */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {["قادم", "اليوم", "منتهي"].map((status) => {
+                  const statusExams = filteredExams.filter((exam) => {
+                    const examDate = new Date(exam.date);
+                    const today = new Date();
 
-                        if (status === "قادم") return examDate > today;
-                        if (status === "اليوم")
-                          return (
-                            examDate.toDateString() === today.toDateString()
-                          );
-                        if (status === "منتهي") return examDate < today;
-                        return false;
-                      });
+                    if (status === "قادم") return examDate > today;
+                    if (status === "اليوم")
+                      return examDate.toDateString() === today.toDateString();
+                    if (status === "منتهي") return examDate < today;
+                    return false;
+                  });
 
-                      if (statusExams.length === 0) return null;
+                  if (statusExams.length === 0) return null;
 
-                      return (
-                        <Card
-                          key={status}
-                          className="border-r-4 border-r-primary/20"
-                        >
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-lg flex items-center justify-between">
-                              <span>الامتحانات {status}</span>
-                              <Badge variant="outline">
-                                {statusExams.length} امتحان
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            {statusExams.map((exam) => (
-                              <div
-                                key={exam.id}
-                                className="p-3 border rounded-lg bg-muted/30"
-                              >
-                                <div className="flex justify-between items-start mb-2">
-                                  <h5 className="font-medium text-sm">
-                                    {exam.title}
-                                  </h5>
-                                  <Badge className={getExamStatusColor(exam)}>
-                                    {getExamStatusText(exam)}
-                                  </Badge>
-                                </div>
-                                <div className="text-xs text-muted-foreground mb-2">
-                                  {exam.description}
-                                </div>
-                                <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
-                                  <span>
-                                    📅 {exam.date.toLocaleDateString("ar-SA")}
-                                  </span>
-                                  <span>⏱️ {exam.duration} دقيقة</span>
-                                  <span>📊 {exam.totalMarks} درجة</span>
-                                </div>
-                                <div className="flex space-x-2 space-x-reverse">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openResultDialog(exam.id)}
-                                    className="text-xs"
-                                  >
-                                    نتيجة
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openEditDialog(exam)}
-                                    className="text-xs"
-                                  >
-                                    تعديل
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => openDeleteDialog(exam)}
-                                    className="text-xs"
-                                  >
-                                    حذف
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-
-                  {/* عرض جميع الامتحانات في جدول */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>جميع امتحانات {activeTab}</CardTitle>
-                      <CardDescription>
-                        عرض جميع الامتحانات في جدول واحد
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>عنوان الامتحان</TableHead>
-                            <TableHead>التاريخ</TableHead>
-                            <TableHead>المدة</TableHead>
-                            <TableHead>الدرجة الكاملة</TableHead>
-                            <TableHead>الحالة</TableHead>
-                            <TableHead>الإجراءات</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredExams.map((exam) => (
-                            <TableRow key={exam.id}>
-                              <TableCell className="font-medium">
+                  return (
+                    <Card
+                      key={status}
+                      className="border-r-4 border-r-primary/20"
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center justify-between">
+                          <span>الامتحانات {status}</span>
+                          <Badge variant="outline">
+                            {statusExams.length} امتحان
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {statusExams.map((exam) => (
+                          <div
+                            key={exam.id}
+                            className="p-3 border rounded-lg bg-muted/30"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-sm">
                                 {exam.title}
-                              </TableCell>
-                              <TableCell>
-                                {exam.date.toLocaleDateString("ar-SA")}
-                              </TableCell>
-                              <TableCell>{exam.duration} دقيقة</TableCell>
-                              <TableCell>{exam.totalMarks}</TableCell>
-                              <TableCell>
-                                <Badge className={getExamStatusColor(exam)}>
-                                  {getExamStatusText(exam)}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2 space-x-reverse">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openResultDialog(exam.id)}
-                                  >
-                                    إضافة نتيجة
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openEditDialog(exam)}
-                                  >
-                                    تعديل
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => openDeleteDialog(exam)}
-                                  >
-                                    حذف
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                              </h5>
+                              <Badge className={getExamStatusColor(exam)}>
+                                {getExamStatusText(exam)}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mb-2">
+                              {exam.description}
+                            </div>
+                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
+                              <span>
+                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                              </span>
+                              <span>⏱️ {exam.duration} دقيقة</span>
+                              <span>📊 {exam.totalMarks} درجة</span>
+                            </div>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                                className="text-xs"
+                              >
+                                نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                                className="text-xs"
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                                className="text-xs"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* عرض جميع الامتحانات في جدول */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>جميع امتحانات {activeTab}</CardTitle>
+                  <CardDescription>
+                    عرض جميع الامتحانات في جدول واحد
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>عنوان الامتحان</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>المدة</TableHead>
+                        <TableHead>الدرجة الكاملة</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredExams.map((exam) => (
+                        <TableRow key={exam.id}>
+                          <TableCell className="font-medium">
+                            {exam.title}
+                          </TableCell>
+                          <TableCell>
+                            {exam.date.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.totalMarks}</TableCell>
+                          <TableCell>
+                            <Badge className={getExamStatusColor(exam)}>
+                              {getExamStatusText(exam)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                              >
+                                إضافة نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="تجويد" className="mt-6">
+            <div className="space-y-6">
+              {/* عرض الامتحانات حسب الحالة */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {["قادم", "اليوم", "منتهي"].map((status) => {
+                  const statusExams = filteredExams.filter((exam) => {
+                    const examDate = new Date(exam.date);
+                    const today = new Date();
+
+                    if (status === "قادم") return examDate > today;
+                    if (status === "اليوم")
+                      return examDate.toDateString() === today.toDateString();
+                    if (status === "منتهي") return examDate < today;
+                    return false;
+                  });
+
+                  if (statusExams.length === 0) return null;
+
+                  return (
+                    <Card
+                      key={status}
+                      className="border-r-4 border-r-primary/20"
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center justify-between">
+                          <span>الامتحانات {status}</span>
+                          <Badge variant="outline">
+                            {statusExams.length} امتحان
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {statusExams.map((exam) => (
+                          <div
+                            key={exam.id}
+                            className="p-3 border rounded-lg bg-muted/30"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-sm">
+                                {exam.title}
+                              </h5>
+                              <Badge className={getExamStatusColor(exam)}>
+                                {getExamStatusText(exam)}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mb-2">
+                              {exam.description}
+                            </div>
+                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
+                              <span>
+                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                              </span>
+                              <span>⏱️ {exam.duration} دقيقة</span>
+                              <span>📊 {exam.totalMarks} درجة</span>
+                            </div>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                                className="text-xs"
+                              >
+                                نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                                className="text-xs"
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                                className="text-xs"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* عرض جميع الامتحانات في جدول */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>جميع امتحانات تجويد</CardTitle>
+                  <CardDescription>
+                    عرض جميع الامتحانات في جدول واحد
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>عنوان الامتحان</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>المدة</TableHead>
+                        <TableHead>الدرجة الكاملة</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredExams.map((exam) => (
+                        <TableRow key={exam.id}>
+                          <TableCell className="font-medium">
+                            {exam.title}
+                          </TableCell>
+                          <TableCell>
+                            {exam.date.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.totalMarks}</TableCell>
+                          <TableCell>
+                            <Badge className={getExamStatusColor(exam)}>
+                              {getExamStatusText(exam)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                              >
+                                إضافة نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="تربوي" className="mt-6">
+            <div className="space-y-6">
+              {/* عرض الامتحانات حسب الحالة */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {["قادم", "اليوم", "منتهي"].map((status) => {
+                  const statusExams = filteredExams.filter((exam) => {
+                    const examDate = new Date(exam.date);
+                    const today = new Date();
+
+                    if (status === "قادم") return examDate > today;
+                    if (status === "اليوم")
+                      return examDate.toDateString() === today.toDateString();
+                    if (status === "منتهي") return examDate < today;
+                    return false;
+                  });
+
+                  if (statusExams.length === 0) return null;
+
+                  return (
+                    <Card
+                      key={status}
+                      className="border-r-4 border-r-primary/20"
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center justify-between">
+                          <span>الامتحانات {status}</span>
+                          <Badge variant="outline">
+                            {statusExams.length} امتحان
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {statusExams.map((exam) => (
+                          <div
+                            key={exam.id}
+                            className="p-3 border rounded-lg bg-muted/30"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-sm">
+                                {exam.title}
+                              </h5>
+                              <Badge className={getExamStatusColor(exam)}>
+                                {getExamStatusText(exam)}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mb-2">
+                              {exam.description}
+                            </div>
+                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
+                              <span>
+                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                              </span>
+                              <span>⏱️ {exam.duration} دقيقة</span>
+                              <span>📊 {exam.totalMarks} درجة</span>
+                            </div>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                                className="text-xs"
+                              >
+                                نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                                className="text-xs"
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                                className="text-xs"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* عرض جميع الامتحانات في جدول */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>جميع امتحانات تربوية</CardTitle>
+                  <CardDescription>
+                    عرض جميع الامتحانات في جدول واحد
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>عنوان الامتحان</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>المدة</TableHead>
+                        <TableHead>الدرجة الكاملة</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredExams.map((exam) => (
+                        <TableRow key={exam.id}>
+                          <TableCell className="font-medium">
+                            {exam.title}
+                          </TableCell>
+                          <TableCell>
+                            {exam.date.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.totalMarks}</TableCell>
+                          <TableCell>
+                            <Badge className={getExamStatusColor(exam)}>
+                              {getExamStatusText(exam)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResultDialog(exam.id)}
+                              >
+                                إضافة نتيجة
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(exam)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(exam)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="results" className="mt-6">

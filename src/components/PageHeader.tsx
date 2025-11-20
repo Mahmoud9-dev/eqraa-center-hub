@@ -51,13 +51,13 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-4 md:py-8 shadow-lg relative">
+    <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-3 xs:py-4 sm:py-6 md:py-8 shadow-lg relative">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
             {title}
           </h1>
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1 xs:gap-2 md:gap-3">
             <ThemeToggle />
             {userName && (
               <div className="hidden md:flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-lg">
@@ -72,7 +72,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2"
+                className="p-2 xs:p-2.5 touch-target"
                 aria-label="فتح القائمة"
               >
                 {isMobileMenuOpen ? (
@@ -107,10 +107,10 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
 
         {/* قائمة جانبية للهواتف */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pt-4 border-t border-primary-foreground/20 animate-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col space-y-2">
+          <div className="md:hidden mt-3 xs:mt-4 pt-3 xs:pt-4 border-t border-primary-foreground/20 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col space-y-1 xs:space-y-2">
               {userName && (
-                <div className="flex items-center gap-2 bg-primary-foreground/10 px-3 py-2 rounded-lg">
+                <div className="flex items-center gap-2 bg-primary-foreground/10 px-3 py-2 xs:py-2.5 rounded-lg">
                   <User className="w-4 h-4" />
                   <span className="text-sm font-medium">{userName}</span>
                   <span className="text-xs opacity-75">({getRoleLabel()})</span>
@@ -121,7 +121,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 py-2.5 xs:py-3 touch-target"
                   >
                     <ArrowRight className="w-4 h-4" />
                     الرئيسية
@@ -131,7 +131,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
               <Button
                 variant="secondary"
                 size="sm"
-                className="w-full justify-start gap-2"
+                className="w-full justify-start gap-2 py-2.5 xs:py-3 touch-target"
                 onClick={() => {
                   handleLogout();
                   setIsMobileMenuOpen(false);

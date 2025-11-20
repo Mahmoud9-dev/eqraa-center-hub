@@ -426,14 +426,31 @@ const Schedule = () => {
 
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-4 space-x-reverse">
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Switch
-                  id="notifications"
-                  checked={notificationsEnabled}
-                  onCheckedChange={setNotificationsEnabled}
-                />
-                <Label htmlFor="notifications">
-                  تفعيل الإشعارات قبل 15 دقيقة
+              <div className="flex items-center space-x-3 space-x-reverse p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="relative">
+                  <Switch
+                    id="notifications"
+                    checked={notificationsEnabled}
+                    onCheckedChange={setNotificationsEnabled}
+                    className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300 shadow-sm transition-all duration-200 ease-in-out"
+                  />
+                  {notificationsEnabled && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white"></div>
+                  )}
+                </div>
+                <Label
+                  htmlFor="notifications"
+                  className="cursor-pointer font-medium text-blue-900 dark:text-blue-100"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🔔</span>
+                    <span>تفعيل الإشعارات قبل 15 دقيقة</span>
+                  </div>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 font-normal">
+                    {notificationsEnabled
+                      ? "الإشعارات مفعلة"
+                      : "الإشعارات معطلة"}
+                  </p>
                 </Label>
               </div>
             </div>
@@ -721,21 +738,79 @@ const Schedule = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>إشعارات الحلقات</Label>
-                    <Switch defaultChecked />
+                  <div className="flex items-center justify-between p-4 rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 dark:border-green-800 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <div className="relative">
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-green-900 dark:text-green-100 cursor-pointer">
+                          إشعارات الحلقات
+                        </Label>
+                        <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                          تذكير بالحلقات اليومية
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      defaultChecked
+                      className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300 shadow-md transition-all duration-200 ease-in-out data-[state=checked]:scale-105"
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label>إشعارات الاختبارات</Label>
-                    <Switch defaultChecked />
+                  <div className="flex items-center justify-between p-4 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 dark:border-blue-800 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <div className="relative">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                        <div className="absolute inset-0 w-3 h-3 bg-blue-400 rounded-full animate-ping"></div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                          إشعارات الاختبارات
+                        </Label>
+                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                          تنبيهات مواعيد الاختبارات
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      defaultChecked
+                      className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-300 shadow-md transition-all duration-200 ease-in-out data-[state=checked]:scale-105"
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label>إشعارات الإعلانات</Label>
-                    <Switch defaultChecked />
+                  <div className="flex items-center justify-between p-4 rounded-xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 dark:border-purple-800 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <div className="relative">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                        <div className="absolute inset-0 w-3 h-3 bg-purple-400 rounded-full animate-ping"></div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-purple-900 dark:text-purple-100 cursor-pointer">
+                          إشعارات الإعلانات
+                        </Label>
+                        <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                          آخر الأخبار والإعلانات
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      defaultChecked
+                      className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-300 shadow-md transition-all duration-200 ease-in-out data-[state=checked]:scale-105"
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label>إشعارات الواجبات</Label>
-                    <Switch />
+                  <div className="flex items-center justify-between p-4 rounded-xl border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950 dark:border-orange-800 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                      <div>
+                        <Label className="text-sm font-medium text-orange-900 dark:text-orange-100 cursor-pointer">
+                          إشعارات الواجبات
+                        </Label>
+                        <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                          تذكير بالواجبات المطلوبة
+                        </p>
+                      </div>
+                    </div>
+                    <Switch className="data-[state=checked]:bg-orange-600 data-[state=unchecked]:bg-gray-300 shadow-md transition-all duration-200 ease-in-out data-[state=checked]:scale-105" />
                   </div>
                 </div>
               </CardContent>

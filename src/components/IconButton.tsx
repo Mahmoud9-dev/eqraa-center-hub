@@ -26,7 +26,7 @@ const IconButton = ({
   "aria-label": ariaLabel,
 }: IconButtonProps) => {
   const baseClasses =
-    "group relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-card rounded-xl sm:rounded-2xl border-2 border-border hover:border-primary transition-all duration-300 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-hover)] hover:scale-105 min-h-[120px] sm:min-h-[140px] md:min-h-[160px] w-full";
+    "group relative flex flex-col items-center justify-center p-3 xs:p-4 sm:p-6 md:p-8 bg-card rounded-lg xs:rounded-xl sm:rounded-2xl border-2 border-border hover:border-primary transition-all duration-300 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-hover)] hover:scale-105 min-h-[100px] xs:min-h-[120px] sm:min-h-[140px] md:min-h-[160px] w-full touch-target";
   const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
   const loadingClasses = loading ? "opacity-75 cursor-wait" : "";
 
@@ -34,13 +34,13 @@ const IconButton = ({
     <div
       className={cn(baseClasses, disabledClasses, loadingClasses, className)}
     >
-      <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-2 sm:mb-3 md:mb-4 transition-transform duration-300 group-hover:scale-110">
+      <div className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-2 xs:mb-2 sm:mb-3 md:mb-4 transition-transform duration-300 group-hover:scale-110">
         {loading ? "⏳" : icon}
       </div>
-      <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-foreground text-center">
+      <h2 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-foreground text-center">
         {label}
       </h2>
-      <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 rounded-lg xs:rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );
 

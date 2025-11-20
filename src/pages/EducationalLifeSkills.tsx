@@ -137,6 +137,35 @@ const EducationalLifeSkills = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRecording = (lesson: any) => {
+    if (lesson.recording === "available") {
+      toast({
+        title: "فتح التسجيل",
+        description: "جاري فتح تسجيل الدرس...",
+      });
+      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
+      window.open("#", "_blank");
+    } else {
+      toast({
+        title: "التسجيل غير متاح",
+        description: "هذا الدرس قيد المعالجة وسيكون متاحاً قريباً",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadMaterial = (lesson: any) => {
+    toast({
+      title: "تحميل المادة",
+      description: "جاري تحميل مادة الدرس...",
+    });
+    // هنا يمكن إضافة رابط التحميل
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `${lesson.title}.pdf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="المهارات الحياتية" showBack={true} />
@@ -321,12 +350,19 @@ const EducationalLifeSkills = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button className="flex-1 text-sm">
+                  <Button
+                    className="flex-1 text-sm"
+                    onClick={() => handleViewRecording(lesson)}
+                  >
                     {lesson.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline" className="text-sm">
+                  <Button
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => handleDownloadMaterial(lesson)}
+                  >
                     تحميل المادة
                   </Button>
                   <Button

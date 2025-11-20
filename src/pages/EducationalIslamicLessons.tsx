@@ -137,6 +137,35 @@ const EducationalIslamicLessons = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRecording = (lesson: any) => {
+    if (lesson.recording === "available") {
+      toast({
+        title: "فتح التسجيل",
+        description: "جاري فتح تسجيل الدرس...",
+      });
+      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
+      window.open("#", "_blank");
+    } else {
+      toast({
+        title: "التسجيل غير متاح",
+        description: "هذا الدرس قيد المعالجة وسيكون متاحاً قريباً",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadMaterial = (lesson: any) => {
+    toast({
+      title: "تحميل المادة",
+      description: "جاري تحميل مادة الدرس...",
+    });
+    // هنا يمكن إضافة رابط التحميل
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `${lesson.title}.pdf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الدروس الشرعية" showBack={true} />
@@ -309,12 +338,20 @@ const EducationalIslamicLessons = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1">
+                  <Button
+                    className="flex-1"
+                    onClick={() => handleViewRecording(lesson)}
+                  >
                     {lesson.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline">تحميل المادة</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDownloadMaterial(lesson)}
+                  >
+                    تحميل المادة
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
