@@ -143,30 +143,34 @@ const EducationalStudentActivities = () => {
     <div className="min-h-screen bg-background">
       <PageHeader title="الأنشطة الطلابية" showBack={true} />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="mb-8 flex justify-between items-center">
-          <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-8 rounded-2xl shadow-[var(--shadow-soft)] flex-1">
-            <h2 className="text-3xl font-bold mb-3">الأنشطة الطلابية</h2>
-            <p className="text-lg opacity-90">
+      <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)] flex-1">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
+              الأنشطة الطلابية
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg opacity-90">
               مسابقات وفعاليات تربوية هادفة لتطوير مهارات الطلاب
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground mr-4">
+              <Button className="bg-primary text-primary-foreground w-full sm:w-auto">
                 إضافة نشاط جديد
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>إضافة نشاط طلابي جديد</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-lg sm:text-base">
+                  إضافة نشاط طلابي جديد
+                </DialogTitle>
+                <DialogDescription className="text-sm sm:text-xs">
                   أدخل بيانات النشاط الجديد في النموذج أدناه
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="title" className="text-right sm:text-sm">
                     عنوان النشاط
                   </Label>
                   <Input
@@ -175,11 +179,14 @@ const EducationalStudentActivities = () => {
                     onChange={(e) =>
                       setNewActivity({ ...newActivity, title: e.target.value })
                     }
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                  <Label
+                    htmlFor="description"
+                    className="text-right sm:text-sm sm:mt-2"
+                  >
                     الوصف
                   </Label>
                   <Textarea
@@ -191,12 +198,12 @@ const EducationalStudentActivities = () => {
                         description: e.target.value,
                       })
                     }
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     rows={3}
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="teacher" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="teacher" className="text-right sm:text-sm">
                     المشرف
                   </Label>
                   <Input
@@ -208,11 +215,11 @@ const EducationalStudentActivities = () => {
                         teacher: e.target.value,
                       })
                     }
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="duration" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="duration" className="text-right sm:text-sm">
                     المدة
                   </Label>
                   <Input
@@ -225,11 +232,11 @@ const EducationalStudentActivities = () => {
                       })
                     }
                     placeholder="مثال: يوم كامل"
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="verses" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="verses" className="text-right sm:text-sm">
                     الآيات
                   </Label>
                   <Input
@@ -239,11 +246,11 @@ const EducationalStudentActivities = () => {
                       setNewActivity({ ...newActivity, verses: e.target.value })
                     }
                     placeholder="مثال: المزمل 1-20"
-                    className="col-span-3"
+                    className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="recording" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                  <Label htmlFor="recording" className="text-right sm:text-sm">
                     التسجيل
                   </Label>
                   <Select
@@ -252,7 +259,7 @@ const EducationalStudentActivities = () => {
                       setNewActivity({ ...newActivity, recording: value })
                     }
                   >
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
                       <SelectValue placeholder="اختر حالة التسجيل" />
                     </SelectTrigger>
                     <SelectContent>
@@ -266,21 +273,26 @@ const EducationalStudentActivities = () => {
                 <Button
                   variant="outline"
                   onClick={() => setIsAddDialogOpen(false)}
+                  className="text-sm"
                 >
                   إلغاء
                 </Button>
-                <Button onClick={handleAddActivity}>إضافة النشاط</Button>
+                <Button onClick={handleAddActivity} className="text-sm">
+                  إضافة النشاط
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {activities.map((activity) => (
             <Card key={activity.id} className="border-r-4 border-r-primary">
               <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl">{activity.title}</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <CardTitle className="text-lg sm:text-xl">
+                    {activity.title}
+                  </CardTitle>
                   <Badge
                     variant={
                       activity.recording === "available"
@@ -295,40 +307,43 @@ const EducationalStudentActivities = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">
                   {activity.description}
                 </p>
 
                 <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">المشرف:</span>
                     <span>{activity.teacher}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">التاريخ:</span>
                     <span>{activity.date}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">المدة:</span>
                     <span>{activity.duration}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">الآيات:</span>
                     <span className="text-primary">{activity.verses}</span>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button className="flex-1">
+                <div className="flex flex-wrap gap-2">
+                  <Button className="flex-1 text-sm">
                     {activity.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline">تحميل المادة</Button>
+                  <Button variant="outline" className="text-sm">
+                    تحميل المادة
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => openDeleteDialog(activity)}
+                    className="text-sm"
                   >
                     حذف
                   </Button>
@@ -341,10 +356,12 @@ const EducationalStudentActivities = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-base">
+              تأكيد الحذف
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-xs">
               هل أنت متأكد من حذف النشاط "{selectedActivity?.title}"؟ لا يمكن
               التراجع عن هذا الإجراء.
             </DialogDescription>
@@ -353,10 +370,15 @@ const EducationalStudentActivities = () => {
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="text-sm"
             >
               إلغاء
             </Button>
-            <Button variant="destructive" onClick={handleDeleteActivity}>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteActivity}
+              className="text-sm"
+            >
               حذف
             </Button>
           </DialogFooter>

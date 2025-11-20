@@ -25,17 +25,17 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <PageHeader title="معهد فاطمة الزهراء" showBack={false} />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-3">
+      <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3">
             مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
             اختر القسم المناسب للبدء
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 max-w-7xl mx-auto">
           {sections.map((section) => (
             <IconButton
               key={section.to}
@@ -47,9 +47,9 @@ const Index = () => {
         </div>
       </main>
 
-      <footer className="bg-card border-t border-border py-6 mt-16">
+      <footer className="bg-card border-t border-border py-4 sm:py-6 mt-8 sm:mt-12 md:mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             © {new Date().getFullYear()} معهد فاطمة الزهراء للعلوم الشرعية -
             جميع الحقوق محفوظة
           </p>

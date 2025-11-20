@@ -1,4 +1,4 @@
-import { ArrowRight, LogOut, User } from "lucide-react";
+import { ArrowRight, LogOut, User, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   const navigate = useNavigate();
   const { roles, isAdmin } = useUserRole();
   const [userName, setUserName] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -50,11 +51,13 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-8 shadow-lg">
+    <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-4 md:py-8 shadow-lg relative">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl md:text-5xl font-bold">{title}</h1>
-          <div className="flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
+            {title}
+          </h1>
+          <div className="flex items-center gap-2 md:gap-3">
             <ThemeToggle />
             {userName && (
               <div className="hidden md:flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-lg">
@@ -63,25 +66,83 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 <span className="text-xs opacity-75">({getRoleLabel()})</span>
               </div>
             )}
-            {showBack && (
-              <Link to="/">
-                <Button variant="secondary" size="lg" className="gap-2">
-                  <ArrowRight className="w-5 h-5" />
-                  الرئيسية
-                </Button>
-              </Link>
-            )}
-            <Button
-              variant="secondary"
-              size="lg"
-              className="gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden md:inline">خروج</span>
-            </Button>
+            {/* قائمة متنقلة للهواتف */}
+            <div className="md:hidden">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2"
+                aria-label="فتح القائمة"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+            {/* أزرار سطح المكتب */}
+            <div className="hidden md:flex items-center gap-2">
+              {showBack && (
+                <Link to="/">
+                  <Button variant="secondary" size="lg" className="gap-2">
+                    <ArrowRight className="w-5 h-5" />
+                    الرئيسية
+                  </Button>
+                </Link>
+              )}
+              <Button
+                variant="secondary"
+                size="lg"
+                className="gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-5 h-5" />
+                <span>خروج</span>
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* قائمة جانبية للهواتف */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t border-primary-foreground/20 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col space-y-2">
+              {userName && (
+                <div className="flex items-center gap-2 bg-primary-foreground/10 px-3 py-2 rounded-lg">
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium">{userName}</span>
+                  <span className="text-xs opacity-75">({getRoleLabel()})</span>
+                </div>
+              )}
+              {showBack && (
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-start gap-2"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    الرئيسية
+                  </Button>
+                </Link>
+              )}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full justify-start gap-2"
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                خروج
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

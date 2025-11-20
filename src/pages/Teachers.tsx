@@ -305,20 +305,22 @@ const Teachers = () => {
     <div className="min-h-screen bg-background">
       <PageHeader title="المدرسون والمشايخ" showBack={true} />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">🧑‍🏫 المدرسون والمشايخ</h2>
-          <p className="text-muted-foreground mb-6">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+            🧑‍🏫 المدرسون والمشايخ
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
             إدارة بيانات المدرسين والمشايخ والمواد التي يدرسونها
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4 space-x-0 sm:space-x-4 space-x-reverse">
               <Input
                 placeholder="البحث عن مدرس..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64 text-base sm:text-sm"
               />
               <Select
                 value={filterDepartment}
@@ -326,7 +328,7 @@ const Teachers = () => {
                   setFilterDepartment(value as Department | "all")
                 }
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48 text-base sm:text-sm">
                   <SelectValue placeholder="جميع الأقسام" />
                 </SelectTrigger>
                 <SelectContent>
@@ -339,20 +341,22 @@ const Teachers = () => {
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary text-primary-foreground">
+                <Button className="bg-primary text-primary-foreground w-full sm:w-auto text-sm">
                   إضافة مدرس جديد
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة مدرس جديد</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-lg sm:text-base">
+                    إضافة مدرس جديد
+                  </DialogTitle>
+                  <DialogDescription className="text-sm sm:text-xs">
                     أدخل بيانات المدرس الجديد
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="name" className="text-right sm:text-sm">
                       الاسم
                     </Label>
                     <Input
@@ -361,11 +365,14 @@ const Teachers = () => {
                       onChange={(e) =>
                         setNewTeacher({ ...newTeacher, name: e.target.value })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="specialization" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="specialization"
+                      className="text-right sm:text-sm"
+                    >
                       التخصص
                     </Label>
                     <Input
@@ -377,11 +384,14 @@ const Teachers = () => {
                           specialization: e.target.value,
                         })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="department" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="department"
+                      className="text-right sm:text-sm"
+                    >
                       القسم
                     </Label>
                     <Select
@@ -393,7 +403,7 @@ const Teachers = () => {
                         })
                       }
                     >
-                      <SelectTrigger className="col-span-3">
+                      <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
                         <SelectValue placeholder="اختر القسم" />
                       </SelectTrigger>
                       <SelectContent>
@@ -403,8 +413,8 @@ const Teachers = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="email" className="text-right sm:text-sm">
                       البريد الإلكتروني
                     </Label>
                     <Input
@@ -414,11 +424,11 @@ const Teachers = () => {
                       onChange={(e) =>
                         setNewTeacher({ ...newTeacher, email: e.target.value })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="phone" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="phone" className="text-right sm:text-sm">
                       رقم الهاتف
                     </Label>
                     <Input
@@ -427,11 +437,14 @@ const Teachers = () => {
                       onChange={(e) =>
                         setNewTeacher({ ...newTeacher, phone: e.target.value })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="experience" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="experience"
+                      className="text-right sm:text-sm"
+                    >
                       الخبرة (سنوات)
                     </Label>
                     <Input
@@ -444,7 +457,7 @@ const Teachers = () => {
                           experience: parseInt(e.target.value) || 0,
                         })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
                 </div>
@@ -452,10 +465,13 @@ const Teachers = () => {
                   <Button
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
+                    className="text-sm"
                   >
                     إلغاء
                   </Button>
-                  <Button onClick={handleAddTeacher}>إضافة مدرس</Button>
+                  <Button onClick={handleAddTeacher} className="text-sm">
+                    إضافة مدرس
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -463,7 +479,7 @@ const Teachers = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
             <TabsTrigger value="all">جميع المدرسين</TabsTrigger>
             <TabsTrigger value="profile">الملفات الشخصية</TabsTrigger>
             <TabsTrigger value="contact">التواصل</TabsTrigger>
@@ -478,90 +494,118 @@ const Teachers = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>المدرس</TableHead>
-                      <TableHead>التخصص</TableHead>
-                      <TableHead>القسم</TableHead>
-                      <TableHead>الخبرة</TableHead>
-                      <TableHead>عدد الطلاب</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTeachers.map((teacher) => (
-                      <TableRow key={teacher.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3 space-x-reverse">
-                            <Avatar>
-                              <AvatarImage src="" />
-                              <AvatarFallback>
-                                {teacher.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{teacher.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {teacher.email}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs sm:text-sm">
+                          المدرس
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden sm:table-cell">
+                          التخصص
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          القسم
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">
+                          الخبرة
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden lg:table-cell">
+                          الطلاب
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          الحالة
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          إجراءات
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTeachers.map((teacher) => (
+                        <TableRow key={teacher.id}>
+                          <TableCell className="text-xs sm:text-sm">
+                            <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
+                              <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
+                                <AvatarImage src="" />
+                                <AvatarFallback className="text-xs sm:text-sm">
+                                  {teacher.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium text-xs sm:text-sm">
+                                  {teacher.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground hidden sm:block">
+                                  {teacher.email}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{teacher.specialization}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {getDepartmentName(teacher.department)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={getExperienceColor(teacher.experience)}
-                          >
-                            {teacher.experience} سنة
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{teacher.studentsCount}</TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              teacher.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }
-                          >
-                            {teacher.isActive ? "نشط" : "غير نشط"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              عرض
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(teacher)}
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden sm:table-cell">
+                            {teacher.specialization}
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <Badge variant="outline" className="text-xs">
+                              {getDepartmentName(teacher.department)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden md:table-cell">
+                            <Badge
+                              className={getExperienceColor(teacher.experience)}
                             >
-                              تعديل
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteDialog(teacher)}
+                              {teacher.experience} سنة
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden lg:table-cell">
+                            {teacher.studentsCount}
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <Badge
+                              className={
+                                teacher.isActive
+                                  ? "bg-green-100 text-green-800 text-xs"
+                                  : "bg-red-100 text-red-800 text-xs"
+                              }
                             >
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                              {teacher.isActive ? "نشط" : "غير نشط"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <div className="flex space-x-1 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                عرض
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(teacher)}
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(teacher)}
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

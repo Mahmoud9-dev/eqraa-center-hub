@@ -448,20 +448,22 @@ const Students = () => {
     <div className="min-h-screen bg-background">
       <PageHeader title="إدارة الطلاب" showBack={true} />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">👥 الطلاب</h2>
-          <p className="text-muted-foreground mb-6">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+            👥 الطلاب
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
             إدارة بيانات الطلاب ومتابعة أدائهم وحضورهم
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4 space-x-0 sm:space-x-4 space-x-reverse">
               <Input
                 placeholder="البحث عن طالب..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64 text-base sm:text-sm"
               />
               <Select
                 value={filterDepartment}
@@ -469,7 +471,7 @@ const Students = () => {
                   setFilterDepartment(value as Department | "all")
                 }
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48 text-base sm:text-sm">
                   <SelectValue placeholder="جميع الأقسام" />
                 </SelectTrigger>
                 <SelectContent>
@@ -482,20 +484,22 @@ const Students = () => {
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary text-primary-foreground">
+                <Button className="bg-primary text-primary-foreground w-full sm:w-auto text-sm">
                   إضافة طالب جديد
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة طالب جديد</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-lg sm:text-base">
+                    إضافة طالب جديد
+                  </DialogTitle>
+                  <DialogDescription className="text-sm sm:text-xs">
                     أدخل بيانات الطالب الجديد
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="name" className="text-right sm:text-sm">
                       الاسم
                     </Label>
                     <Input
@@ -504,11 +508,11 @@ const Students = () => {
                       onChange={(e) =>
                         setNewStudent({ ...newStudent, name: e.target.value })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="age" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="age" className="text-right sm:text-sm">
                       العمر
                     </Label>
                     <Input
@@ -521,11 +525,11 @@ const Students = () => {
                           age: parseInt(e.target.value) || 0,
                         })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="grade" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label htmlFor="grade" className="text-right sm:text-sm">
                       المرحلة الدراسية
                     </Label>
                     <Input
@@ -534,11 +538,14 @@ const Students = () => {
                       onChange={(e) =>
                         setNewStudent({ ...newStudent, grade: e.target.value })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="department" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="department"
+                      className="text-right sm:text-sm"
+                    >
                       القسم
                     </Label>
                     <Select
@@ -550,7 +557,7 @@ const Students = () => {
                         })
                       }
                     >
-                      <SelectTrigger className="col-span-3">
+                      <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
                         <SelectValue placeholder="اختر القسم" />
                       </SelectTrigger>
                       <SelectContent>
@@ -560,8 +567,11 @@ const Students = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="teacherId" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="teacherId"
+                      className="text-right sm:text-sm"
+                    >
                       المعلم
                     </Label>
                     <Select
@@ -570,7 +580,7 @@ const Students = () => {
                         setNewStudent({ ...newStudent, teacherId: value })
                       }
                     >
-                      <SelectTrigger className="col-span-3">
+                      <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
                         <SelectValue placeholder="اختر المعلم" />
                       </SelectTrigger>
                       <SelectContent>
@@ -584,8 +594,11 @@ const Students = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="parentName" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="parentName"
+                      className="text-right sm:text-sm"
+                    >
                       اسم ولي الأمر
                     </Label>
                     <Input
@@ -597,11 +610,14 @@ const Students = () => {
                           parentName: e.target.value,
                         })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="parentPhone" className="text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                    <Label
+                      htmlFor="parentPhone"
+                      className="text-right sm:text-sm"
+                    >
                       هاتف ولي الأمر
                     </Label>
                     <Input
@@ -613,7 +629,7 @@ const Students = () => {
                           parentPhone: e.target.value,
                         })
                       }
-                      className="col-span-3"
+                      className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                     />
                   </div>
 
@@ -737,10 +753,13 @@ const Students = () => {
                   <Button
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
+                    className="text-sm"
                   >
                     إلغاء
                   </Button>
-                  <Button onClick={handleAddStudent}>إضافة طالب</Button>
+                  <Button onClick={handleAddStudent} className="text-sm">
+                    إضافة طالب
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -748,11 +767,11 @@ const Students = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="all">جميع الطلاب</TabsTrigger>
-            <TabsTrigger value="attendance">الحضور والغياب</TabsTrigger>
+            <TabsTrigger value="attendance">الحضور</TabsTrigger>
             <TabsTrigger value="grades">الدرجات</TabsTrigger>
-            <TabsTrigger value="images">الصور المحفوظة</TabsTrigger>
+            <TabsTrigger value="images">الصور</TabsTrigger>
             <TabsTrigger value="notes">الملاحظات</TabsTrigger>
           </TabsList>
 
@@ -765,92 +784,128 @@ const Students = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>الطالب</TableHead>
-                      <TableHead>العمر</TableHead>
-                      <TableHead>القسم</TableHead>
-                      <TableHead>المعلم</TableHead>
-                      <TableHead>الأجزاء المحفوظة</TableHead>
-                      <TableHead>نسبة الحضور</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredStudents.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3 space-x-reverse">
-                            <Avatar>
-                              <AvatarImage src="" />
-                              <AvatarFallback>
-                                {student.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{student.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {student.grade}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs sm:text-sm">
+                          الطالب
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden sm:table-cell">
+                          العمر
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          القسم
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">
+                          المعلم
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden lg:table-cell">
+                          الأجزاء
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden xl:table-cell">
+                          الحضور
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          الحالة
+                        </TableHead>
+                        <TableHead className="text-xs sm:text-sm">
+                          إجراءات
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredStudents.map((student) => (
+                        <TableRow key={student.id}>
+                          <TableCell className="text-xs sm:text-sm">
+                            <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
+                              <Avatar className="w-6 h-6 sm:w-8 sm:h-8">
+                                <AvatarImage src="" />
+                                <AvatarFallback className="text-xs sm:text-sm">
+                                  {student.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium text-xs sm:text-sm">
+                                  {student.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground hidden sm:block">
+                                  {student.grade}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{student.age}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {getDepartmentName(student.department)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {teachers[student.teacherId as keyof typeof teachers]}
-                        </TableCell>
-                        <TableCell>{student.partsMemorized}</TableCell>
-                        <TableCell
-                          className={getAttendanceColor(student.attendance)}
-                        >
-                          {student.attendance}%
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              student.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden sm:table-cell">
+                            {student.age}
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <Badge variant="outline" className="text-xs">
+                              {getDepartmentName(student.department)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden md:table-cell">
+                            {
+                              teachers[
+                                student.teacherId as keyof typeof teachers
+                              ]
                             }
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm hidden lg:table-cell">
+                            {student.partsMemorized}
+                          </TableCell>
+                          <TableCell
+                            className={`text-xs sm:text-sm hidden xl:table-cell ${getAttendanceColor(
+                              student.attendance
+                            )}`}
                           >
-                            {student.isActive ? "نشط" : "غير نشط"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              عرض
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(student)}
+                            {student.attendance}%
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <Badge
+                              className={
+                                student.isActive
+                                  ? "bg-green-100 text-green-800 text-xs"
+                                  : "bg-red-100 text-red-800 text-xs"
+                              }
                             >
-                              تعديل
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteDialog(student)}
-                            >
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                              {student.isActive ? "نشط" : "غير نشط"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <div className="flex space-x-1 space-x-reverse">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                عرض
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(student)}
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(student)}
+                                className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

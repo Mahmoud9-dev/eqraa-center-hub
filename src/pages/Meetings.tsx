@@ -124,11 +124,11 @@ const Meetings = () => {
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الاجتماعات" />
-      <main className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
           <Card className="border-primary/20">
             <CardHeader>
-              <CardTitle className="text-2xl text-primary">
+              <CardTitle className="text-xl sm:text-2xl text-primary">
                 جدولة اجتماع جديد
               </CardTitle>
             </CardHeader>
@@ -142,6 +142,7 @@ const Meetings = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="مثال: اجتماع المعلمين الأسبوعي"
+                    className="text-base sm:text-sm"
                     required
                   />
                 </div>
@@ -154,6 +155,7 @@ const Meetings = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="اشرح جدول الأعمال والموضوعات"
                     rows={3}
+                    className="text-base sm:text-sm"
                     required
                   />
                 </div>
@@ -165,47 +167,58 @@ const Meetings = () => {
                     type="datetime-local"
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
+                    className="text-base sm:text-sm"
                     required
                   />
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full text-base sm:text-sm py-3 sm:py-2"
+                >
                   {isLoading ? "جاري الإضافة..." : "جدولة الاجتماع"}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          <div className="bg-card p-6 rounded-xl shadow-[var(--shadow-soft)] border border-border">
+          <div className="bg-card p-4 sm:p-6 rounded-xl shadow-[var(--shadow-soft)] border border-border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="text-4xl">🤝</div>
-              <h3 className="text-xl font-semibold text-primary">
+              <div className="text-3xl sm:text-4xl">🤝</div>
+              <h3 className="text-lg sm:text-xl font-semibold text-primary">
                 أنواع الاجتماعات
               </h3>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
-                <div className="text-2xl">👨‍🏫</div>
+                <div className="text-xl sm:text-2xl">👨‍🏫</div>
                 <div>
-                  <h4 className="font-semibold">اجتماعات المعلمين</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-sm sm:text-base">
+                    اجتماعات المعلمين
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     تنسيق وتخطيط الحلقات
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
-                <div className="text-2xl">👥</div>
+                <div className="text-xl sm:text-2xl">👥</div>
                 <div>
-                  <h4 className="font-semibold">اجتماعات أولياء الأمور</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-sm sm:text-base">
+                    اجتماعات أولياء الأمور
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     متابعة تقدم الأبناء
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
-                <div className="text-2xl">⚙️</div>
+                <div className="text-xl sm:text-2xl">⚙️</div>
                 <div>
-                  <h4 className="font-semibold">اجتماعات إدارية</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-sm sm:text-base">
+                    اجتماعات إدارية
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     قرارات وتطوير المركز
                   </p>
                 </div>
@@ -215,22 +228,24 @@ const Meetings = () => {
         </div>
 
         <div>
-          <h3 className="text-2xl font-bold text-primary mb-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">
             الاجتماعات المجدولة
           </h3>
           {meetings.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
+              <CardContent className="p-6 sm:p-8 text-center text-muted-foreground">
                 لا توجد اجتماعات مجدولة
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {meetings.map((meeting) => (
                 <Card key={meeting.id} className="border-r-4 border-r-primary">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-bold text-lg">{meeting.title}</h4>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+                      <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-0">
+                        {meeting.title}
+                      </h4>
                       <Badge
                         variant={
                           meeting.status === "مكتملة"
@@ -243,17 +258,18 @@ const Meetings = () => {
                         {meeting.status}
                       </Badge>
                     </div>
-                    <p className="text-muted-foreground mb-2">
+                    <p className="text-muted-foreground mb-2 text-sm sm:text-base">
                       {meeting.description}
                     </p>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                       {new Date(meeting.meeting_date).toLocaleString("ar")}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => updateStatus(meeting.id, "مجدولة")}
+                        className="text-xs sm:text-sm"
                       >
                         مجدولة
                       </Button>
@@ -261,6 +277,7 @@ const Meetings = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => updateStatus(meeting.id, "مكتملة")}
+                        className="text-xs sm:text-sm"
                       >
                         مكتملة
                       </Button>
@@ -268,6 +285,7 @@ const Meetings = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => updateStatus(meeting.id, "ملغاة")}
+                        className="text-xs sm:text-sm"
                       >
                         ملغاة
                       </Button>
@@ -275,6 +293,7 @@ const Meetings = () => {
                         size="sm"
                         variant="destructive"
                         onClick={() => openDeleteDialog(meeting)}
+                        className="text-xs sm:text-sm"
                       >
                         حذف
                       </Button>
@@ -289,10 +308,12 @@ const Meetings = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-base">
+              تأكيد الحذف
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-xs">
               هل أنت متأكد من حذف الاجتماع "{selectedMeeting?.title}"؟ لا يمكن
               التراجع عن هذا الإجراء.
             </DialogDescription>
@@ -301,10 +322,15 @@ const Meetings = () => {
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
+              className="text-sm"
             >
               إلغاء
             </Button>
-            <Button variant="destructive" onClick={deleteMeeting}>
+            <Button
+              variant="destructive"
+              onClick={deleteMeeting}
+              className="text-sm"
+            >
               حذف
             </Button>
           </DialogFooter>

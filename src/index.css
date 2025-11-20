@@ -114,6 +114,10 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-arabic;
     direction: rtl;
+    /* Improve text rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   h1,
@@ -123,5 +127,28 @@ All colors MUST be HSL.
   h5,
   h6 {
     @apply font-arabic;
+  }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px;
+    }
+
+    body {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Touch-friendly tap targets */
+  @media (pointer: coarse) {
+    button,
+    a,
+    input,
+    select,
+    textarea {
+      min-height: 44px;
+    }
   }
 }

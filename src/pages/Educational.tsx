@@ -142,21 +142,21 @@ const Educational = () => {
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="التربوي" />
-      <main className="container mx-auto px-4 py-12">
-        <div className="mb-8 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-8 rounded-2xl shadow-[var(--shadow-soft)]">
-          <h2 className="text-3xl font-bold mb-3">
+      <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+        <div className="mb-6 sm:mb-8 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)]">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
             البرامج التربوية والتعليمية
           </h2>
-          <p className="text-lg opacity-90">
+          <p className="text-sm sm:text-base md:text-lg opacity-90">
             تطوير القيم الإسلامية والمهارات التربوية للطلاب
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
+          <div className="space-y-4 sm:space-y-6 md:space-y-8">
             <Card className="border-primary/20">
               <CardHeader>
-                <CardTitle className="text-2xl text-primary">
+                <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary">
                   تسجيل حلقة تربوية
                 </CardTitle>
               </CardHeader>
@@ -169,7 +169,7 @@ const Educational = () => {
                     <select
                       value={selectedStudent}
                       onChange={(e) => setSelectedStudent(e.target.value)}
-                      className="w-full p-2 border rounded-md bg-background"
+                      className="w-full p-2 border rounded-md bg-background text-base sm:text-sm"
                       required
                     >
                       <option value="">اختر الطالب</option>
@@ -187,7 +187,7 @@ const Educational = () => {
                     <select
                       value={selectedTeacher}
                       onChange={(e) => setSelectedTeacher(e.target.value)}
-                      className="w-full p-2 border rounded-md bg-background"
+                      className="w-full p-2 border rounded-md bg-background text-base sm:text-sm"
                       required
                     >
                       <option value="">اختر المعلم</option>
@@ -206,6 +206,7 @@ const Educational = () => {
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       placeholder="مثال: الأخلاق الإسلامية"
+                      className="text-base sm:text-sm"
                       required
                     />
                   </div>
@@ -217,6 +218,7 @@ const Educational = () => {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="وصف الحلقة..."
+                      className="text-base sm:text-sm"
                       required
                     />
                   </div>
@@ -233,7 +235,11 @@ const Educational = () => {
                       className="w-full"
                     />
                   </div>
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full text-base sm:text-sm py-3 sm:py-2"
+                  >
                     {isLoading ? "جاري التسجيل..." : "تسجيل الحلقة"}
                   </Button>
                 </form>
@@ -242,7 +248,7 @@ const Educational = () => {
 
             <Card className="border-primary/20">
               <CardHeader>
-                <CardTitle className="text-2xl text-primary">
+                <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary">
                   تسجيل طالب في البرنامج التربوي
                 </CardTitle>
               </CardHeader>
@@ -256,6 +262,7 @@ const Educational = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="أدخل اسم الطالب"
+                      className="text-base sm:text-sm"
                       required
                     />
                   </div>
@@ -270,6 +277,7 @@ const Educational = () => {
                       placeholder="أدخل العمر"
                       min="5"
                       max="100"
+                      className="text-base sm:text-sm"
                       required
                     />
                   </div>
@@ -281,10 +289,15 @@ const Educational = () => {
                       value={grade}
                       onChange={(e) => setGrade(e.target.value)}
                       placeholder="مثال: الصف الخامس"
+                      className="text-base sm:text-sm"
                       required
                     />
                   </div>
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full text-base sm:text-sm py-3 sm:py-2"
+                  >
                     {isLoading ? "جاري التسجيل..." : "تسجيل الطالب"}
                   </Button>
                 </form>
@@ -292,12 +305,12 @@ const Educational = () => {
             </Card>
 
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-primary">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
                 الطلاب المسجلون
               </h3>
               {students.length === 0 ? (
                 <Card>
-                  <CardContent className="p-8 text-center text-muted-foreground">
+                  <CardContent className="p-4 sm:p-6 md:p-8 text-center text-muted-foreground">
                     لا يوجد طلاب مسجلين في البرنامج التربوي بعد
                   </CardContent>
                 </Card>
@@ -307,9 +320,11 @@ const Educational = () => {
                     key={student.id}
                     className="border-r-4 border-r-primary"
                   >
-                    <CardContent className="p-6">
-                      <h4 className="font-bold text-lg">{student.name}</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="p-4 sm:p-6">
+                      <h4 className="font-bold text-base sm:text-lg">
+                        {student.name}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         العمر: {student.age} سنة - {student.grade}
                       </p>
                     </CardContent>
@@ -320,35 +335,39 @@ const Educational = () => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-primary">الحلقات المسجلة</h3>
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
+              الحلقات المسجلة
+            </h3>
             {sessions.length === 0 ? (
               <Card>
-                <CardContent className="p-8 text-center text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 md:p-8 text-center text-muted-foreground">
                   لا توجد حلقات مسجلة بعد
                 </CardContent>
               </Card>
             ) : (
               sessions.slice(0, 10).map((session) => (
                 <Card key={session.id} className="border-r-4 border-r-primary">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-2">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
                       <div>
-                        <h4 className="font-bold text-lg">{session.topic}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-0">
+                          {session.topic}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           الطالب: {session.students.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           المعلم: {session.teachers.name}
                         </p>
                       </div>
-                      <span className="text-sm bg-primary/10 px-3 py-1 rounded-full">
+                      <span className="text-xs sm:text-sm bg-primary/10 px-3 py-1 rounded-full">
                         {session.performance_rating}/10
                       </span>
                     </div>
-                    <p className="text-muted-foreground text-sm mt-2">
+                    <p className="text-muted-foreground text-xs sm:text-sm mt-2">
                       {session.description}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                       {new Date(session.session_date).toLocaleDateString("ar")}
                     </p>
                   </CardContent>
@@ -358,7 +377,7 @@ const Educational = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <IconButton
             to="/educational/islamic-lessons"
             icon="📚"
