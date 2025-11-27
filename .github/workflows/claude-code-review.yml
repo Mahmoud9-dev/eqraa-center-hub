@@ -85,6 +85,58 @@ jobs:
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Categorize changed files
+        id: categorize-files
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.changed_files }}"
+
+          # Initialize categories
+          TYPE_SAFETY_FILES=""
+          SUPABASE_FILES=""
+          VALIDATION_FILES=""
+          AUTH_FILES=""
+
+          # Categorize each file
+          for file in $CHANGED_FILES; do
+            # Check for pure TypeScript files (lib, types, hooks)
+            if [[ "$file" =~ ^src/(lib|types|hooks)/.*\.ts$ && ! "$file" =~ \.(test|spec)\.ts$ ]]; then
+              TYPE_SAFETY_FILES="$TYPE_SAFETY_FILES- $file\n"
+            fi
+
+            # Check for validation files
+            if [[ "$file" == "src/lib/validations.ts" ]]; then
+              VALIDATION_FILES="$VALIDATION_FILES- $file\n"
+            fi
+
+            # Check for authentication files
+            if [[ "$file" =~ (Login|Signup|ProtectedRoute|useUserRole) ]]; then
+              AUTH_FILES="$AUTH_FILES- $file\n"
+            fi
+
+            # Check for files that might contain Supabase calls
+            if [[ "$file" =~ ^src/(pages|components)/.*\.(tsx|ts)$ || "$file" =~ supabase ]]; then
+              # We'll check content for supabase usage in the prompt
+              SUPABASE_FILES="$SUPABASE_FILES- $file\n"
+            fi
+          done
+
+          # Output categorized files
+          echo "type_safety_files<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$TYPE_SAFETY_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "supabase_files<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SUPABASE_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "validation_files<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$VALIDATION_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "auth_files<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$AUTH_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Claude Code Review
         uses: anthropics/claude-code-action@v1
         with:
@@ -102,16 +154,75 @@ jobs:
             ## Changed Files
             ${{ steps.changed-files.outputs.changed_files }}
 
+            ## Categorized Files for Specialized Review
+
+            ### Type Safety Focus Files (lib, types, hooks - *.ts):
+            ${{ steps.categorize-files.outputs.type_safety_files }}
+
+            ### Supabase/Database Interaction Files (pages, components with supabase calls):
+            ${{ steps.categorize-files.outputs.supabase_files }}
+
+            ### Validation Schema Files:
+            ${{ steps.categorize-files.outputs.validation_files }}
+
+            ### Authentication/Authorization Files:
+            ${{ steps.categorize-files.outputs.auth_files }}
+
             ## Test Results
             Type Check: ${{ steps.type-check.outcome }}
             Lint: ${{ steps.lint.outcome }}
             Tests: ${{ steps.tests.outcome }}
 
             ## Your Task
-            Please review this pull request focusing on:
+            Please review this pull request with **FILE-TYPE SPECIFIC FOCUS**:
+
+            ### 🎯 PRIORITY REVIEW RULES BY FILE TYPE:
+
+            #### FOR TYPE SAFETY FOCUS FILES (*.ts in lib, types, hooks):
+            **PRIMARY FOCUS:**
+            - ✅ **Type Safety**: No `any` types unless absolutely necessary and documented
+            - ✅ **Interface Usage**: Proper interface/type definitions, avoiding inline types
+            - ✅ **Generic Types**: Correct usage of generic type parameters
+            - ✅ **Utility Types**: Leverage TypeScript utility types (Partial, Pick, Omit, etc.)
+            - ✅ **Null Safety**: Explicit handling of null/undefined with proper type guards
+            - ✅ **Type Exports**: Proper export of reusable types/interfaces
+            - ✅ **Type Inference**: Let TypeScript infer types where appropriate
+
+            #### FOR SUPABASE/DATABASE INTERACTION FILES (pages/*.tsx, components with supabase.*):
+            **PRIMARY FOCUS:**
+            - 🔒 **Security Validation**: All user inputs validated BEFORE database operations
+            - 🔒 **Error Handling**: Comprehensive try-catch with specific error messages
+            - 🔒 **SQL Injection Prevention**: Use parameterized queries (Supabase's built-in protection)
+            - 🔒 **Authentication Checks**: Verify user is authenticated before data access
+            - 🔒 **Authorization**: Check user roles/permissions for sensitive operations
+            - 🔒 **Data Sanitization**: Clean user inputs before insertion
+            - 🔒 **Response Validation**: Verify database responses before using data
+            - 🔒 **Query Optimization**: Efficient queries with proper select/filters
+
+            #### FOR VALIDATION SCHEMA FILES (lib/validations.ts):
+            **PRIMARY FOCUS:**
+            - ✅ **Comprehensive Schemas**: All fields have proper Zod validation
+            - ✅ **Security Validation**: Check for XSS, SQL injection patterns
+            - ✅ **Input Sanitization**: Trim, lowercase, normalize inputs
+            - ✅ **Error Messages**: Clear, user-friendly validation error messages
+            - ✅ **Edge Cases**: Handle empty strings, whitespace, special characters
+            - ✅ **Type Safety**: Ensure Zod schemas match TypeScript types
+
+            #### FOR AUTHENTICATION/AUTHORIZATION FILES:
+            **PRIMARY FOCUS:**
+            - 🔐 **Secure Auth Flow**: Proper login/signup implementation
+            - 🔐 **Session Management**: Correct handling of user sessions
+            - 🔐 **Role-Based Access**: Proper role checking and enforcement
+            - 🔐 **Protected Routes**: Verify route protection is effective
+            - 🔐 **Token Handling**: Safe storage and transmission of auth tokens
+            - 🔐 **Error Handling**: No information leakage in auth errors
+
+            ---
+
+            ### 🌐 GENERAL REVIEW AREAS (All Files):
 
             1. **Code Quality**
-               - TypeScript best practices and type safety
+               - TypeScript best practices
                - React hooks usage and component patterns
                - Proper error handling
                - Code organization and maintainability
@@ -151,8 +262,24 @@ jobs:
             ### Summary
             [Brief overview of changes and overall assessment]
 
+            ### 🎯 File-Type Specific Findings
+
+            #### Type Safety Review (*.ts files):
+            [Findings related to type safety, interfaces, and TypeScript best practices]
+
+            #### Security & Database Review (Supabase files):
+            [Findings related to security validation, error handling, and database interactions]
+
+            #### Validation Schema Review:
+            [Findings related to input validation and Zod schemas]
+
+            #### Authentication Review:
+            [Findings related to auth/authorization security]
+
+            ---
+
             ### Critical Issues 🔴
-            [Any issues that must be fixed before merge]
+            [Any issues that must be fixed before merge - categorize by file type when relevant]
 
             ### Warnings ⚠️
             [Issues that should be addressed but not blocking]
@@ -161,12 +288,16 @@ jobs:
             [Nice-to-have improvements]
 
             ### Positive Highlights ✅
-            [What was done well]
+            [What was done well - highlight good practices in each file category]
 
             ### Test Results Analysis
             [Analysis of the CI test results and any failures]
 
-            Please be specific and reference file paths and line numbers where applicable.
+            **IMPORTANT:**
+            - Reference specific file paths and line numbers
+            - Apply the appropriate file-type rules based on the categorized files above
+            - Prioritize security issues in database/auth files
+            - Prioritize type safety in pure TypeScript files
 
       - name: Upload logs as artifacts
         if: always()
