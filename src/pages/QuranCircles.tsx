@@ -433,11 +433,11 @@ const QuranCircles = () => {
             إدارة حلقات القرآن ومتابعة تقدم الطلاب في الحفظ والمراجعة
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
-              <Input placeholder="البحث عن حلقة..." className="w-64" />
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+            <div className="w-full sm:w-auto">
+              <Input placeholder="البحث عن حلقة..." className="w-full sm:w-64" />
             </div>
-            <div className="flex space-x-2 space-x-reverse">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Dialog
                 open={isAddMemberDialogOpen}
                 onOpenChange={setIsAddMemberDialogOpen}
@@ -657,72 +657,134 @@ const QuranCircles = () => {
                 <CardDescription>عرض وإدارة جميع حلقات القرآن</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>اسم الحلقة</TableHead>
-                      <TableHead>المشرف</TableHead>
-                      <TableHead>ورد الحفظ</TableHead>
-                      <TableHead>ورد المراجعة</TableHead>
-                      <TableHead>عدد الأعضاء</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {circles.map((circle) => (
-                      <TableRow key={circle.id}>
-                        <TableCell className="font-medium">
-                          {circle.name}
-                        </TableCell>
-                        <TableCell>
-                          {
-                            teachers[
-                              circle.supervisorId as keyof typeof teachers
-                            ]
-                          }
-                        </TableCell>
-                        <TableCell>{circle.dailyMemorization}</TableCell>
-                        <TableCell>{circle.dailyRevision}</TableCell>
-                        <TableCell>
-                          {getCircleMembers(circle.id).length}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              circle.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }
-                          >
-                            {circle.isActive ? "نشطة" : "غير نشطة"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              عرض
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditCircleDialog(circle)}
-                            >
-                              تعديل
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteCircleDialog(circle)}
-                            >
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-4">
+                  {circles.map((circle) => (
+                    <div key={circle.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-medium text-sm leading-tight">{circle.name}</h4>
+                        <Badge
+                          className={`text-xs shrink-0 ${
+                            circle.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {circle.isActive ? "نشطة" : "غير نشطة"}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        المشرف: {teachers[circle.supervisorId as keyof typeof teachers]}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="p-2 bg-muted rounded">
+                          <span className="text-muted-foreground">ورد الحفظ:</span>
+                          <div className="font-medium">{circle.dailyMemorization}</div>
+                        </div>
+                        <div className="p-2 bg-muted rounded">
+                          <span className="text-muted-foreground">ورد المراجعة:</span>
+                          <div className="font-medium">{circle.dailyRevision}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        عدد الأعضاء: {getCircleMembers(circle.id).length}
+                      </div>
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1 text-xs">
+                          عرض
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openEditCircleDialog(circle)}
+                        >
+                          تعديل
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openDeleteCircleDialog(circle)}
+                        >
+                          حذف
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>اسم الحلقة</TableHead>
+                        <TableHead>المشرف</TableHead>
+                        <TableHead className="hidden lg:table-cell">ورد الحفظ</TableHead>
+                        <TableHead className="hidden lg:table-cell">ورد المراجعة</TableHead>
+                        <TableHead>عدد الأعضاء</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {circles.map((circle) => (
+                        <TableRow key={circle.id}>
+                          <TableCell className="font-medium max-w-[150px] truncate">
+                            {circle.name}
+                          </TableCell>
+                          <TableCell>
+                            {
+                              teachers[
+                                circle.supervisorId as keyof typeof teachers
+                              ]
+                            }
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">{circle.dailyMemorization}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{circle.dailyRevision}</TableCell>
+                          <TableCell>
+                            {getCircleMembers(circle.id).length}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                circle.isActive
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }
+                            >
+                              {circle.isActive ? "نشطة" : "غير نشطة"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" className="text-xs px-2">
+                                عرض
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openEditCircleDialog(circle)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openDeleteCircleDialog(circle)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -762,12 +824,12 @@ const QuranCircles = () => {
                           {getCircleMembers(circle.id).map((member) => (
                             <div
                               key={member.id}
-                              className="flex items-center justify-between p-2 border rounded"
+                              className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded gap-3"
                             >
-                              <div className="flex items-center space-x-3 space-x-reverse">
-                                <Avatar className="w-8 h-8">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8 shrink-0">
                                   <AvatarImage src="" />
-                                  <AvatarFallback>
+                                  <AvatarFallback className="text-xs">
                                     {students[
                                       member.studentId as keyof typeof students
                                     ]
@@ -776,15 +838,15 @@ const QuranCircles = () => {
                                       .join("")}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div>
-                                  <div className="font-medium">
+                                <div className="min-w-0">
+                                  <div className="font-medium text-sm truncate">
                                     {
                                       students[
                                         member.studentId as keyof typeof students
                                       ]
                                     }
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
+                                  <div className="text-xs text-muted-foreground">
                                     انضم:{" "}
                                     {member.joinDate.toLocaleDateString(
                                       "ar-SA"
@@ -792,11 +854,11 @@ const QuranCircles = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex space-x-2 space-x-reverse">
-                                <Button variant="outline" size="sm">
+                              <div className="flex gap-2 sm:shrink-0">
+                                <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs">
                                   تعديل
                                 </Button>
-                                <Button variant="destructive" size="sm">
+                                <Button variant="destructive" size="sm" className="flex-1 sm:flex-none text-xs">
                                   حذف
                                 </Button>
                               </div>
@@ -812,7 +874,7 @@ const QuranCircles = () => {
           </TabsContent>
 
           <TabsContent value="records" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h3 className="text-lg font-medium">سجلات الحفظ والمراجعة</h3>
               <Dialog
                 open={isAddRecordDialogOpen}
@@ -1000,65 +1062,108 @@ const QuranCircles = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>الطالب</TableHead>
-                      <TableHead>الحلقة</TableHead>
-                      <TableHead>السورة</TableHead>
-                      <TableHead>الآيات</TableHead>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>التقييم</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {memorizationRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell>
-                          {students[record.studentId as keyof typeof students]}
-                        </TableCell>
-                        <TableCell>
-                          {circles.find((c) => c.id === record.circleId)?.name}
-                        </TableCell>
-                        <TableCell>{record.surahName}</TableCell>
-                        <TableCell>
-                          {record.versesFrom} - {record.versesTo}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={getMemorizationTypeColor(
-                              record.memorizationType
-                            )}
-                          >
-                            {record.memorizationType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={getEvaluationColor(record.evaluation)}
-                          >
-                            {record.evaluation}/10
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {record.date.toLocaleDateString("ar-SA")}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              تعديل
-                            </Button>
-                            <Button variant="destructive" size="sm">
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-4">
+                  {memorizationRecords.map((record) => (
+                    <div key={record.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-medium text-sm">
+                            {students[record.studentId as keyof typeof students]}
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            {circles.find((c) => c.id === record.circleId)?.name}
+                          </p>
+                        </div>
+                        <Badge className={`${getEvaluationColor(record.evaluation)} text-xs shrink-0`}>
+                          {record.evaluation}/10
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={`${getMemorizationTypeColor(record.memorizationType)} text-xs`}>
+                          {record.memorizationType}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {record.surahName} ({record.versesFrom} - {record.versesTo})
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {record.date.toLocaleDateString("ar-SA")}
+                      </div>
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1 text-xs">
+                          تعديل
+                        </Button>
+                        <Button variant="destructive" size="sm" className="flex-1 text-xs">
+                          حذف
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>الطالب</TableHead>
+                        <TableHead className="hidden lg:table-cell">الحلقة</TableHead>
+                        <TableHead>السورة</TableHead>
+                        <TableHead>الآيات</TableHead>
+                        <TableHead>النوع</TableHead>
+                        <TableHead>التقييم</TableHead>
+                        <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
+                        <TableHead>الإجراءات</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {memorizationRecords.map((record) => (
+                        <TableRow key={record.id}>
+                          <TableCell className="max-w-[120px] truncate">
+                            {students[record.studentId as keyof typeof students]}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell max-w-[120px] truncate">
+                            {circles.find((c) => c.id === record.circleId)?.name}
+                          </TableCell>
+                          <TableCell>{record.surahName}</TableCell>
+                          <TableCell>
+                            {record.versesFrom} - {record.versesTo}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={getMemorizationTypeColor(
+                                record.memorizationType
+                              )}
+                            >
+                              {record.memorizationType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={getEvaluationColor(record.evaluation)}
+                            >
+                              {record.evaluation}/10
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            {record.date.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" className="text-xs px-2">
+                                تعديل
+                              </Button>
+                              <Button variant="destructive" size="sm" className="text-xs px-2">
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
