@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp add TestSprite --env API_KEY=sk-user-vB97GRfep27-Yg3snZY9JpomyOos93FM6dYyrl01X8x-BlEIPoiw7tRnFJ_nVEpP4cxDG6oDaxQeR207_d8DlQ2XD1Y3acoLMF_dp1liEddUh07c77ANULnnYgI_UKz-jNo -- npx @testsprite/testsprite-mcp@latest)",
+      "Bash(claude mcp remove:*)",
+      "WebFetch(domain:docs.testsprite.com)",
+      "WebFetch(domain:www.testsprite.com)",
+      "Bash(npx @testsprite/testsprite-mcp:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(BASE_URL=http://localhost:8081 npx playwright test:*)",
+      "mcp__TestSprite__testsprite_bootstrap_tests",
+      "Bash(claude mcp:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(npx playwright install)",
+      "Bash(tree:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
