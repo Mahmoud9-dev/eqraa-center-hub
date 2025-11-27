@@ -324,11 +324,11 @@ const Announcements = () => {
             إدارة الإعلانات العامة والتنبيهات والمواعيد الهامة
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
-              <Input placeholder="البحث عن إعلان..." className="w-64" />
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <Input placeholder="البحث عن إعلان..." className="w-full sm:w-64" />
               <Select>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="جميع الأنواع" />
                 </SelectTrigger>
                 <SelectContent>
@@ -519,80 +519,139 @@ const Announcements = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>العنوان</TableHead>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>الجمهور المستهدف</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>تاريخ الإنشاء</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {announcements.map((announcement) => (
-                      <TableRow key={announcement.id}>
-                        <TableCell className="font-medium">
-                          {announcement.title}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getTypeColor(announcement.type)}>
-                            {announcement.type}
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-4">
+                  {announcements.map((announcement) => (
+                    <div key={announcement.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-medium text-sm leading-tight">{announcement.title}</h4>
+                        <Badge className={`${getTypeColor(announcement.type)} text-xs shrink-0`}>
+                          {announcement.type}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {announcement.targetAudience.map((role) => (
+                          <Badge key={role} variant="outline" className="text-xs">
+                            {getRoleName(role)}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {announcement.targetAudience.map((role) => (
-                              <Badge
-                                key={role}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {getRoleName(role)}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              announcement.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }
-                          >
-                            {announcement.isActive ? "نشط" : "غير نشط"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {announcement.createdAt.toLocaleDateString("ar-SA")}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              عرض
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(announcement)}
-                            >
-                              تعديل
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteDialog(announcement)}
-                            >
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{announcement.createdAt.toLocaleDateString("ar-SA")}</span>
+                        <Badge
+                          className={
+                            announcement.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }
+                        >
+                          {announcement.isActive ? "نشط" : "غير نشط"}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1 text-xs">
+                          عرض
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openEditDialog(announcement)}
+                        >
+                          تعديل
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openDeleteDialog(announcement)}
+                        >
+                          حذف
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>العنوان</TableHead>
+                        <TableHead>النوع</TableHead>
+                        <TableHead className="hidden lg:table-cell">الجمهور المستهدف</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead className="hidden lg:table-cell">تاريخ الإنشاء</TableHead>
+                        <TableHead>الإجراءات</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {announcements.map((announcement) => (
+                        <TableRow key={announcement.id}>
+                          <TableCell className="font-medium max-w-[200px] truncate">
+                            {announcement.title}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getTypeColor(announcement.type)}>
+                              {announcement.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            <div className="flex flex-wrap gap-1">
+                              {announcement.targetAudience.map((role) => (
+                                <Badge
+                                  key={role}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {getRoleName(role)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                announcement.isActive
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }
+                            >
+                              {announcement.isActive ? "نشط" : "غير نشط"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            {announcement.createdAt.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" className="text-xs px-2">
+                                عرض
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openEditDialog(announcement)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openDeleteDialog(announcement)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
