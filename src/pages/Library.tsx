@@ -347,19 +347,19 @@ const Library = () => {
             كتب PDF، مقاطع صوتية للعلماء، روابط موثوقة للمراجع الشرعية
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Input
                 placeholder="البحث في المكتبة..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64"
               />
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="جميع الفئات" />
                 </SelectTrigger>
                 <SelectContent>
@@ -511,13 +511,15 @@ const Library = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="books">الكتب PDF</TabsTrigger>
-            <TabsTrigger value="audio">المقاطع الصوتية</TabsTrigger>
-            <TabsTrigger value="video">الفيديوهات</TabsTrigger>
-            <TabsTrigger value="links">الروابط الموثوقة</TabsTrigger>
-            <TabsTrigger value="all">جميع الموارد</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1">
+              <TabsTrigger value="books" className="text-xs sm:text-sm whitespace-nowrap">الكتب PDF</TabsTrigger>
+              <TabsTrigger value="audio" className="text-xs sm:text-sm whitespace-nowrap">المقاطع الصوتية</TabsTrigger>
+              <TabsTrigger value="video" className="text-xs sm:text-sm whitespace-nowrap">الفيديوهات</TabsTrigger>
+              <TabsTrigger value="links" className="text-xs sm:text-sm whitespace-nowrap">الروابط الموثوقة</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap">جميع الموارد</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="books" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -527,14 +529,14 @@ const Library = () => {
                   className="hover:shadow-md transition-shadow"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <span className="text-2xl">📄</span>
-                        <CardTitle className="text-lg">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl shrink-0">📄</span>
+                        <CardTitle className="text-base truncate">
                           {resource.title}
                         </CardTitle>
                       </div>
-                      <Badge className={getTypeColor(resource.type)}>
+                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
                         {resource.type}
                       </Badge>
                     </div>
@@ -544,32 +546,32 @@ const Library = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-muted-foreground">
-                        إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                      </div>
-                      <div className="flex space-x-2 space-x-reverse">
-                        <Button variant="outline" size="sm">
-                          تحميل
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(resource)}
-                        >
-                          تعديل
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(resource)}
-                        >
-                          حذف
-                        </Button>
-                      </div>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
+                        تحميل
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openEditDialog(resource)}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openDeleteDialog(resource)}
+                      >
+                        حذف
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -585,14 +587,14 @@ const Library = () => {
                   className="hover:shadow-md transition-shadow"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <span className="text-2xl">🎵</span>
-                        <CardTitle className="text-lg">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl shrink-0">🎵</span>
+                        <CardTitle className="text-base truncate">
                           {resource.title}
                         </CardTitle>
                       </div>
-                      <Badge className={getTypeColor(resource.type)}>
+                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
                         {resource.type}
                       </Badge>
                     </div>
@@ -602,32 +604,32 @@ const Library = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-muted-foreground">
-                        إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                      </div>
-                      <div className="flex space-x-2 space-x-reverse">
-                        <Button variant="outline" size="sm">
-                          استماع
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(resource)}
-                        >
-                          تعديل
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(resource)}
-                        >
-                          حذف
-                        </Button>
-                      </div>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
+                        استماع
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openEditDialog(resource)}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openDeleteDialog(resource)}
+                      >
+                        حذف
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -643,14 +645,14 @@ const Library = () => {
                   className="hover:shadow-md transition-shadow"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <span className="text-2xl">🎥</span>
-                        <CardTitle className="text-lg">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl shrink-0">🎥</span>
+                        <CardTitle className="text-base truncate">
                           {resource.title}
                         </CardTitle>
                       </div>
-                      <Badge className={getTypeColor(resource.type)}>
+                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
                         {resource.type}
                       </Badge>
                     </div>
@@ -660,32 +662,32 @@ const Library = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-muted-foreground">
-                        إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                      </div>
-                      <div className="flex space-x-2 space-x-reverse">
-                        <Button variant="outline" size="sm">
-                          مشاهدة
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(resource)}
-                        >
-                          تعديل
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(resource)}
-                        >
-                          حذف
-                        </Button>
-                      </div>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
+                        مشاهدة
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openEditDialog(resource)}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openDeleteDialog(resource)}
+                      >
+                        حذف
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -701,14 +703,14 @@ const Library = () => {
                   className="hover:shadow-md transition-shadow"
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <span className="text-2xl">🔗</span>
-                        <CardTitle className="text-lg">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl shrink-0">🔗</span>
+                        <CardTitle className="text-base truncate">
                           {resource.title}
                         </CardTitle>
                       </div>
-                      <Badge className={getTypeColor(resource.type)}>
+                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
                         {resource.type}
                       </Badge>
                     </div>
@@ -718,32 +720,32 @@ const Library = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {resource.description}
                     </p>
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-muted-foreground">
-                        إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                      </div>
-                      <div className="flex space-x-2 space-x-reverse">
-                        <Button variant="outline" size="sm">
-                          زيارة
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(resource)}
-                        >
-                          تعديل
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(resource)}
-                        >
-                          حذف
-                        </Button>
-                      </div>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
+                        زيارة
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openEditDialog(resource)}
+                      >
+                        تعديل
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 min-w-[70px] text-xs"
+                        onClick={() => openDeleteDialog(resource)}
+                      >
+                        حذف
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -760,61 +762,109 @@ const Library = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>العنوان</TableHead>
-                      <TableHead>المؤلف</TableHead>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>الفئة</TableHead>
-                      <TableHead>تاريخ الإضافة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredResources.map((resource) => (
-                      <TableRow key={resource.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center space-x-2 space-x-reverse">
-                            <span>{getTypeIcon(resource.type)}</span>
-                            <span>{resource.title}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{resource.author}</TableCell>
-                        <TableCell>
-                          <Badge className={getTypeColor(resource.type)}>
-                            {resource.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{resource.category}</TableCell>
-                        <TableCell>
-                          {resource.createdAt.toLocaleDateString("ar-SA")}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Button variant="outline" size="sm">
-                              عرض
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(resource)}
-                            >
-                              تعديل
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteDialog(resource)}
-                            >
-                              حذف
-                            </Button>
-                          </div>
-                        </TableCell>
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-4">
+                  {filteredResources.map((resource) => (
+                    <div key={resource.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xl shrink-0">{getTypeIcon(resource.type)}</span>
+                          <h4 className="font-medium text-sm truncate">{resource.title}</h4>
+                        </div>
+                        <Badge className={`${getTypeColor(resource.type)} text-xs shrink-0`}>
+                          {resource.type}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        {resource.author && <div>المؤلف: {resource.author}</div>}
+                        <div>الفئة: {resource.category}</div>
+                        <div>إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}</div>
+                      </div>
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1 text-xs">
+                          عرض
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openEditDialog(resource)}
+                        >
+                          تعديل
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => openDeleteDialog(resource)}
+                        >
+                          حذف
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>العنوان</TableHead>
+                        <TableHead className="hidden lg:table-cell">المؤلف</TableHead>
+                        <TableHead>النوع</TableHead>
+                        <TableHead className="hidden lg:table-cell">الفئة</TableHead>
+                        <TableHead className="hidden lg:table-cell">تاريخ الإضافة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredResources.map((resource) => (
+                        <TableRow key={resource.id}>
+                          <TableCell className="font-medium max-w-[200px]">
+                            <div className="flex items-center gap-2">
+                              <span className="shrink-0">{getTypeIcon(resource.type)}</span>
+                              <span className="truncate">{resource.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">{resource.author}</TableCell>
+                          <TableCell>
+                            <Badge className={getTypeColor(resource.type)}>
+                              {resource.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">{resource.category}</TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            {resource.createdAt.toLocaleDateString("ar-SA")}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" className="text-xs px-2">
+                                عرض
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openEditDialog(resource)}
+                              >
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="text-xs px-2"
+                                onClick={() => openDeleteDialog(resource)}
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
