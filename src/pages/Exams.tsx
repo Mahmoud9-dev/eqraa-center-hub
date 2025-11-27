@@ -40,12 +40,16 @@ import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { ExamType, Exam, ExamResult } from "@/types";
 
+type TabType = ExamType | "results";
+
 const Exams = () => {
-  const [activeTab, setActiveTab] = useState<ExamType>("قرآن");
+  const [activeTab, setActiveTab] = useState<TabType>("قرآن");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+  const [isEditResultDialogOpen, setIsEditResultDialogOpen] = useState(false);
+  const [isDeleteResultDialogOpen, setIsDeleteResultDialogOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [selectedResult, setSelectedResult] = useState<ExamResult | null>(null);
   const { toast } = useToast();
@@ -178,10 +182,12 @@ const Exams = () => {
   });
 
   const filteredExams = exams.filter((exam) => exam.type === activeTab);
-  const filteredResults = examResults.filter((result) => {
-    const exam = exams.find((e) => e.id === result.examId);
-    return exam && exam.type === activeTab;
-  });
+  const filteredResults = activeTab === "results"
+    ? examResults
+    : examResults.filter((result) => {
+        const exam = exams.find((e) => e.id === result.examId);
+        return exam && exam.type === activeTab;
+      });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -395,6 +401,82 @@ const Exams = () => {
     setIsResultDialogOpen(true);
   };
 
+  const openEditResultDialog = (result: ExamResult) => {
+    setSelectedResult(result);
+    setNewResult({
+      examId: result.examId,
+      studentId: result.studentId,
+      marks: result.marks,
+      percentage: result.percentage,
+      status: result.status,
+      notes: result.notes,
+    });
+    setIsEditResultDialogOpen(true);
+  };
+
+  const openDeleteResultDialog = (result: ExamResult) => {
+    setSelectedResult(result);
+    setIsDeleteResultDialogOpen(true);
+  };
+
+  const handleEditResult = () => {
+    if (!selectedResult || !newResult.marks) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exam = exams.find((e) => e.id === selectedResult.examId);
+    if (!exam) return;
+
+    const percentage = Math.round((newResult.marks / exam.totalMarks) * 100);
+    const status = percentage >= (exam.passingMarks / exam.totalMarks * 100) ? "ناجح" : "راسب";
+
+    setExamResults(
+      examResults.map((r) =>
+        r.id === selectedResult.id
+          ? {
+              ...r,
+              marks: newResult.marks!,
+              percentage,
+              status,
+              notes: newResult.notes,
+            }
+          : r
+      )
+    );
+
+    setIsEditResultDialogOpen(false);
+    setSelectedResult(null);
+    setNewResult({
+      examId: "",
+      studentId: "",
+      marks: 0,
+      percentage: 0,
+      status: "ناجح",
+      notes: "",
+    });
+    toast({
+      title: "تم التعديل",
+      description: "تم تعديل النتيجة بنجاح",
+    });
+  };
+
+  const handleDeleteResult = () => {
+    if (!selectedResult) return;
+
+    setExamResults(examResults.filter((r) => r.id !== selectedResult.id));
+    setIsDeleteResultDialogOpen(false);
+    setSelectedResult(null);
+    toast({
+      title: "تم الحذف",
+      description: "تم حذف النتيجة بنجاح",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader title="الامتحانات والتقييم" showBack={true} />
@@ -556,7 +638,7 @@ const Exams = () => {
 
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as ExamType)}
+          onValueChange={(value) => setActiveTab(value as TabType)}
         >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="قرآن">امتحانات القرآن</TabsTrigger>
@@ -1077,10 +1159,18 @@ const Exams = () => {
                               الدرجة: {result.marks}/{exam?.totalMarks}
                             </div>
                             <div className="flex space-x-2 space-x-reverse">
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditResultDialog(result)}
+                              >
                                 تعديل
                               </Button>
-                              <Button variant="destructive" size="sm">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteResultDialog(result)}
+                              >
                                 حذف
                               </Button>
                             </div>
@@ -1102,31 +1192,35 @@ const Exams = () => {
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-2">معدل النجاح</h4>
                       <div className="text-2xl font-bold text-green-600">
-                        {Math.round(
-                          (filteredResults.filter((r) => r.status === "ناجح")
-                            .length /
-                            filteredResults.length) *
-                            100
-                        )}
+                        {filteredResults.length > 0
+                          ? Math.round(
+                              (filteredResults.filter((r) => r.status === "ناجح")
+                                .length /
+                                filteredResults.length) *
+                                100
+                            )
+                          : 0}
                         %
                       </div>
                     </div>
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-2">متوسط الدرجات</h4>
                       <div className="text-2xl font-bold text-blue-600">
-                        {Math.round(
-                          filteredResults.reduce(
-                            (acc, r) => acc + r.percentage,
-                            0
-                          ) / filteredResults.length
-                        )}
+                        {filteredResults.length > 0
+                          ? Math.round(
+                              filteredResults.reduce(
+                                (acc, r) => acc + r.percentage,
+                                0
+                              ) / filteredResults.length
+                            )
+                          : 0}
                         %
                       </div>
                     </div>
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-2">إجمالي الامتحانات</h4>
                       <div className="text-2xl font-bold text-purple-600">
-                        {filteredExams.length}
+                        {exams.length}
                       </div>
                     </div>
                   </div>
@@ -1364,6 +1458,81 @@ const Exams = () => {
               إلغاء
             </Button>
             <Button onClick={handleAddResult}>إضافة نتيجة</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Result Dialog */}
+      <Dialog open={isEditResultDialogOpen} onOpenChange={setIsEditResultDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>تعديل نتيجة الامتحان</DialogTitle>
+            <DialogDescription>قم بتعديل درجة الطالب</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-marks" className="text-right">
+                الدرجة
+              </Label>
+              <Input
+                id="edit-marks"
+                type="number"
+                value={newResult.marks}
+                onChange={(e) =>
+                  setNewResult({
+                    ...newResult,
+                    marks: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-notes" className="text-right">
+                ملاحظات
+              </Label>
+              <Textarea
+                id="edit-notes"
+                value={newResult.notes}
+                onChange={(e) =>
+                  setNewResult({ ...newResult, notes: e.target.value })
+                }
+                className="col-span-3"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditResultDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button onClick={handleEditResult}>حفظ التعديلات</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Result Dialog */}
+      <Dialog open={isDeleteResultDialogOpen} onOpenChange={setIsDeleteResultDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف النتيجة</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من حذف هذه النتيجة؟ لا يمكن التراجع عن هذا الإجراء.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteResultDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteResult}>
+              حذف
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
