@@ -847,11 +847,11 @@ const Students = () => {
                   {/* إضافة خانات الصور المتعددة */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right font-medium">
-                      الصور الجديدة
+                      السور الجديدة
                     </Label>
                     <div className="col-span-3 space-y-2">
                       <Input
-                        placeholder="الصورة الجديدة"
+                        placeholder="سورة الجديدة"
                         value={newStudent.images?.new || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1225,11 +1225,11 @@ const Students = () => {
 
                       {student.images && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {/* الصورة الجديدة */}
+                          {/* السورة الجديدة */}
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <h4 className="text-sm font-semibold text-green-700 bg-green-50 p-2 rounded border border-green-200">
-                                📖 الصورة الجديدة
+                                📖 السورة الجديدة
                               </h4>
                               <Button
                                 size="sm"
@@ -1608,10 +1608,10 @@ const Students = () => {
 
             {/* إضافة خانات الصور المتعددة */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">الصورة الجديدة</Label>
+              <Label className="text-right font-medium">السورة الجديدة</Label>
               <div className="col-span-3 space-y-2">
                 <Input
-                  placeholder="الصورة الجديدة"
+                  placeholder="سورة الجديدة"
                   value={newStudent.images?.new || ""}
                   onChange={(e) =>
                     setNewStudent({

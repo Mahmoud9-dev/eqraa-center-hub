@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
@@ -394,12 +394,13 @@ const Attendance = () => {
                         </Select>
                       </div>
 
-                      <div className="flex-1 max-w-xs">
+                      <div className="flex-1 max-w-xs relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="البحث عن طالب..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full"
+                          className="w-full pr-10"
                         />
                       </div>
                     </div>
@@ -585,12 +586,13 @@ const Attendance = () => {
                         </Select>
                       </div>
 
-                      <div className="flex-1 max-w-xs">
+                      <div className="flex-1 max-w-xs relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="البحث عن معلم..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full"
+                          className="w-full pr-10"
                         />
                       </div>
                     </div>

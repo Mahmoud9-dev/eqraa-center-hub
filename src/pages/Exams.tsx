@@ -488,9 +488,9 @@ const Exams = () => {
             إدارة وتتبع امتحانات القرآن والتجويد والجانب التربوي
           </p>
 
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4 space-x-reverse">
-              <Input placeholder="البحث عن امتحان..." className="w-64" />
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+            <div className="w-full sm:w-auto">
+              <Input placeholder="البحث عن امتحان..." className="w-full sm:w-64" />
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
@@ -640,12 +640,22 @@ const Exams = () => {
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as TabType)}
         >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="قرآن">امتحانات القرآن</TabsTrigger>
-            <TabsTrigger value="تجويد">امتحانات التجويد</TabsTrigger>
-            <TabsTrigger value="تربوي">امتحانات تربوية</TabsTrigger>
-            <TabsTrigger value="results">النتائج والإحصائيات</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 gap-1 p-1">
+              <TabsTrigger value="قرآن" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                امتحانات القرآن
+              </TabsTrigger>
+              <TabsTrigger value="تجويد" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                امتحانات التجويد
+              </TabsTrigger>
+              <TabsTrigger value="تربوي" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                امتحانات تربوية
+              </TabsTrigger>
+              <TabsTrigger value="results" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
+                النتائج والإحصائيات
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="قرآن" className="mt-6">
             <div className="space-y-6">
