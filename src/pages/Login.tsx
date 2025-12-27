@@ -1,17 +1,19 @@
+'use client';
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,7 @@ export default function Login() {
       toast.error("خطأ في تسجيل الدخول: " + error.message);
     } else {
       toast.success("تم تسجيل الدخول بنجاح");
-      navigate("/");
+      router.push("/");
     }
 
     setLoading(false);
@@ -72,7 +74,7 @@ export default function Login() {
                 type="button"
                 variant="link"
                 className="p-0"
-                onClick={() => navigate("/signup")}
+                onClick={() => router.push("/signup")}
               >
                 إنشاء حساب جديد
               </Button>

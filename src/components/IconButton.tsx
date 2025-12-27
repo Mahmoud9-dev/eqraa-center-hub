@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import { LucideIcon } from "lucide-react";
+'use client';
+
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface IconButtonProps {
@@ -46,14 +47,25 @@ const IconButton = ({
 
   // If it's a link (either to or href is provided)
   if (to || href) {
-    const linkProps = {
-      to: to || href,
-      "aria-label": ariaLabel || label,
-      ...(disabled && { "aria-disabled": true, tabIndex: -1 }),
-      ...(loading && { "aria-busy": true }),
-    };
+    const linkHref = to || href || "/";
 
-    return <Link {...linkProps}>{content}</Link>;
+    if (disabled) {
+      return (
+        <span aria-disabled="true" aria-label={ariaLabel || label}>
+          {content}
+        </span>
+      );
+    }
+
+    return (
+      <Link
+        href={linkHref}
+        aria-label={ariaLabel || label}
+        aria-busy={loading}
+      >
+        {content}
+      </Link>
+    );
   }
 
   // If it's a button

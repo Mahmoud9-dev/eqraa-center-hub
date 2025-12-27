@@ -1,5 +1,8 @@
+'use client';
+
 import { ArrowRight, LogOut, User, Menu, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -13,7 +16,7 @@ interface PageHeaderProps {
 }
 
 const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { roles, isAdmin } = useUserRole();
   const [userName, setUserName] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,7 +41,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
       toast.error("خطأ في تسجيل الخروج");
     } else {
       toast.success("تم تسجيل الخروج بنجاح");
-      navigate("/login");
+      router.push("/login");
     }
   };
 
@@ -85,7 +88,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
             {/* أزرار سطح المكتب */}
             <div className="hidden md:flex items-center gap-2">
               {showBack && (
-                <Link to="/">
+                <Link href="/">
                   <Button variant="secondary" size="lg" className="gap-2">
                     <ArrowRight className="w-5 h-5" />
                     الرئيسية
@@ -117,7 +120,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 </div>
               )}
               {showBack && (
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button
                     variant="secondary"
                     size="sm"
