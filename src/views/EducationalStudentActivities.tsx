@@ -1,3 +1,5 @@
+'use client';
+
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,51 +26,50 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const EducationalFamilyPrograms = () => {
+const EducationalStudentActivities = () => {
   const { toast } = useToast();
 
-  // State for programs management
-  const [programs, setPrograms] = useState([
+  // State for activities management
+  const [activities, setActivities] = useState([
     {
       id: "1",
-      title: "برنامج الأسرة المسلمة",
-      description:
-        "برنامج متكامل لتعزيز قيم الأسرة المسلمة وتطوير العلاقات الأسرية",
+      title: "مسابقة حفظ القرآن الكريم",
+      description: "مسابقة سنوية لحفظ وتجويد القرآن الكريم بمختلف مستوياته",
       teacher: "الشيخ أحمد محمد",
-      date: "2025-11-11",
-      duration: "ساعتان",
+      date: "2025-11-12",
+      duration: "يوم كامل",
       recording: "available",
-      verses: "الروم 21",
+      verses: "المزمل 1-20",
     },
     {
       id: "2",
-      title: "ورشة تربية الأبناء",
-      description: "ورشة عمل عملية لآليات تربية الأبناء في ضوء الإسلام",
+      title: "معسكر القيم الإسلامية",
+      description: "معسكر تربوي لتعزيز القيم الإسلامية وبناء الشخصية",
       teacher: "الشيخ خالد حسن",
-      date: "2025-11-04",
-      duration: "3 ساعات",
+      date: "2025-11-05",
+      duration: "3 أيام",
       recording: "available",
-      verses: "الإسراء 23-25",
+      verses: "الأنعام 151-153",
     },
     {
       id: "3",
-      title: "لقاءات أولياء الأمور",
-      description: "لقاءات دورية لمناقشة قضايا تربية الأبناء ومتابعتهم",
+      title: "مشروع الخدمة المجتمعية",
+      description: "مشروع طلابي لخدمة المجتمع وتطبيق مبادئ الإسلام العملي",
       teacher: "الشيخ محمد سعيد",
-      date: "2025-10-28",
-      duration: "ساعة ونصف",
+      date: "2025-10-29",
+      duration: "أسبوع",
       recording: "processing",
-      verses: "التحريم 6",
+      verses: "البقرة 177",
     },
   ]);
 
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
 
-  // Form state for new program
-  const [newProgram, setNewProgram] = useState({
+  // Form state for new activity
+  const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
     teacher: "",
@@ -78,13 +79,13 @@ const EducationalFamilyPrograms = () => {
   });
 
   // Functions for CRUD operations
-  const handleAddProgram = () => {
+  const handleAddActivity = () => {
     if (
-      !newProgram.title ||
-      !newProgram.description ||
-      !newProgram.teacher ||
-      !newProgram.duration ||
-      !newProgram.verses
+      !newActivity.title ||
+      !newActivity.description ||
+      !newActivity.teacher ||
+      !newActivity.duration ||
+      !newActivity.verses
     ) {
       toast({
         title: "خطأ",
@@ -94,19 +95,19 @@ const EducationalFamilyPrograms = () => {
       return;
     }
 
-    const program = {
+    const activity = {
       id: Date.now().toString(),
-      title: newProgram.title,
-      description: newProgram.description,
-      teacher: newProgram.teacher,
+      title: newActivity.title,
+      description: newActivity.description,
+      teacher: newActivity.teacher,
       date: new Date().toISOString().split("T")[0],
-      duration: newProgram.duration,
-      verses: newProgram.verses,
-      recording: newProgram.recording,
+      duration: newActivity.duration,
+      verses: newActivity.verses,
+      recording: newActivity.recording,
     };
 
-    setPrograms([...programs, program]);
-    setNewProgram({
+    setActivities([...activities, activity]);
+    setNewActivity({
       title: "",
       description: "",
       teacher: "",
@@ -117,97 +118,97 @@ const EducationalFamilyPrograms = () => {
     setIsAddDialogOpen(false);
     toast({
       title: "تم الإضافة",
-      description: "تم إضافة البرنامج بنجاح",
+      description: "تم إضافة النشاط بنجاح",
     });
   };
 
-  const handleDeleteProgram = () => {
-    if (!selectedProgram) return;
+  const handleDeleteActivity = () => {
+    if (!selectedActivity) return;
 
-    setPrograms(
-      programs.filter((program) => program.id !== selectedProgram.id)
+    setActivities(
+      activities.filter((activity) => activity.id !== selectedActivity.id)
     );
     setIsDeleteDialogOpen(false);
-    setSelectedProgram(null);
+    setSelectedActivity(null);
     toast({
       title: "تم الحذف",
-      description: "تم حذف البرنامج بنجاح",
+      description: "تم حذف النشاط بنجاح",
     });
   };
 
-  const openDeleteDialog = (program: any) => {
-    setSelectedProgram(program);
+  const openDeleteDialog = (activity: any) => {
+    setSelectedActivity(activity);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleViewRecording = (program: any) => {
-    if (program.recording === "available") {
+  const handleViewRecording = (activity: any) => {
+    if (activity.recording === "available") {
       toast({
         title: "فتح التسجيل",
-        description: "جاري فتح تسجيل البرنامج...",
+        description: "جاري فتح تسجيل النشاط...",
       });
       // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
       window.open("#", "_blank");
     } else {
       toast({
         title: "التسجيل غير متاح",
-        description: "هذا البرنامج قيد المعالجة وسيكون متاحاً قريباً",
+        description: "هذا النشاط قيد المعالجة وسيكون متاحاً قريباً",
         variant: "destructive",
       });
     }
   };
 
-  const handleDownloadMaterial = (program: any) => {
+  const handleDownloadMaterial = (activity: any) => {
     toast({
       title: "تحميل المادة",
-      description: "جاري تحميل مادة البرنامج...",
+      description: "جاري تحميل مادة النشاط...",
     });
     // هنا يمكن إضافة رابط التحميل
     const link = document.createElement("a");
     link.href = "#";
-    link.download = `${program.title}.pdf`;
+    link.download = `${activity.title}.pdf`;
     link.click();
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="برامج الأسرة" showBack={true} />
+      <PageHeader title="الأنشطة الطلابية" showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)] flex-1">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
-              برامج الأسرة
+              الأنشطة الطلابية
             </h2>
             <p className="text-sm sm:text-base md:text-lg opacity-90">
-              إشراك الأسرة في العملية التربوية وتعزيز العلاقات الأسرية
+              مسابقات وفعاليات تربوية هادفة لتطوير مهارات الطلاب
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground w-full sm:w-auto">
-                إضافة برنامج جديد
+                إضافة نشاط جديد
               </Button>
             </DialogTrigger>
             <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-base">
-                  إضافة برنامج أسرة جديد
+                  إضافة نشاط طلابي جديد
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-xs">
-                  أدخل بيانات البرنامج الجديد في النموذج أدناه
+                  أدخل بيانات النشاط الجديد في النموذج أدناه
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="title" className="text-right sm:text-sm">
-                    عنوان البرنامج
+                    عنوان النشاط
                   </Label>
                   <Input
                     id="title"
-                    value={newProgram.title}
+                    value={newActivity.title}
                     onChange={(e) =>
-                      setNewProgram({ ...newProgram, title: e.target.value })
+                      setNewActivity({ ...newActivity, title: e.target.value })
                     }
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
@@ -221,10 +222,10 @@ const EducationalFamilyPrograms = () => {
                   </Label>
                   <Textarea
                     id="description"
-                    value={newProgram.description}
+                    value={newActivity.description}
                     onChange={(e) =>
-                      setNewProgram({
-                        ...newProgram,
+                      setNewActivity({
+                        ...newActivity,
                         description: e.target.value,
                       })
                     }
@@ -234,13 +235,16 @@ const EducationalFamilyPrograms = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="teacher" className="text-right sm:text-sm">
-                    المقدم
+                    المشرف
                   </Label>
                   <Input
                     id="teacher"
-                    value={newProgram.teacher}
+                    value={newActivity.teacher}
                     onChange={(e) =>
-                      setNewProgram({ ...newProgram, teacher: e.target.value })
+                      setNewActivity({
+                        ...newActivity,
+                        teacher: e.target.value,
+                      })
                     }
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
@@ -251,11 +255,14 @@ const EducationalFamilyPrograms = () => {
                   </Label>
                   <Input
                     id="duration"
-                    value={newProgram.duration}
+                    value={newActivity.duration}
                     onChange={(e) =>
-                      setNewProgram({ ...newProgram, duration: e.target.value })
+                      setNewActivity({
+                        ...newActivity,
+                        duration: e.target.value,
+                      })
                     }
-                    placeholder="مثال: ساعتان"
+                    placeholder="مثال: يوم كامل"
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
@@ -265,11 +272,11 @@ const EducationalFamilyPrograms = () => {
                   </Label>
                   <Input
                     id="verses"
-                    value={newProgram.verses}
+                    value={newActivity.verses}
                     onChange={(e) =>
-                      setNewProgram({ ...newProgram, verses: e.target.value })
+                      setNewActivity({ ...newActivity, verses: e.target.value })
                     }
-                    placeholder="مثال: الروم 21"
+                    placeholder="مثال: المزمل 1-20"
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
@@ -278,9 +285,9 @@ const EducationalFamilyPrograms = () => {
                     التسجيل
                   </Label>
                   <Select
-                    value={newProgram.recording}
+                    value={newActivity.recording}
                     onValueChange={(value) =>
-                      setNewProgram({ ...newProgram, recording: value })
+                      setNewActivity({ ...newActivity, recording: value })
                     }
                   >
                     <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
@@ -301,8 +308,8 @@ const EducationalFamilyPrograms = () => {
                 >
                   إلغاء
                 </Button>
-                <Button onClick={handleAddProgram} className="text-sm">
-                  إضافة البرنامج
+                <Button onClick={handleAddActivity} className="text-sm">
+                  إضافة النشاط
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -310,21 +317,21 @@ const EducationalFamilyPrograms = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {programs.map((program) => (
-            <Card key={program.id} className="border-r-4 border-r-primary">
+          {activities.map((activity) => (
+            <Card key={activity.id} className="border-r-4 border-r-primary">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                   <CardTitle className="text-lg sm:text-xl">
-                    {program.title}
+                    {activity.title}
                   </CardTitle>
                   <Badge
                     variant={
-                      program.recording === "available"
+                      activity.recording === "available"
                         ? "default"
                         : "secondary"
                     }
                   >
-                    {program.recording === "available"
+                    {activity.recording === "available"
                       ? "متاح التسجيل"
                       : "قيد المعالجة"}
                   </Badge>
@@ -332,48 +339,48 @@ const EducationalFamilyPrograms = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-                  {program.description}
+                  {activity.description}
                 </p>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المقدم:</span>
-                    <span>{program.teacher}</span>
+                    <span className="font-medium">المشرف:</span>
+                    <span>{activity.teacher}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">التاريخ:</span>
-                    <span>{program.date}</span>
+                    <span>{activity.date}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">المدة:</span>
-                    <span>{program.duration}</span>
+                    <span>{activity.duration}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">الآيات:</span>
-                    <span className="text-primary">{program.verses}</span>
+                    <span className="text-primary">{activity.verses}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <Button
                     className="flex-1 text-sm"
-                    onClick={() => handleViewRecording(program)}
+                    onClick={() => handleViewRecording(activity)}
                   >
-                    {program.recording === "available"
+                    {activity.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => handleDownloadMaterial(program)}
+                    onClick={() => handleDownloadMaterial(activity)}
                   >
                     تحميل المادة
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => openDeleteDialog(program)}
+                    onClick={() => openDeleteDialog(activity)}
                     className="text-sm"
                   >
                     حذف
@@ -393,7 +400,7 @@ const EducationalFamilyPrograms = () => {
               تأكيد الحذف
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              هل أنت متأكد من حذف البرنامج "{selectedProgram?.title}"؟ لا يمكن
+              هل أنت متأكد من حذف النشاط "{selectedActivity?.title}"؟ لا يمكن
               التراجع عن هذا الإجراء.
             </DialogDescription>
           </DialogHeader>
@@ -407,7 +414,7 @@ const EducationalFamilyPrograms = () => {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDeleteProgram}
+              onClick={handleDeleteActivity}
               className="text-sm"
             >
               حذف
@@ -419,4 +426,4 @@ const EducationalFamilyPrograms = () => {
   );
 };
 
-export default EducationalFamilyPrograms;
+export default EducationalStudentActivities;

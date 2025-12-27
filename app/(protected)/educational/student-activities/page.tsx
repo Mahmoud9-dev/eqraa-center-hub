@@ -1,4 +1,4 @@
-import EducationalStudentActivities from '@/pages/EducationalStudentActivities';
+import EducationalStudentActivities from '@/views/EducationalStudentActivities';
 
 export default function StudentActivitiesPage() {
   return <EducationalStudentActivities />;

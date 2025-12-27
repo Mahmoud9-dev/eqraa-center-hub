@@ -1,4 +1,4 @@
-import Educational from '@/pages/Educational';
+import Educational from '@/views/Educational';
 
 export default function EducationalPage() {
   return <Educational />;

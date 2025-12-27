@@ -1,4 +1,4 @@
-import Announcements from '@/pages/Announcements';
+import Announcements from '@/views/Announcements';
 
 export default function AnnouncementsPage() {
   return <Announcements />;

@@ -1,4 +1,4 @@
-import Library from '@/pages/Library';
+import Library from '@/views/Library';
 
 export default function LibraryPage() {
   return <Library />;

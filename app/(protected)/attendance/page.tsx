@@ -1,4 +1,4 @@
-import Attendance from '@/pages/Attendance';
+import Attendance from '@/views/Attendance';
 
 export default function AttendancePage() {
   return <Attendance />;

@@ -14,7 +14,7 @@ import {
 
 // Base URL for Supabase
 const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || "https://mock-supabase-url.supabase.co";
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://mock-supabase-url.supabase.co";
 
 // Authentication handlers
 export const authHandlers = [

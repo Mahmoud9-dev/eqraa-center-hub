@@ -1,4 +1,4 @@
-import Teachers from '@/pages/Teachers';
+import Teachers from '@/views/Teachers';
 
 export default function TeachersPage() {
   return <Teachers />;

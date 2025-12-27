@@ -1,4 +1,4 @@
-import Students from '@/pages/Students';
+import Students from '@/views/Students';
 
 export default function StudentsPage() {
   return <Students />;

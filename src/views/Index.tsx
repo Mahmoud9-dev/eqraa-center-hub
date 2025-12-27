@@ -1,3 +1,5 @@
+'use client';
+
 import IconButton from "@/components/IconButton";
 import PageHeader from "@/components/PageHeader";
 

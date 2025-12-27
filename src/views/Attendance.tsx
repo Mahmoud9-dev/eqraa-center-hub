@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";

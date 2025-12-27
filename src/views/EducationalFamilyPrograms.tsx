@@ -1,3 +1,5 @@
+'use client';
+
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,50 +26,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const EducationalLifeSkills = () => {
+const EducationalFamilyPrograms = () => {
   const { toast } = useToast();
 
-  // State for lessons management
-  const [lessons, setLessons] = useState([
+  // State for programs management
+  const [programs, setPrograms] = useState([
     {
       id: "1",
-      title: "مهارات التواصل الفعال",
-      description: "تطوير مهارات التواصل مع الآخرين وفن الحوار البناء",
+      title: "برنامج الأسرة المسلمة",
+      description:
+        "برنامج متكامل لتعزيز قيم الأسرة المسلمة وتطوير العلاقات الأسرية",
       teacher: "الشيخ أحمد محمد",
-      date: "2025-11-13",
-      duration: "50 دقيقة",
+      date: "2025-11-11",
+      duration: "ساعتان",
       recording: "available",
-      verses: "الحجرات 11-13",
+      verses: "الروم 21",
     },
     {
       id: "2",
-      title: "القيادة وإدارة الفريق",
-      description: "تعليم مبادئ القيادة الإسلامية وكيفية إدارة الفرق بفعالية",
+      title: "ورشة تربية الأبناء",
+      description: "ورشة عمل عملية لآليات تربية الأبناء في ضوء الإسلام",
       teacher: "الشيخ خالد حسن",
-      date: "2025-11-06",
-      duration: "45 دقيقة",
+      date: "2025-11-04",
+      duration: "3 ساعات",
       recording: "available",
-      verses: "آل عمران 159-160",
+      verses: "الإسراء 23-25",
     },
     {
       id: "3",
-      title: "حل المشكلات واتخاذ القرارات",
-      description: "منهجية إسلامية في حل المشكلات واتخاذ القرارات الحكيمة",
+      title: "لقاءات أولياء الأمور",
+      description: "لقاءات دورية لمناقشة قضايا تربية الأبناء ومتابعتهم",
       teacher: "الشيخ محمد سعيد",
-      date: "2025-10-30",
-      duration: "40 دقيقة",
+      date: "2025-10-28",
+      duration: "ساعة ونصف",
       recording: "processing",
-      verses: "الشورى 38-43",
+      verses: "التحريم 6",
     },
   ]);
 
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedProgram, setSelectedProgram] = useState<any>(null);
 
-  // Form state for new lesson
-  const [newLesson, setNewLesson] = useState({
+  // Form state for new program
+  const [newProgram, setNewProgram] = useState({
     title: "",
     description: "",
     teacher: "",
@@ -77,13 +80,13 @@ const EducationalLifeSkills = () => {
   });
 
   // Functions for CRUD operations
-  const handleAddLesson = () => {
+  const handleAddProgram = () => {
     if (
-      !newLesson.title ||
-      !newLesson.description ||
-      !newLesson.teacher ||
-      !newLesson.duration ||
-      !newLesson.verses
+      !newProgram.title ||
+      !newProgram.description ||
+      !newProgram.teacher ||
+      !newProgram.duration ||
+      !newProgram.verses
     ) {
       toast({
         title: "خطأ",
@@ -93,19 +96,19 @@ const EducationalLifeSkills = () => {
       return;
     }
 
-    const lesson = {
+    const program = {
       id: Date.now().toString(),
-      title: newLesson.title,
-      description: newLesson.description,
-      teacher: newLesson.teacher,
+      title: newProgram.title,
+      description: newProgram.description,
+      teacher: newProgram.teacher,
       date: new Date().toISOString().split("T")[0],
-      duration: newLesson.duration,
-      verses: newLesson.verses,
-      recording: newLesson.recording,
+      duration: newProgram.duration,
+      verses: newProgram.verses,
+      recording: newProgram.recording,
     };
 
-    setLessons([...lessons, lesson]);
-    setNewLesson({
+    setPrograms([...programs, program]);
+    setNewProgram({
       title: "",
       description: "",
       teacher: "",
@@ -116,95 +119,97 @@ const EducationalLifeSkills = () => {
     setIsAddDialogOpen(false);
     toast({
       title: "تم الإضافة",
-      description: "تم إضافة الدرس بنجاح",
+      description: "تم إضافة البرنامج بنجاح",
     });
   };
 
-  const handleDeleteLesson = () => {
-    if (!selectedLesson) return;
+  const handleDeleteProgram = () => {
+    if (!selectedProgram) return;
 
-    setLessons(lessons.filter((lesson) => lesson.id !== selectedLesson.id));
+    setPrograms(
+      programs.filter((program) => program.id !== selectedProgram.id)
+    );
     setIsDeleteDialogOpen(false);
-    setSelectedLesson(null);
+    setSelectedProgram(null);
     toast({
       title: "تم الحذف",
-      description: "تم حذف الدرس بنجاح",
+      description: "تم حذف البرنامج بنجاح",
     });
   };
 
-  const openDeleteDialog = (lesson: any) => {
-    setSelectedLesson(lesson);
+  const openDeleteDialog = (program: any) => {
+    setSelectedProgram(program);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleViewRecording = (lesson: any) => {
-    if (lesson.recording === "available") {
+  const handleViewRecording = (program: any) => {
+    if (program.recording === "available") {
       toast({
         title: "فتح التسجيل",
-        description: "جاري فتح تسجيل الدرس...",
+        description: "جاري فتح تسجيل البرنامج...",
       });
       // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
       window.open("#", "_blank");
     } else {
       toast({
         title: "التسجيل غير متاح",
-        description: "هذا الدرس قيد المعالجة وسيكون متاحاً قريباً",
+        description: "هذا البرنامج قيد المعالجة وسيكون متاحاً قريباً",
         variant: "destructive",
       });
     }
   };
 
-  const handleDownloadMaterial = (lesson: any) => {
+  const handleDownloadMaterial = (program: any) => {
     toast({
       title: "تحميل المادة",
-      description: "جاري تحميل مادة الدرس...",
+      description: "جاري تحميل مادة البرنامج...",
     });
     // هنا يمكن إضافة رابط التحميل
     const link = document.createElement("a");
     link.href = "#";
-    link.download = `${lesson.title}.pdf`;
+    link.download = `${program.title}.pdf`;
     link.click();
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="المهارات الحياتية" showBack={true} />
+      <PageHeader title="برامج الأسرة" showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)] flex-1">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
-              المهارات الحياتية
+              برامج الأسرة
             </h2>
             <p className="text-sm sm:text-base md:text-lg opacity-90">
-              تطوير مهارات التواصل والقيادة والعمل الجماعي
+              إشراك الأسرة في العملية التربوية وتعزيز العلاقات الأسرية
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground w-full sm:w-auto">
-                إضافة درس جديد
+                إضافة برنامج جديد
               </Button>
             </DialogTrigger>
             <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-base">
-                  إضافة درس جديد في المهارات الحياتية
+                  إضافة برنامج أسرة جديد
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-xs">
-                  أدخل بيانات الدرس الجديد في النموذج أدناه
+                  أدخل بيانات البرنامج الجديد في النموذج أدناه
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="title" className="text-right sm:text-sm">
-                    عنوان الدرس
+                    عنوان البرنامج
                   </Label>
                   <Input
                     id="title"
-                    value={newLesson.title}
+                    value={newProgram.title}
                     onChange={(e) =>
-                      setNewLesson({ ...newLesson, title: e.target.value })
+                      setNewProgram({ ...newProgram, title: e.target.value })
                     }
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
@@ -218,10 +223,10 @@ const EducationalLifeSkills = () => {
                   </Label>
                   <Textarea
                     id="description"
-                    value={newLesson.description}
+                    value={newProgram.description}
                     onChange={(e) =>
-                      setNewLesson({
-                        ...newLesson,
+                      setNewProgram({
+                        ...newProgram,
                         description: e.target.value,
                       })
                     }
@@ -231,13 +236,13 @@ const EducationalLifeSkills = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="teacher" className="text-right sm:text-sm">
-                    المعلم
+                    المقدم
                   </Label>
                   <Input
                     id="teacher"
-                    value={newLesson.teacher}
+                    value={newProgram.teacher}
                     onChange={(e) =>
-                      setNewLesson({ ...newLesson, teacher: e.target.value })
+                      setNewProgram({ ...newProgram, teacher: e.target.value })
                     }
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
@@ -248,11 +253,11 @@ const EducationalLifeSkills = () => {
                   </Label>
                   <Input
                     id="duration"
-                    value={newLesson.duration}
+                    value={newProgram.duration}
                     onChange={(e) =>
-                      setNewLesson({ ...newLesson, duration: e.target.value })
+                      setNewProgram({ ...newProgram, duration: e.target.value })
                     }
-                    placeholder="مثال: 50 دقيقة"
+                    placeholder="مثال: ساعتان"
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
@@ -262,11 +267,11 @@ const EducationalLifeSkills = () => {
                   </Label>
                   <Input
                     id="verses"
-                    value={newLesson.verses}
+                    value={newProgram.verses}
                     onChange={(e) =>
-                      setNewLesson({ ...newLesson, verses: e.target.value })
+                      setNewProgram({ ...newProgram, verses: e.target.value })
                     }
-                    placeholder="مثال: الحجرات 11-13"
+                    placeholder="مثال: الروم 21"
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
@@ -275,9 +280,9 @@ const EducationalLifeSkills = () => {
                     التسجيل
                   </Label>
                   <Select
-                    value={newLesson.recording}
+                    value={newProgram.recording}
                     onValueChange={(value) =>
-                      setNewLesson({ ...newLesson, recording: value })
+                      setNewProgram({ ...newProgram, recording: value })
                     }
                   >
                     <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
@@ -298,8 +303,8 @@ const EducationalLifeSkills = () => {
                 >
                   إلغاء
                 </Button>
-                <Button onClick={handleAddLesson} className="text-sm">
-                  إضافة الدرس
+                <Button onClick={handleAddProgram} className="text-sm">
+                  إضافة البرنامج
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -307,19 +312,21 @@ const EducationalLifeSkills = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {lessons.map((lesson) => (
-            <Card key={lesson.id} className="border-r-4 border-r-primary">
+          {programs.map((program) => (
+            <Card key={program.id} className="border-r-4 border-r-primary">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                   <CardTitle className="text-lg sm:text-xl">
-                    {lesson.title}
+                    {program.title}
                   </CardTitle>
                   <Badge
                     variant={
-                      lesson.recording === "available" ? "default" : "secondary"
+                      program.recording === "available"
+                        ? "default"
+                        : "secondary"
                     }
                   >
-                    {lesson.recording === "available"
+                    {program.recording === "available"
                       ? "متاح التسجيل"
                       : "قيد المعالجة"}
                   </Badge>
@@ -327,48 +334,48 @@ const EducationalLifeSkills = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-                  {lesson.description}
+                  {program.description}
                 </p>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المعلم:</span>
-                    <span>{lesson.teacher}</span>
+                    <span className="font-medium">المقدم:</span>
+                    <span>{program.teacher}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">التاريخ:</span>
-                    <span>{lesson.date}</span>
+                    <span>{program.date}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">المدة:</span>
-                    <span>{lesson.duration}</span>
+                    <span>{program.duration}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">الآيات:</span>
-                    <span className="text-primary">{lesson.verses}</span>
+                    <span className="text-primary">{program.verses}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <Button
                     className="flex-1 text-sm"
-                    onClick={() => handleViewRecording(lesson)}
+                    onClick={() => handleViewRecording(program)}
                   >
-                    {lesson.recording === "available"
+                    {program.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
-                    onClick={() => handleDownloadMaterial(lesson)}
+                    onClick={() => handleDownloadMaterial(program)}
                   >
                     تحميل المادة
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => openDeleteDialog(lesson)}
+                    onClick={() => openDeleteDialog(program)}
                     className="text-sm"
                   >
                     حذف
@@ -388,7 +395,7 @@ const EducationalLifeSkills = () => {
               تأكيد الحذف
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              هل أنت متأكد من حذف الدرس "{selectedLesson?.title}"؟ لا يمكن
+              هل أنت متأكد من حذف البرنامج "{selectedProgram?.title}"؟ لا يمكن
               التراجع عن هذا الإجراء.
             </DialogDescription>
           </DialogHeader>
@@ -402,7 +409,7 @@ const EducationalLifeSkills = () => {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDeleteLesson}
+              onClick={handleDeleteProgram}
               className="text-sm"
             >
               حذف
@@ -414,4 +421,4 @@ const EducationalLifeSkills = () => {
   );
 };
 
-export default EducationalLifeSkills;
+export default EducationalFamilyPrograms;

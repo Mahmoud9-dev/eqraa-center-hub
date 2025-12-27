@@ -1,4 +1,4 @@
-import Schedule from '@/pages/Schedule';
+import Schedule from '@/views/Schedule';
 
 export default function SchedulePage() {
   return <Schedule />;

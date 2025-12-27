@@ -1,4 +1,4 @@
-import EducationalGuidanceCounseling from '@/pages/EducationalGuidanceCounseling';
+import EducationalGuidanceCounseling from '@/views/EducationalGuidanceCounseling';
 
 export default function GuidanceCounselingPage() {
   return <EducationalGuidanceCounseling />;

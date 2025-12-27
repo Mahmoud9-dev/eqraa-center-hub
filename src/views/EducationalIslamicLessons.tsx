@@ -1,3 +1,5 @@
+'use client';
+
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,42 +26,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const EducationalEthicsBehavior = () => {
+const EducationalIslamicLessons = () => {
   const { toast } = useToast();
 
   // State for lessons management
   const [lessons, setLessons] = useState([
     {
       id: "1",
-      title: "آداب الطعام والشراب في الإسلام",
-      description:
-        "تعليم الآداب النبوية في الأكل والشرب وأهميتها في حياة المسلم",
+      title: "أصول العقيدة الإسلامية",
+      description: "درس شامل عن أصول العقيدة وأركان الإيمان",
       teacher: "الشيخ أحمد محمد",
-      date: "2025-11-14",
-      duration: "40 دقيقة",
+      date: "2025-11-15",
+      duration: "45 دقيقة",
       recording: "available",
-      verses: "الأعراف 31-36",
+      verses: "البقرة 255-285",
     },
     {
       id: "2",
-      title: "بر الوالدين وحقوقهما",
-      description: "توضيح أهمية بر الوالدين والحقوق الواجبة تجاههما في الإسلام",
+      title: "فقه العبادات",
+      description: "أحكام الطهارة والصلاة والزكاة",
       teacher: "الشيخ خالد حسن",
-      date: "2025-11-07",
-      duration: "45 دقيقة",
+      date: "2025-11-08",
+      duration: "60 دقيقة",
       recording: "available",
-      verses: "الإسراء 23-24",
+      verses: "المائدة 6-11",
     },
     {
       id: "3",
-      title: "الصدق والأمانة",
-      description:
-        "أهمية الصدق والأمانة كقيم إسلامية أساسية وتطبيقها في الحياة",
+      title: "سيرة النبي صلى الله عليه وسلم",
+      description: "مراحل حياة النبي والدروس المستفادة",
       teacher: "الشيخ محمد سعيد",
-      date: "2025-10-31",
-      duration: "35 دقيقة",
+      date: "2025-11-01",
+      duration: "50 دقيقة",
       recording: "processing",
-      verses: "المائدة 8-13",
+      verses: "آل عمران 144-148",
     },
   ]);
 
@@ -139,16 +139,45 @@ const EducationalEthicsBehavior = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRecording = (lesson: any) => {
+    if (lesson.recording === "available") {
+      toast({
+        title: "فتح التسجيل",
+        description: "جاري فتح تسجيل الدرس...",
+      });
+      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
+      window.open("#", "_blank");
+    } else {
+      toast({
+        title: "التسجيل غير متاح",
+        description: "هذا الدرس قيد المعالجة وسيكون متاحاً قريباً",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadMaterial = (lesson: any) => {
+    toast({
+      title: "تحميل المادة",
+      description: "جاري تحميل مادة الدرس...",
+    });
+    // هنا يمكن إضافة رابط التحميل
+    const link = document.createElement("a");
+    link.href = "#";
+    link.download = `${lesson.title}.pdf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الأخلاق والسلوك" showBack={true} />
+      <PageHeader title="الدروس الشرعية" showBack={true} />
 
       <main className="container mx-auto px-4 py-12">
         <div className="mb-8 flex justify-between items-center">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-8 rounded-2xl shadow-[var(--shadow-soft)] flex-1">
-            <h2 className="text-3xl font-bold mb-3">الأخلاق والسلوك</h2>
+            <h2 className="text-3xl font-bold mb-3">الدروس الشرعية</h2>
             <p className="text-lg opacity-90">
-              تعزيز القيم الأخلاقية والسلوك الإسلامي في حياة الطلاب
+              دروس متخصصة في العقيدة والفقه والسيرة النبوية
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -159,7 +188,7 @@ const EducationalEthicsBehavior = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>إضافة درس جديد في الأخلاق والسلوك</DialogTitle>
+                <DialogTitle>إضافة درس شرعي جديد</DialogTitle>
                 <DialogDescription>
                   أدخل بيانات الدرس الجديد في النموذج أدناه
                 </DialogDescription>
@@ -218,7 +247,7 @@ const EducationalEthicsBehavior = () => {
                     onChange={(e) =>
                       setNewLesson({ ...newLesson, duration: e.target.value })
                     }
-                    placeholder="مثال: 40 دقيقة"
+                    placeholder="مثال: 45 دقيقة"
                     className="col-span-3"
                   />
                 </div>
@@ -232,7 +261,7 @@ const EducationalEthicsBehavior = () => {
                     onChange={(e) =>
                       setNewLesson({ ...newLesson, verses: e.target.value })
                     }
-                    placeholder="مثال: الأعراف 31-36"
+                    placeholder="مثال: البقرة 255-285"
                     className="col-span-3"
                   />
                 </div>
@@ -311,12 +340,20 @@ const EducationalEthicsBehavior = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1">
+                  <Button
+                    className="flex-1"
+                    onClick={() => handleViewRecording(lesson)}
+                  >
                     {lesson.recording === "available"
                       ? "مشاهدة التسجيل"
                       : "قريباً"}
                   </Button>
-                  <Button variant="outline">تحميل المادة</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDownloadMaterial(lesson)}
+                  >
+                    تحميل المادة
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
@@ -358,4 +395,4 @@ const EducationalEthicsBehavior = () => {
   );
 };
 
-export default EducationalEthicsBehavior;
+export default EducationalIslamicLessons;
