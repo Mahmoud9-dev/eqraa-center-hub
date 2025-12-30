@@ -74,7 +74,7 @@ jobs:
         run: npm run test:component
 
       - name: Upload component test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: component-test-results
@@ -111,7 +111,7 @@ jobs:
         run: npm run test:e2e:${{ matrix.browser }}
 
       - name: Upload E2E test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-test-results-${{ matrix.browser }}
@@ -141,7 +141,7 @@ jobs:
         run: npm run test:performance
 
       - name: Upload performance report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: performance-report
@@ -202,7 +202,7 @@ jobs:
         run: npm run test:a11y
 
       - name: Upload accessibility report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: accessibility-report
