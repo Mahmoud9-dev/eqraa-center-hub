@@ -2,310 +2,56 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  issue_comment:
-    types: [created]
-
-permissions:
-  contents: read
-  pull-requests: write
-  issues: write
+    types: [opened, synchronize]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    name: Automated Code Review
-    runs-on: ubuntu-latest
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
-    # Only run on PR comments that mention @claude or on PR open/update
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Get PR information
-        id: pr-info
-        uses: actions/github-script@v7
-        with:
-          script: |
-            let pr_number;
-            if (context.eventName === 'pull_request') {
-              pr_number = context.payload.pull_request.number;
-            } else if (context.eventName === 'issue_comment') {
-              pr_number = context.payload.issue.number;
-            }
-
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr_number
-            });
-
-            core.setOutput('pr_number', pr_number);
-            core.setOutput('base_branch', pr.data.base.ref);
-            core.setOutput('head_branch', pr.data.head.ref);
-            core.setOutput('pr_title', pr.data.title);
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run type checking
-        id: type-check
-        continue-on-error: true
-        run: npm run type-check 2>&1 | tee type-check.log
-
-      - name: Run linting
-        id: lint
-        continue-on-error: true
-        run: npm run lint 2>&1 | tee lint.log
-
-      - name: Run tests
-        id: tests
-        continue-on-error: true
-        run: npm run test:ci 2>&1 | tee test.log
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          git fetch origin ${{ steps.pr-info.outputs.base_branch }}
-          CHANGED_FILES=$(git diff --name-only origin/${{ steps.pr-info.outputs.base_branch }}...HEAD)
-          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Categorize changed files
-        id: categorize-files
-        run: |
-          CHANGED_FILES="${{ steps.changed-files.outputs.changed_files }}"
-
-          # Initialize categories
-          TYPE_SAFETY_FILES=""
-          SUPABASE_FILES=""
-          VALIDATION_FILES=""
-          AUTH_FILES=""
-
-          # Categorize each file
-          for file in $CHANGED_FILES; do
-            # Check for pure TypeScript files (lib, types, hooks)
-            if [[ "$file" =~ ^src/(lib|types|hooks)/.*\.ts$ && ! "$file" =~ \.(test|spec)\.ts$ ]]; then
-              TYPE_SAFETY_FILES="$TYPE_SAFETY_FILES- $file\n"
-            fi
-
-            # Check for validation files
-            if [[ "$file" == "src/lib/validations.ts" ]]; then
-              VALIDATION_FILES="$VALIDATION_FILES- $file\n"
-            fi
-
-            # Check for authentication files
-            if [[ "$file" =~ (Login|Signup|ProtectedRoute|useUserRole) ]]; then
-              AUTH_FILES="$AUTH_FILES- $file\n"
-            fi
-
-            # Check for files that might contain Supabase calls
-            if [[ "$file" =~ ^src/(pages|components)/.*\.(tsx|ts)$ || "$file" =~ supabase ]]; then
-              # We'll check content for supabase usage in the prompt
-              SUPABASE_FILES="$SUPABASE_FILES- $file\n"
-            fi
-          done
-
-          # Output categorized files
-          echo "type_safety_files<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$TYPE_SAFETY_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-          echo "supabase_files<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$SUPABASE_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-          echo "validation_files<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$VALIDATION_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-          echo "auth_files<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$AUTH_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Claude Code Review
+      - name: Run Claude Code Review
+        id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          use_sticky_comment: true
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You are an expert code reviewer for a React + TypeScript + Vite project using Supabase.
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
 
-            ## PR Information
-            Title: ${{ steps.pr-info.outputs.pr_title }}
-            Base Branch: ${{ steps.pr-info.outputs.base_branch }}
-            Head Branch: ${{ steps.pr-info.outputs.head_branch }}
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
 
-            ## Changed Files
-            ${{ steps.changed-files.outputs.changed_files }}
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
-            ## Categorized Files for Specialized Review
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
-            ### Type Safety Focus Files (lib, types, hooks - *.ts):
-            ${{ steps.categorize-files.outputs.type_safety_files }}
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://code.claude.com/docs/en/cli-reference for available options
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
 
-            ### Supabase/Database Interaction Files (pages, components with supabase calls):
-            ${{ steps.categorize-files.outputs.supabase_files }}
-
-            ### Validation Schema Files:
-            ${{ steps.categorize-files.outputs.validation_files }}
-
-            ### Authentication/Authorization Files:
-            ${{ steps.categorize-files.outputs.auth_files }}
-
-            ## Test Results
-            Type Check: ${{ steps.type-check.outcome }}
-            Lint: ${{ steps.lint.outcome }}
-            Tests: ${{ steps.tests.outcome }}
-
-            ## Your Task
-            Please review this pull request with **FILE-TYPE SPECIFIC FOCUS**:
-
-            ### 🎯 PRIORITY REVIEW RULES BY FILE TYPE:
-
-            #### FOR TYPE SAFETY FOCUS FILES (*.ts in lib, types, hooks):
-            **PRIMARY FOCUS:**
-            - ✅ **Type Safety**: No `any` types unless absolutely necessary and documented
-            - ✅ **Interface Usage**: Proper interface/type definitions, avoiding inline types
-            - ✅ **Generic Types**: Correct usage of generic type parameters
-            - ✅ **Utility Types**: Leverage TypeScript utility types (Partial, Pick, Omit, etc.)
-            - ✅ **Null Safety**: Explicit handling of null/undefined with proper type guards
-            - ✅ **Type Exports**: Proper export of reusable types/interfaces
-            - ✅ **Type Inference**: Let TypeScript infer types where appropriate
-
-            #### FOR SUPABASE/DATABASE INTERACTION FILES (pages/*.tsx, components with supabase.*):
-            **PRIMARY FOCUS:**
-            - 🔒 **Security Validation**: All user inputs validated BEFORE database operations
-            - 🔒 **Error Handling**: Comprehensive try-catch with specific error messages
-            - 🔒 **SQL Injection Prevention**: Use parameterized queries (Supabase's built-in protection)
-            - 🔒 **Authentication Checks**: Verify user is authenticated before data access
-            - 🔒 **Authorization**: Check user roles/permissions for sensitive operations
-            - 🔒 **Data Sanitization**: Clean user inputs before insertion
-            - 🔒 **Response Validation**: Verify database responses before using data
-            - 🔒 **Query Optimization**: Efficient queries with proper select/filters
-
-            #### FOR VALIDATION SCHEMA FILES (lib/validations.ts):
-            **PRIMARY FOCUS:**
-            - ✅ **Comprehensive Schemas**: All fields have proper Zod validation
-            - ✅ **Security Validation**: Check for XSS, SQL injection patterns
-            - ✅ **Input Sanitization**: Trim, lowercase, normalize inputs
-            - ✅ **Error Messages**: Clear, user-friendly validation error messages
-            - ✅ **Edge Cases**: Handle empty strings, whitespace, special characters
-            - ✅ **Type Safety**: Ensure Zod schemas match TypeScript types
-
-            #### FOR AUTHENTICATION/AUTHORIZATION FILES:
-            **PRIMARY FOCUS:**
-            - 🔐 **Secure Auth Flow**: Proper login/signup implementation
-            - 🔐 **Session Management**: Correct handling of user sessions
-            - 🔐 **Role-Based Access**: Proper role checking and enforcement
-            - 🔐 **Protected Routes**: Verify route protection is effective
-            - 🔐 **Token Handling**: Safe storage and transmission of auth tokens
-            - 🔐 **Error Handling**: No information leakage in auth errors
-
-            ---
-
-            ### 🌐 GENERAL REVIEW AREAS (All Files):
-
-            1. **Code Quality**
-               - TypeScript best practices
-               - React hooks usage and component patterns
-               - Proper error handling
-               - Code organization and maintainability
-
-            2. **Security**
-               - XSS vulnerabilities
-               - SQL injection risks (Supabase queries)
-               - Authentication/authorization issues
-               - Sensitive data exposure
-               - OWASP Top 10 vulnerabilities
-
-            3. **Performance**
-               - Unnecessary re-renders
-               - Inefficient algorithms or queries
-               - Bundle size impact
-               - Memory leaks
-
-            4. **Testing**
-               - Test coverage for new features
-               - Edge cases handled
-               - Integration test considerations
-
-            5. **Accessibility**
-               - ARIA attributes
-               - Keyboard navigation
-               - Screen reader compatibility
-
-            6. **Best Practices**
-               - Following project conventions
-               - Proper use of Radix UI components
-               - TanStack Query usage
-               - Form validation with react-hook-form + Zod
-
-            ## Review Format
-            Provide your review in the following format:
-
-            ### Summary
-            [Brief overview of changes and overall assessment]
-
-            ### 🎯 File-Type Specific Findings
-
-            #### Type Safety Review (*.ts files):
-            [Findings related to type safety, interfaces, and TypeScript best practices]
-
-            #### Security & Database Review (Supabase files):
-            [Findings related to security validation, error handling, and database interactions]
-
-            #### Validation Schema Review:
-            [Findings related to input validation and Zod schemas]
-
-            #### Authentication Review:
-            [Findings related to auth/authorization security]
-
-            ---
-
-            ### Critical Issues 🔴
-            [Any issues that must be fixed before merge - categorize by file type when relevant]
-
-            ### Warnings ⚠️
-            [Issues that should be addressed but not blocking]
-
-            ### Suggestions 💡
-            [Nice-to-have improvements]
-
-            ### Positive Highlights ✅
-            [What was done well - highlight good practices in each file category]
-
-            ### Test Results Analysis
-            [Analysis of the CI test results and any failures]
-
-            **IMPORTANT:**
-            - Reference specific file paths and line numbers
-            - Apply the appropriate file-type rules based on the categorized files above
-            - Prioritize security issues in database/auth files
-            - Prioritize type safety in pure TypeScript files
-
-      - name: Upload logs as artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: review-logs-${{ steps.pr-info.outputs.pr_number }}
-          path: |
-            type-check.log
-            lint.log
-            test.log
-          retention-days: 7
