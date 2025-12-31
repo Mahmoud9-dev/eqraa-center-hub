@@ -360,10 +360,7 @@ export interface UserSettings {
   id: string;
   userId: string;
   theme: "فاتح" | "داكن";
-  notifications: boolean;
   language: "ar" | "en";
-  emailNotifications: boolean;
-  smsNotifications: boolean;
   updatedAt: Date;
 }
 

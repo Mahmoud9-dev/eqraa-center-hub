@@ -39,7 +39,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
@@ -109,10 +108,7 @@ const Settings = () => {
     id: "1",
     userId: "current_user",
     theme: "فاتح",
-    notifications: true,
     language: "ar",
-    emailNotifications: true,
-    smsNotifications: false,
     updatedAt: new Date(),
   });
 
@@ -615,68 +611,7 @@ const Settings = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="notifications">الإشعارات</Label>
-                      <p className="text-sm text-muted-foreground">
-                        تلقي إشعارات التطبيق
-                      </p>
-                    </div>
-                    <Switch
-                      id="notifications"
-                      checked={userSettings.notifications}
-                      onCheckedChange={(checked) =>
-                        setUserSettings({
-                          ...userSettings,
-                          notifications: checked,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="emailNotifications">
-                        الإشعارات البريدية
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        تلقي الإشعارات عبر البريد الإلكتروني
-                      </p>
-                    </div>
-                    <Switch
-                      id="emailNotifications"
-                      checked={userSettings.emailNotifications}
-                      onCheckedChange={(checked) =>
-                        setUserSettings({
-                          ...userSettings,
-                          emailNotifications: checked,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="smsNotifications">
-                        الإشعارات الرسائل النصية
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        تلقي الإشعارات عبر الرسائل النصية
-                      </p>
-                    </div>
-                    <Switch
-                      id="smsNotifications"
-                      checked={userSettings.smsNotifications}
-                      onCheckedChange={(checked) =>
-                        setUserSettings({
-                          ...userSettings,
-                          smsNotifications: checked,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
+                <div className="flex justify-end mt-6">
                   <Button onClick={handleUpdateSettings}>حفظ الإعدادات</Button>
                 </div>
               </CardContent>
