@@ -37,29 +37,30 @@ describe("useHomeStats Hook", () => {
   });
 
   it("should fetch and return home stats successfully", async () => {
-    // Mock successful responses for all queries
-    const mockSelect = vi.fn();
-    const mockEq = vi.fn();
-    const mockNot = vi.fn();
-    const mockGte = vi.fn();
-
-    // Students count mock
-    mockSelect.mockImplementation(() => ({
-      eq: vi.fn().mockResolvedValue({ count: 150, error: null }),
-    }));
+    let callCount = 0;
 
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              not: vi.fn().mockResolvedValue({
-                data: [{ attendance: 90 }, { attendance: 95 }, { attendance: 85 }],
-                error: null,
+        callCount++;
+        // First call is for student count, second is for attendance data
+        if (callCount === 1) {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count: 150, error: null }),
+            }),
+          };
+        } else {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                not: vi.fn().mockResolvedValue({
+                  data: [{ attendance: 90 }, { attendance: 95 }, { attendance: 85 }],
+                  error: null,
+                }),
               }),
             }),
-          }),
-        };
+          };
+        }
       }
       if (table === "teachers") {
         return {
@@ -96,19 +97,36 @@ describe("useHomeStats Hook", () => {
 
     // Check that data is returned
     expect(result.current.data).toBeDefined();
+    expect(result.current.data?.totalStudents).toBe(150);
+    expect(result.current.data?.activeCircles).toBe(25);
+    expect(result.current.data?.upcomingExams).toBe(5);
+    // Attendance should be average of 90, 95, 85 = 90
+    expect(result.current.data?.attendancePercentage).toBe(90);
   });
 
   it("should return default values when no data is available", async () => {
+    let studentsCallCount = 0;
+
     // Mock all tables to return empty/null data
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              not: vi.fn().mockResolvedValue({ data: [], error: null }),
+        studentsCallCount++;
+        // First call is for count, second is for attendance
+        if (studentsCallCount === 1) {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
             }),
-          }),
-        };
+          };
+        } else {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                not: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          };
+        }
       }
       if (table === "teachers") {
         return {
@@ -150,13 +168,14 @@ describe("useHomeStats Hook", () => {
   it("should handle errors gracefully", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    // Mock all tables to return errors but still provide fallback data
+    // Mock students query to return an error (first in Promise.all)
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              not: vi.fn().mockResolvedValue({ data: [], error: { message: "Database error" } }),
+            eq: vi.fn().mockResolvedValue({
+              count: null,
+              error: { message: "Database error" }
             }),
           }),
         };
@@ -164,7 +183,7 @@ describe("useHomeStats Hook", () => {
       if (table === "teachers") {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ count: null, error: { message: "Database error" } }),
+            eq: vi.fn().mockResolvedValue({ count: 25, error: null }),
           }),
         };
       }
@@ -172,13 +191,13 @@ describe("useHomeStats Hook", () => {
         return {
           select: vi.fn().mockReturnValue({
             gte: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ count: null, error: { message: "Database error" } }),
+              eq: vi.fn().mockResolvedValue({ count: 5, error: null }),
             }),
           }),
         };
       }
       return {
-        select: vi.fn().mockResolvedValue({ count: null, error: { message: "Database error" } }),
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
       };
     });
 
@@ -190,25 +209,37 @@ describe("useHomeStats Hook", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // Should still return data (with defaults of 0) even on error
-    expect(result.current.data).toBeDefined();
-    expect(result.current.data?.totalStudents).toBe(0);
+    // Should have error state when database query fails
+    expect(result.current.isError).toBe(true);
+    expect(result.current.error).toBeDefined();
     expect(consoleError).toHaveBeenCalled();
 
     consoleError.mockRestore();
   });
 
   it("should have correct staleTime configuration", async () => {
+    let studentsCallCount = 0;
+
     // Mock all tables with proper chain for staleTime test
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              not: vi.fn().mockResolvedValue({ data: [], error: null }),
+        studentsCallCount++;
+        // First call is for count, second is for attendance
+        if (studentsCallCount === 1) {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count: 10, error: null }),
             }),
-          }),
-        };
+          };
+        } else {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                not: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          };
+        }
       }
       if (table === "teachers") {
         return {
@@ -246,11 +277,48 @@ describe("useHomeStats Hook", () => {
   });
 
   it("should not refetch on window focus", async () => {
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ count: 10, error: null }),
-      }),
-    }));
+    let studentsCallCount = 0;
+
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+      if (table === "students") {
+        studentsCallCount++;
+        // First call is for count, second is for attendance
+        if (studentsCallCount === 1 || studentsCallCount === 3) {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count: 10, error: null }),
+            }),
+          };
+        } else {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                not: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          };
+        }
+      }
+      if (table === "teachers") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ count: 5, error: null }),
+          }),
+        };
+      }
+      if (table === "meetings") {
+        return {
+          select: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count: 2, error: null }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
 
     const { result } = renderHook(() => useHomeStats(), {
       wrapper: createWrapper(),

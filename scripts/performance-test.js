@@ -1,6 +1,7 @@
 import { performance } from "perf_hooks";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { BookOpen } from "lucide-react";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -295,7 +296,7 @@ async function runPerformanceTests() {
   console.log("📦 Testing Component Render Performance...");
   const componentResults = await suite.measureComponentRender(
     "../src/components/IconButton.tsx",
-    { icon: "📚", label: "Test", to: "/test" }
+    { icon: BookOpen, label: "Test", to: "/test" }
   );
   console.log(
     `   Average render time: ${componentResults?.average.toFixed(2)}ms`

@@ -11,37 +11,57 @@ interface HomeStats {
 }
 
 async function fetchHomeStats(): Promise<HomeStats> {
-  // Fetch total students count
-  const { count: studentsCount, error: studentsError } = await supabase
-    .from('students')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_active', true);
+  const today = new Date().toISOString().split('T')[0];
 
+  // Execute all queries in parallel for better performance
+  const [studentsResult, teachersResult, attendanceResult, meetingsResult] = await Promise.all([
+    supabase
+      .from('students')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true),
+    supabase
+      .from('teachers')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true),
+    supabase
+      .from('students')
+      .select('attendance')
+      .eq('is_active', true)
+      .not('attendance', 'is', null),
+    supabase
+      .from('meetings')
+      .select('id', { count: 'exact', head: true })
+      .gte('meeting_date', today)
+      .eq('status', 'scheduled'),
+  ]);
+
+  const { count: studentsCount, error: studentsError } = studentsResult;
+  const { count: teachersCount, error: teachersError } = teachersResult;
+  const { data: attendanceData, error: attendanceError } = attendanceResult;
+  const { count: meetingsCount, error: meetingsError } = meetingsResult;
+
+  // Handle errors by throwing to trigger React Query error state
   if (studentsError) {
     console.error('Error fetching students count:', studentsError);
+    throw new Error('Failed to fetch student statistics');
   }
-
-  // Fetch total teachers (as a proxy for active circles for now)
-  const { count: teachersCount, error: teachersError } = await supabase
-    .from('teachers')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_active', true);
 
   if (teachersError) {
     console.error('Error fetching teachers count:', teachersError);
+    throw new Error('Failed to fetch teacher statistics');
   }
-
-  // Calculate attendance percentage from students with attendance data
-  const { data: attendanceData, error: attendanceError } = await supabase
-    .from('students')
-    .select('attendance')
-    .eq('is_active', true)
-    .not('attendance', 'is', null);
 
   if (attendanceError) {
     console.error('Error fetching attendance data:', attendanceError);
+    throw new Error('Failed to fetch attendance data');
   }
 
+  if (meetingsError) {
+    console.error('Error fetching meetings count:', meetingsError);
+    throw new Error('Failed to fetch meeting statistics');
+  }
+
+  // Calculate attendance percentage from students with attendance data
   let attendancePercentage = 0;
   if (attendanceData && attendanceData.length > 0) {
     const totalAttendance = attendanceData.reduce(
@@ -49,18 +69,6 @@ async function fetchHomeStats(): Promise<HomeStats> {
       0
     );
     attendancePercentage = Math.round(totalAttendance / attendanceData.length);
-  }
-
-  // Fetch upcoming meetings as a proxy for upcoming exams
-  const today = new Date().toISOString().split('T')[0];
-  const { count: meetingsCount, error: meetingsError } = await supabase
-    .from('meetings')
-    .select('*', { count: 'exact', head: true })
-    .gte('meeting_date', today)
-    .eq('status', 'scheduled');
-
-  if (meetingsError) {
-    console.error('Error fetching meetings count:', meetingsError);
   }
 
   return {
