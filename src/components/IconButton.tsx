@@ -1,53 +1,74 @@
 'use client';
 
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import Link from 'next/link';
+import { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface IconButtonProps {
   to?: string;
   href?: string;
-  icon: string;
+  icon: LucideIcon;
+  iconBgColor?: string;
+  iconColor?: string;
   label: string;
   onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
   className?: string;
-  "aria-label"?: string;
+  'aria-label'?: string;
 }
 
 const IconButton = ({
   to,
   href,
-  icon,
+  icon: Icon,
+  iconBgColor = 'bg-primary/10 dark:bg-primary/20',
+  iconColor = 'text-primary',
   label,
   onClick,
   disabled = false,
   loading = false,
   className,
-  "aria-label": ariaLabel,
+  'aria-label': ariaLabel,
 }: IconButtonProps) => {
   const baseClasses =
-    "group relative flex flex-col items-center justify-center p-3 xs:p-4 sm:p-6 md:p-8 bg-card rounded-lg xs:rounded-xl sm:rounded-2xl border-2 border-border hover:border-primary transition-all duration-300 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-hover)] hover:scale-105 min-h-[100px] xs:min-h-[120px] sm:min-h-[140px] md:min-h-[160px] w-full touch-target";
-  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
-  const loadingClasses = loading ? "opacity-75 cursor-wait" : "";
+    'group relative flex flex-col items-center justify-center p-4 sm:p-6 bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-hover)] hover:-translate-y-1 min-h-[120px] sm:min-h-[140px] w-full';
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
+  const loadingClasses = loading ? 'opacity-75 cursor-wait' : '';
 
   const content = (
     <div
       className={cn(baseClasses, disabledClasses, loadingClasses, className)}
     >
-      <div className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-2 xs:mb-2 sm:mb-3 md:mb-4 transition-transform duration-300 group-hover:scale-110">
-        {loading ? "⏳" : icon}
+      {/* Circular Icon Container */}
+      <div
+        className={cn(
+          'mb-3 sm:mb-4 h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center rounded-full transition-all duration-300 group-hover:scale-105',
+          iconBgColor
+        )}
+      >
+        {loading ? (
+          <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        ) : (
+          <Icon
+            className={cn(
+              'w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-300',
+              iconColor
+            )}
+          />
+        )}
       </div>
-      <h2 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-foreground text-center">
+
+      {/* Label */}
+      <h3 className="text-sm sm:text-base lg:text-lg font-bold text-foreground text-center group-hover:text-primary transition-colors duration-300">
         {label}
-      </h2>
-      <div className="absolute inset-0 rounded-lg xs:rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </h3>
     </div>
   );
 
   // If it's a link (either to or href is provided)
   if (to || href) {
-    const linkHref = to || href || "/";
+    const linkHref = to || href || '/';
 
     if (disabled) {
       return (
@@ -77,8 +98,8 @@ const IconButton = ({
       aria-busy={loading}
       aria-disabled={disabled}
       className={cn(
-        "border-none bg-transparent cursor-pointer",
-        disabled && "cursor-not-allowed"
+        'border-none bg-transparent cursor-pointer',
+        disabled && 'cursor-not-allowed'
       )}
     >
       {content}

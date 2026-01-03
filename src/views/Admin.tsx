@@ -133,28 +133,28 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <PageHeader title="الإدارة" />
       <main className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-8">
           <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-2">👥</div>
-              <h3 className="text-lg font-semibold mb-1">إجمالي الطلاب</h3>
-              <p className="text-4xl font-bold">{totalStudents}</p>
+            <CardContent className="p-3 md:p-6">
+              <div className="text-2xl md:text-4xl mb-1 md:mb-2">👥</div>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">إجمالي الطلاب</h3>
+              <p className="text-2xl md:text-4xl font-bold">{totalStudents}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-secondary to-secondary/80 text-secondary-foreground">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-2">👨‍🏫</div>
-              <h3 className="text-lg font-semibold mb-1">عدد المعلمين</h3>
-              <p className="text-4xl font-bold">{totalTeachers}</p>
+            <CardContent className="p-3 md:p-6">
+              <div className="text-2xl md:text-4xl mb-1 md:mb-2">👨‍🏫</div>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">عدد المعلمين</h3>
+              <p className="text-2xl md:text-4xl font-bold">{totalTeachers}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-accent to-accent/80">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-2">📖</div>
-              <h3 className="text-lg font-semibold mb-1">طلاب التحفيظ</h3>
-              <p className="text-4xl font-bold">{quranStudents}</p>
+            <CardContent className="p-3 md:p-6">
+              <div className="text-2xl md:text-4xl mb-1 md:mb-2">📖</div>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">طلاب التحفيظ</h3>
+              <p className="text-2xl md:text-4xl font-bold">{quranStudents}</p>
             </CardContent>
           </Card>
         </div>
