@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import IconButton from "@/components/IconButton";
+import { BookOpen, HandHeart, Target, Star, Users, Lightbulb } from "lucide-react";
 
 interface Teacher {
   id: string;
@@ -382,42 +383,54 @@ const Educational = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <IconButton
             to="/educational/islamic-lessons"
-            icon="📚"
+            icon={BookOpen}
+            iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
+            iconColor="text-emerald-500"
             label="الدروس الشرعية"
             aria-label="فتح صفحة الدروس الشرعية"
           />
 
           <IconButton
             to="/educational/ethics-behavior"
-            icon="🤲"
+            icon={HandHeart}
+            iconBgColor="bg-pink-50 dark:bg-pink-900/20"
+            iconColor="text-pink-500"
             label="الأخلاق والسلوك"
             aria-label="فتح صفحة الأخلاق والسلوك"
           />
 
           <IconButton
             to="/educational/life-skills"
-            icon="🎯"
+            icon={Target}
+            iconBgColor="bg-blue-50 dark:bg-blue-900/20"
+            iconColor="text-blue-500"
             label="المهارات الحياتية"
             aria-label="فتح صفحة المهارات الحياتية"
           />
 
           <IconButton
             to="/educational/student-activities"
-            icon="🌟"
+            icon={Star}
+            iconBgColor="bg-yellow-50 dark:bg-yellow-900/20"
+            iconColor="text-yellow-500"
             label="الأنشطة الطلابية"
             aria-label="فتح صفحة الأنشطة الطلابية"
           />
 
           <IconButton
             to="/educational/family-programs"
-            icon="👨‍👩‍👧‍👦"
+            icon={Users}
+            iconBgColor="bg-purple-50 dark:bg-purple-900/20"
+            iconColor="text-purple-500"
             label="برامج الأسرة"
             aria-label="فتح صفحة برامج الأسرة"
           />
 
           <IconButton
             to="/educational/guidance-counseling"
-            icon="💡"
+            icon={Lightbulb}
+            iconBgColor="bg-amber-50 dark:bg-amber-900/20"
+            iconColor="text-amber-500"
             label="الإرشاد والتوجيه"
             aria-label="فتح صفحة الإرشاد والتوجيه"
           />

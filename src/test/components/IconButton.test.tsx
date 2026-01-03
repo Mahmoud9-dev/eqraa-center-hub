@@ -1,23 +1,23 @@
 import { describe, it, expect, vi } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import IconButton from "@/components/IconButton";
 import { render } from "@/test/utils/test-utils";
+import { BookOpen, Home, Settings, User, Bell, Search, Target, Sparkles, Smartphone, Monitor, BookOpenCheck, Loader } from "lucide-react";
 
 describe("IconButton Component", () => {
   it("should render correctly with required props", () => {
-    render(<IconButton icon="📚" label="Books" href="/books" />);
+    render(<IconButton icon={BookOpen} label="Books" href="/books" />);
 
     const button = screen.getByRole("link", { name: /books/i });
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute("href", "/books");
-    expect(button).toHaveTextContent("📚");
   });
 
   it("should handle click events when not a link", () => {
     const handleClick = vi.fn();
 
-    render(<IconButton icon="🏠" label="Home" onClick={handleClick} />);
+    render(<IconButton icon={Home} label="Home" onClick={handleClick} />);
 
     const button = screen.getByRole("button", { name: /home/i });
     expect(button).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe("IconButton Component", () => {
   it("should apply custom className correctly", () => {
     render(
       <IconButton
-        icon="⚙️"
+        icon={Settings}
         label="Settings"
         href="/settings"
         className="custom-class"
@@ -46,7 +46,7 @@ describe("IconButton Component", () => {
   it("should show tooltip on hover", async () => {
     const user = userEvent.setup();
 
-    render(<IconButton icon="👤" label="Profile" href="/profile" />);
+    render(<IconButton icon={User} label="Profile" href="/profile" />);
 
     const button = screen.getByRole("link", { name: /profile/i });
 
@@ -61,7 +61,7 @@ describe("IconButton Component", () => {
   it("should be accessible with proper ARIA attributes", () => {
     render(
       <IconButton
-        icon="🔔"
+        icon={Bell}
         label="Notifications"
         href="/notifications"
         aria-label="View notifications"
@@ -76,7 +76,7 @@ describe("IconButton Component", () => {
     const handleClick = vi.fn();
     const user = userEvent.setup();
 
-    render(<IconButton icon="🔍" label="Search" onClick={handleClick} />);
+    render(<IconButton icon={Search} label="Search" onClick={handleClick} />);
 
     const button = screen.getByRole("button", { name: /search/i });
 
@@ -96,7 +96,7 @@ describe("IconButton Component", () => {
 
   it("should handle disabled state correctly", () => {
     render(
-      <IconButton icon="🚫" label="Disabled" onClick={vi.fn()} disabled />
+      <IconButton icon={Bell} label="Disabled" onClick={vi.fn()} disabled />
     );
 
     const button = screen.getByRole("button", { name: /disabled/i });
@@ -106,25 +106,22 @@ describe("IconButton Component", () => {
 
   it("should render different icon types correctly", () => {
     const { rerender } = render(
-      <IconButton icon="📚" label="Books" href="/books" />
+      <IconButton icon={BookOpen} label="Books" href="/books" />
     );
 
-    expect(screen.getByText("📚")).toBeInTheDocument();
+    // Check that the component renders (icon is SVG, not text)
+    expect(screen.getByRole("link", { name: /books/i })).toBeInTheDocument();
 
     // Rerender with different icon
-    rerender(<IconButton icon="🎯" label="Target" href="/target" />);
+    rerender(<IconButton icon={Target} label="Target" href="/target" />);
 
-    expect(screen.getByText("🎯")).toBeInTheDocument();
-    expect(screen.queryByText("📚")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /target/i })).toBeInTheDocument();
   });
 
   it("should support RTL layout correctly", () => {
-    // Mock RTL context
-    const mockRTLContext = { direction: "rtl" };
-
     render(
       <div dir="rtl">
-        <IconButton icon="📖" label="Read" href="/read" />
+        <IconButton icon={BookOpenCheck} label="Read" href="/read" />
       </div>
     );
 
@@ -137,7 +134,7 @@ describe("IconButton Component", () => {
   });
 
   it("should handle loading state correctly", () => {
-    render(<IconButton icon="⏳" label="Loading" onClick={vi.fn()} loading />);
+    render(<IconButton icon={Loader} label="Loading" onClick={vi.fn()} loading />);
 
     const button = screen.getByRole("button", { name: /loading/i });
     expect(button).toBeDisabled();
@@ -147,7 +144,7 @@ describe("IconButton Component", () => {
   it("should have proper hover and focus states", async () => {
     const user = userEvent.setup();
 
-    render(<IconButton icon="✨" label="Sparkle" href="/sparkle" />);
+    render(<IconButton icon={Sparkles} label="Sparkle" href="/sparkle" />);
 
     const button = screen.getByRole("link", { name: /sparkle/i });
 
@@ -174,7 +171,7 @@ describe("IconButton Component", () => {
     });
 
     const { rerender } = render(
-      <IconButton icon="📱" label="Mobile" to="/mobile" />
+      <IconButton icon={Smartphone} label="Mobile" to="/mobile" />
     );
 
     // Desktop view
@@ -184,7 +181,7 @@ describe("IconButton Component", () => {
       value: 1024,
     });
 
-    rerender(<IconButton icon="💻" label="Desktop" to="/desktop" />);
+    rerender(<IconButton icon={Monitor} label="Desktop" to="/desktop" />);
 
     // Restore original width
     Object.defineProperty(window, "innerWidth", {
@@ -192,5 +189,20 @@ describe("IconButton Component", () => {
       configurable: true,
       value: originalInnerWidth,
     });
+  });
+
+  it("should render with custom icon colors", () => {
+    render(
+      <IconButton
+        icon={BookOpen}
+        label="Custom Colors"
+        href="/custom"
+        iconBgColor="bg-red-50"
+        iconColor="text-red-500"
+      />
+    );
+
+    const button = screen.getByRole("link", { name: /custom colors/i });
+    expect(button).toBeInTheDocument();
   });
 });
