@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+echo "🔒 Running security checks..."
+
+# Check for .env files
+ENV_FILES=$(git diff --cached --name-only | grep -E '^\.env|/\.env' || true)
+if [ -n "$ENV_FILES" ]; then
+  echo "❌ ERROR: Attempting to commit .env file(s):"
+  echo "$ENV_FILES"
+  echo ""
+  echo "Remove them from staging with: git reset HEAD <file>"
+  exit 1
+fi
+
+# Check for potential secrets in staged files
+SECRETS=$(git diff --cached | grep -iE '(api[_-]?key|secret[_-]?key|password|auth[_-]?token|access[_-]?token|private[_-]?key)\s*[:=]\s*["\047][A-Za-z0-9+/=_-]{8,}["\047]' || true)
+if [ -n "$SECRETS" ]; then
+  echo "⚠️  WARNING: Potential hardcoded secrets detected!"
+  echo "Please review your changes and use environment variables instead."
+  echo ""
+  echo "If this is a false positive (e.g., test data), you can bypass with:"
+  echo "  git commit --no-verify"
+  exit 1
+fi
+
+echo "✓ Security checks passed"
