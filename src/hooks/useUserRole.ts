@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 
 export type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'viewer';
 
@@ -9,14 +9,14 @@ export function useUserRole() {
 
   useEffect(() => {
     const fetchUserRoles = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const { data: { session } } = await getSupabase().auth.getSession();
+
       if (!session) {
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id);
@@ -32,7 +32,7 @@ export function useUserRole() {
 
     fetchUserRoles();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange(() => {
       fetchUserRoles();
     });
 

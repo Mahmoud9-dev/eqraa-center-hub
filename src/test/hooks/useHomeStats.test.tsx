@@ -2,15 +2,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useHomeStats } from "@/hooks/useHomeStats";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { ReactNode } from "react";
 
 // Mock the supabase client
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
+  getSupabase: vi.fn(() => ({
     from: vi.fn(),
-  },
+  })),
 }));
+
+// Helper to get the mocked supabase
+const mockSupabase = getSupabase() as { from: ReturnType<typeof vi.fn> };
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -39,7 +42,7 @@ describe("useHomeStats Hook", () => {
   it("should fetch and return home stats successfully", async () => {
     let callCount = 0;
 
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+    (mockSupabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         callCount++;
         // First call is for student count, second is for attendance data
@@ -108,7 +111,7 @@ describe("useHomeStats Hook", () => {
     let studentsCallCount = 0;
 
     // Mock all tables to return empty/null data
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+    (mockSupabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         studentsCallCount++;
         // First call is for count, second is for attendance
@@ -169,7 +172,7 @@ describe("useHomeStats Hook", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     // Mock students query to return an error (first in Promise.all)
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+    (mockSupabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         return {
           select: vi.fn().mockReturnValue({
@@ -221,7 +224,7 @@ describe("useHomeStats Hook", () => {
     let studentsCallCount = 0;
 
     // Mock all tables with proper chain for staleTime test
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+    (mockSupabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         studentsCallCount++;
         // First call is for count, second is for attendance
@@ -279,7 +282,7 @@ describe("useHomeStats Hook", () => {
   it("should not refetch on window focus", async () => {
     let studentsCallCount = 0;
 
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
+    (mockSupabase.from as ReturnType<typeof vi.fn>).mockImplementation((table) => {
       if (table === "students") {
         studentsCallCount++;
         // First call is for count, second is for attendance
@@ -329,12 +332,12 @@ describe("useHomeStats Hook", () => {
     });
 
     // Simulate window focus - should not trigger refetch due to refetchOnWindowFocus: false
-    const callCount = (supabase.from as ReturnType<typeof vi.fn>).mock.calls.length;
+    const callCount = (mockSupabase.from as ReturnType<typeof vi.fn>).mock.calls.length;
 
     // Dispatch focus event
     window.dispatchEvent(new Event("focus"));
 
     // Call count should remain the same
-    expect((supabase.from as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callCount);
+    expect((mockSupabase.from as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callCount);
   });
 });

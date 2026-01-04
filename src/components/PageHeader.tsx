@@ -4,7 +4,7 @@ import { ArrowRight, LogOut, User, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -25,7 +25,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
     const fetchUser = async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await getSupabase().auth.getUser();
       if (user) {
         setUserName(
           user.user_metadata?.name || user.email?.split("@")[0] || "مستخدم"
@@ -36,7 +36,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   }, []);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await getSupabase().auth.signOut();
     if (error) {
       toast.error("خطأ في تسجيل الخروج");
     } else {

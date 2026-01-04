@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/integrations/supabase/client';
 
 interface HomeStats {
   totalStudents: number;
@@ -14,6 +14,7 @@ async function fetchHomeStats(): Promise<HomeStats> {
   const today = new Date().toISOString().split('T')[0];
 
   // Execute all queries in parallel for better performance
+  const supabase = getSupabase();
   const [studentsResult, teachersResult, attendanceResult, meetingsResult] = await Promise.all([
     supabase
       .from('students')
