@@ -1,0 +1,36 @@
+name: Security Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for .env files
+        run: |
+          ENV_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha || 'HEAD~1' }} HEAD | grep -E '^\.env|/\.env' || true)
+          if [ -n "$ENV_FILES" ]; then
+            echo "::error::Found .env file(s) in commit: $ENV_FILES"
+            echo "Please remove these files and add them to .gitignore"
+            exit 1
+          fi
+          echo "✓ No .env files found"
+
+      - name: Scan for hardcoded secrets
+        run: |
+          SECRETS=$(git diff ${{ github.event.pull_request.base.sha || 'HEAD~1' }} HEAD | grep -iE '(api[_-]?key|secret[_-]?key|password|auth[_-]?token|access[_-]?token|private[_-]?key)\s*[:=]\s*["\047][A-Za-z0-9+/=_-]{8,}["\047]' || true)
+          if [ -n "$SECRETS" ]; then
+            echo "::error::Potential hardcoded secrets detected!"
+            echo "Please use environment variables instead"
+            exit 1
+          fi
+          echo "✓ No obvious secrets detected"

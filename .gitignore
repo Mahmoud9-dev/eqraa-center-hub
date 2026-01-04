@@ -33,3 +33,7 @@ SuperClaude/
 .env.test.local
 .env.production.local
 .env.*.local
+
+# Test artifacts
+coverage/
+test-results/
