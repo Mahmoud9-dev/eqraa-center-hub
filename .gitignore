@@ -25,3 +25,8 @@ out
 *.sln
 *.sw?
 SuperClaude/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
