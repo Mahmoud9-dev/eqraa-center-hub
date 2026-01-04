@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,12 +48,12 @@ const Admin = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: teachersData } = await supabase
+    const { data: teachersData } = await getSupabase()
       .from("teachers")
       .select("*")
       .order("name");
 
-    const { data: studentsData } = await supabase
+    const { data: studentsData } = await getSupabase()
       .from("students")
       .select("*")
       .order("name");
@@ -89,7 +89,7 @@ const Admin = () => {
     }
 
     setIsLoading(true);
-    const { error } = await supabase.from("teachers").insert([
+    const { error } = await getSupabase().from("teachers").insert([
       {
         name: validation.data.name,
         specialization: validation.data.specialization,

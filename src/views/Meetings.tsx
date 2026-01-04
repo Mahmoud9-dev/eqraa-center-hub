@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ const Meetings = () => {
   const { toast } = useToast();
 
   const loadMeetings = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("meetings")
       .select("*")
       .order("meeting_date", { ascending: false });
@@ -69,7 +69,7 @@ const Meetings = () => {
     if (!title || !description || !meetingDate) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("meetings").insert([
+    const { error } = await getSupabase().from("meetings").insert([
       {
         title,
         description,
@@ -96,7 +96,7 @@ const Meetings = () => {
     id: string,
     newStatus: "مجدولة" | "مكتملة" | "ملغاة"
   ) => {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from("meetings")
       .update({ status: newStatus })
       .eq("id", id);
@@ -110,7 +110,7 @@ const Meetings = () => {
   const deleteMeeting = async () => {
     if (!selectedMeeting) return;
 
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from("meetings")
       .delete()
       .eq("id", selectedMeeting.id);

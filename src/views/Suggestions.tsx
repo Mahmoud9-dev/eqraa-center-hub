@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,7 @@ const Suggestions = () => {
   const { toast } = useToast();
 
   const loadSuggestions = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("suggestions")
       .select("*")
       .order("created_at", { ascending: false });
@@ -52,7 +52,7 @@ const Suggestions = () => {
     if (!title || !description) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("suggestions").insert([
+    const { error } = await getSupabase().from("suggestions").insert([
       {
         title,
         description,
@@ -76,7 +76,7 @@ const Suggestions = () => {
   };
 
   const updateStatus = async (id: string, newStatus: "تم" | "لم يتم") => {
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from("suggestions")
       .update({ status: newStatus })
       .eq("id", id);

@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { server } from "@/test/mocks/server";
+
+// Get the supabase instance for tests
+const supabase = getSupabase();
 
 describe("Supabase Client Integration", () => {
   beforeEach(() => {
@@ -113,7 +116,7 @@ describe("Supabase Client Integration", () => {
 
         // Mock the final data return
         mockSelect.mockResolvedValue({ data: mockTeachers, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase.from("teachers").select("*");
 
@@ -145,7 +148,7 @@ describe("Supabase Client Integration", () => {
           created_at: new Date().toISOString(),
         };
         mockSingle.mockResolvedValue({ data: insertedTeacher, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("teachers")
@@ -175,7 +178,7 @@ describe("Supabase Client Integration", () => {
 
         const updatedTeacher = { id: teacherId, name: "Updated Teacher Name" };
         mockSingle.mockResolvedValue({ data: updatedTeacher, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("teachers")
@@ -200,7 +203,7 @@ describe("Supabase Client Integration", () => {
         });
 
         mockEq.mockResolvedValue({ error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("teachers")
@@ -231,7 +234,7 @@ describe("Supabase Client Integration", () => {
 
         // The order method should be the last in the chain that resolves
         mockOrder.mockResolvedValue({ data: mockStudents, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("students")
@@ -260,7 +263,7 @@ describe("Supabase Client Integration", () => {
         });
 
         mockIlike.mockResolvedValue({ data: mockStudents, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("students")
@@ -290,7 +293,7 @@ describe("Supabase Client Integration", () => {
 
         // The order method should be the last in the chain that resolves
         mockOrder.mockResolvedValue({ data: mockSessions, error: null });
-        supabase.from = mockFrom;
+        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
         const result = await supabase
           .from("quran_sessions")
@@ -316,7 +319,7 @@ describe("Supabase Client Integration", () => {
           .mockReturnValue({ subscription: "mock-subscription" }),
       });
 
-      supabase.channel = vi.fn().mockReturnValue({
+      (supabase as unknown as { channel: typeof vi.fn }).channel = vi.fn().mockReturnValue({
         on: mockSubscribe,
         subscribe: mockSubscribe,
       });
@@ -348,7 +351,7 @@ describe("Supabase Client Integration", () => {
       });
 
       mockSelect.mockResolvedValue({ data: null, error: mockError });
-      supabase.from = mockFrom;
+      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
       const result = await supabase.from("teachers").select("*");
 
@@ -377,7 +380,7 @@ describe("Supabase Client Integration", () => {
       });
 
       mockSingle.mockResolvedValue({ data: null, error: mockError });
-      supabase.from = mockFrom;
+      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
       const result = await supabase
         .from("teachers")
@@ -416,7 +419,7 @@ describe("Supabase Client Integration", () => {
         { id: "1", teacher_id: "user-1", name: "Allowed Student" },
       ];
       mockSelect.mockResolvedValue({ data: filteredData, error: null });
-      supabase.from = mockFrom;
+      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
       const result = await supabase.from("students").select("*");
 

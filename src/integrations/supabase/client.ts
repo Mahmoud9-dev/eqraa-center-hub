@@ -2,13 +2,27 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from './types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+let supabaseInstance: SupabaseClient<Database> | null = null;
 
-export function createSupabaseClient() {
-  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+function createSupabaseClient(): SupabaseClient<Database> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      'Supabase URL and API key are required. Check your environment variables.'
+    );
+  }
+
+  return createBrowserClient<Database>(url, key);
 }
 
-// For backwards compatibility - singleton instance
-export const supabase = createSupabaseClient();
+// Lazy singleton - only created when first accessed at runtime
+export function getSupabase(): SupabaseClient<Database> {
+  if (!supabaseInstance) {
+    supabaseInstance = createSupabaseClient();
+  }
+  return supabaseInstance;
+}

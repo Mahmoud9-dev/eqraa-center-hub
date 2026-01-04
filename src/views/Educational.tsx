@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,19 +58,19 @@ const Educational = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: studentsData } = await supabase
+    const { data: studentsData } = await getSupabase()
       .from("students")
       .select("*")
       .eq("department", "tarbawi")
       .order("name");
 
-    const { data: teachersData } = await supabase
+    const { data: teachersData } = await getSupabase()
       .from("teachers")
       .select("*")
       .eq("department", "tarbawi")
       .order("name");
 
-    const { data: sessionsData } = await supabase
+    const { data: sessionsData } = await getSupabase()
       .from("educational_sessions")
       .select("*, students(name), teachers(name)")
       .order("session_date", { ascending: false });
@@ -89,7 +89,7 @@ const Educational = () => {
     if (!name || !age || !grade) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("students").insert([
+    const { error } = await getSupabase().from("students").insert([
       {
         name,
         age: parseInt(age),
@@ -118,7 +118,7 @@ const Educational = () => {
     if (!selectedStudent || !selectedTeacher || !topic || !description) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("educational_sessions").insert([
+    const { error } = await getSupabase().from("educational_sessions").insert([
       {
         student_id: selectedStudent,
         teacher_id: selectedTeacher,

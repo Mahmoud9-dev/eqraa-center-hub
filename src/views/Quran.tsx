@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,19 +73,19 @@ const Quran = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: studentsData } = await supabase
+    const { data: studentsData } = await getSupabase()
       .from("students")
       .select("*, teachers(name)")
       .eq("department", "quran")
       .order("name");
 
-    const { data: teachersData } = await supabase
+    const { data: teachersData } = await getSupabase()
       .from("teachers")
       .select("*")
       .eq("department", "quran")
       .order("name");
 
-    const { data: sessionsData } = await supabase
+    const { data: sessionsData } = await getSupabase()
       .from("quran_sessions")
       .select("*, students(name)")
       .order("session_date", { ascending: false });
@@ -109,7 +109,7 @@ const Quran = () => {
 
     // إذا لم يكن هناك شيخ محدد ولكن هناك نص مكتوب، أضف الشيخ أولاً
     if (!teacherId && teacherSearchValue.trim()) {
-      const { data: newTeacher, error: teacherError } = await supabase
+      const { data: newTeacher, error: teacherError } = await getSupabase()
         .from("teachers")
         .insert([
           {
@@ -137,7 +137,7 @@ const Quran = () => {
       return;
     }
 
-    const { error } = await supabase.from("students").insert([
+    const { error } = await getSupabase().from("students").insert([
       {
         name: studentName,
         age: parseInt(studentAge),
@@ -168,7 +168,7 @@ const Quran = () => {
     if (!selectedStudent || !surahName || !versesFrom || !versesTo) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("quran_sessions").insert([
+    const { error } = await getSupabase().from("quran_sessions").insert([
       {
         student_id: selectedStudent,
         surah_name: surahName,

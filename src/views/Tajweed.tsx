@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ const Tajweed = () => {
   const { toast } = useToast();
 
   const loadLessons = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("tajweed_lessons")
       .select("*")
       .order("lesson_date", { ascending: false });
@@ -44,7 +44,7 @@ const Tajweed = () => {
     if (!topic || !description) return;
 
     setIsLoading(true);
-    const { error } = await supabase.from("tajweed_lessons").insert([
+    const { error } = await getSupabase().from("tajweed_lessons").insert([
       { topic, description },
     ]);
 
