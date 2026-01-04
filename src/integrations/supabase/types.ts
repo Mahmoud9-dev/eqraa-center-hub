@@ -14,39 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      activities: {
-        Row: {
-          id: string
-          type: string
-          title: string
-          description: string | null
-          user_id: string | null
-          user_name: string | null
-          metadata: Json
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          type: string
-          title: string
-          description?: string | null
-          user_id?: string | null
-          user_name?: string | null
-          metadata?: Json
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          type?: string
-          title?: string
-          description?: string | null
-          user_id?: string | null
-          user_name?: string | null
-          metadata?: Json
-          created_at?: string | null
-        }
-        Relationships: []
-      }
       educational_sessions: {
         Row: {
           attendance: boolean | null
