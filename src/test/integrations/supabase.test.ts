@@ -1,19 +1,35 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getSupabase } from "@/integrations/supabase/client";
-import { server } from "@/test/mocks/server";
 
-// Get the supabase instance for tests
-const supabase = getSupabase();
+// Mock the supabase client
+vi.mock("@/integrations/supabase/client", () => ({
+  getSupabase: vi.fn(),
+}));
 
 describe("Supabase Client Integration", () => {
-  beforeEach(() => {
-    // Reset all mocks before each test
-    vi.clearAllMocks();
-  });
+  let mockAuth: {
+    signInWithPassword: ReturnType<typeof vi.fn>;
+    signOut: ReturnType<typeof vi.fn>;
+    getUser: ReturnType<typeof vi.fn>;
+  };
 
-  afterEach(() => {
-    // Reset server handlers after each test
-    server.resetHandlers();
+  let mockChannel: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Set up auth mocks
+    mockAuth = {
+      signInWithPassword: vi.fn(),
+      signOut: vi.fn(),
+      getUser: vi.fn(),
+    };
+
+    // Set up channel mock
+    mockChannel = vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn().mockReturnValue({ subscription: "mock-subscription" }),
+    });
   });
 
   describe("Authentication", () => {
@@ -33,21 +49,26 @@ describe("Supabase Client Integration", () => {
         error: null,
       };
 
-      // Mock the signInWithPassword method
-      const mockSignIn = vi.fn().mockResolvedValue(mockResponse);
-      supabase.auth.signInWithPassword = mockSignIn;
+      mockAuth.signInWithPassword.mockResolvedValue(mockResponse);
 
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: vi.fn(),
+        channel: mockChannel,
+      } as any);
+
+      const supabase = getSupabase();
       const result = await supabase.auth.signInWithPassword({
         email: "test@example.com",
         password: "password123",
       });
 
-      expect(mockSignIn).toHaveBeenCalledWith({
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
         email: "test@example.com",
         password: "password123",
       });
-      expect(result.data.user.email).toBe("test@example.com");
-      expect(result.data.session.access_token).toBe("mock-access-token");
+      expect(result.data.user!.email).toBe("test@example.com");
+      expect(result.data.session!.access_token).toBe("mock-access-token");
     });
 
     it("should handle sign in failure", async () => {
@@ -56,9 +77,15 @@ describe("Supabase Client Integration", () => {
         error: { message: "Invalid credentials" },
       };
 
-      const mockSignIn = vi.fn().mockResolvedValue(mockResponse);
-      supabase.auth.signInWithPassword = mockSignIn;
+      mockAuth.signInWithPassword.mockResolvedValue(mockResponse);
 
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: vi.fn(),
+        channel: mockChannel,
+      } as any);
+
+      const supabase = getSupabase();
       const result = await supabase.auth.signInWithPassword({
         email: "invalid@example.com",
         password: "wrongpassword",
@@ -70,12 +97,18 @@ describe("Supabase Client Integration", () => {
 
     it("should sign out user successfully", async () => {
       const mockResponse = { error: null };
-      const mockSignOut = vi.fn().mockResolvedValue(mockResponse);
-      supabase.auth.signOut = mockSignOut;
+      mockAuth.signOut.mockResolvedValue(mockResponse);
 
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: vi.fn(),
+        channel: mockChannel,
+      } as any);
+
+      const supabase = getSupabase();
       const result = await supabase.auth.signOut();
 
-      expect(mockSignOut).toHaveBeenCalled();
+      expect(mockAuth.signOut).toHaveBeenCalled();
       expect(result.error).toBeNull();
     });
 
@@ -87,12 +120,18 @@ describe("Supabase Client Integration", () => {
       };
       const mockResponse = { data: { user: mockUser }, error: null };
 
-      const mockGetUser = vi.fn().mockResolvedValue(mockResponse);
-      supabase.auth.getUser = mockGetUser;
+      mockAuth.getUser.mockResolvedValue(mockResponse);
 
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: vi.fn(),
+        channel: mockChannel,
+      } as any);
+
+      const supabase = getSupabase();
       const result = await supabase.auth.getUser();
 
-      expect(mockGetUser).toHaveBeenCalled();
+      expect(mockAuth.getUser).toHaveBeenCalled();
       expect(result.data.user).toEqual(mockUser);
     });
   });
@@ -105,19 +144,16 @@ describe("Supabase Client Integration", () => {
           { id: "2", name: "Teacher 2", department: "tajweed" },
         ];
 
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockEq = vi.fn().mockReturnThis();
-        const mockOrder = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          select: mockSelect,
-          eq: mockEq,
-          order: mockOrder,
-        });
+        const mockSelect = vi.fn().mockResolvedValue({ data: mockTeachers, error: null });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-        // Mock the final data return
-        mockSelect.mockResolvedValue({ data: mockTeachers, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
 
+        const supabase = getSupabase();
         const result = await supabase.from("teachers").select("*");
 
         expect(mockFrom).toHaveBeenCalledWith("teachers");
@@ -133,23 +169,24 @@ describe("Supabase Client Integration", () => {
           isActive: true,
         };
 
-        const mockInsert = vi.fn().mockReturnThis();
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockSingle = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          insert: mockInsert,
-          select: mockSelect,
-          single: mockSingle,
-        });
-
         const insertedTeacher = {
           ...newTeacher,
           id: "new-id",
           created_at: new Date().toISOString(),
         };
-        mockSingle.mockResolvedValue({ data: insertedTeacher, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
+        const mockSingle = vi.fn().mockResolvedValue({ data: insertedTeacher, error: null });
+        const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
+        const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+        const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
+
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
+
+        const supabase = getSupabase();
         const result = await supabase
           .from("teachers")
           .insert(newTeacher)
@@ -165,21 +202,21 @@ describe("Supabase Client Integration", () => {
         const updates = { name: "Updated Teacher Name" };
         const teacherId = "teacher-1";
 
-        const mockUpdate = vi.fn().mockReturnThis();
-        const mockEq = vi.fn().mockReturnThis();
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockSingle = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          update: mockUpdate,
-          eq: mockEq,
-          select: mockSelect,
-          single: mockSingle,
-        });
-
         const updatedTeacher = { id: teacherId, name: "Updated Teacher Name" };
-        mockSingle.mockResolvedValue({ data: updatedTeacher, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
+        const mockSingle = vi.fn().mockResolvedValue({ data: updatedTeacher, error: null });
+        const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
+        const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
+        const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
+
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
+
+        const supabase = getSupabase();
         const result = await supabase
           .from("teachers")
           .update(updates)
@@ -195,16 +232,17 @@ describe("Supabase Client Integration", () => {
       it("should delete teacher", async () => {
         const teacherId = "teacher-1";
 
-        const mockDelete = vi.fn().mockReturnThis();
-        const mockEq = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          delete: mockDelete,
-          eq: mockEq,
-        });
+        const mockEq = vi.fn().mockResolvedValue({ error: null });
+        const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
 
-        mockEq.mockResolvedValue({ error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
 
+        const supabase = getSupabase();
         const result = await supabase
           .from("teachers")
           .delete()
@@ -223,19 +261,18 @@ describe("Supabase Client Integration", () => {
           { id: "2", name: "Student 2", grade: "Grade 2" },
         ];
 
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockRange = vi.fn().mockReturnThis();
-        const mockOrder = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          select: mockSelect,
-          range: mockRange,
-          order: mockOrder,
-        });
+        const mockOrder = vi.fn().mockResolvedValue({ data: mockStudents, error: null });
+        const mockRange = vi.fn().mockReturnValue({ order: mockOrder });
+        const mockSelect = vi.fn().mockReturnValue({ range: mockRange });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-        // The order method should be the last in the chain that resolves
-        mockOrder.mockResolvedValue({ data: mockStudents, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
 
+        const supabase = getSupabase();
         const result = await supabase
           .from("students")
           .select("*")
@@ -245,9 +282,7 @@ describe("Supabase Client Integration", () => {
         expect(mockFrom).toHaveBeenCalledWith("students");
         expect(mockSelect).toHaveBeenCalledWith("*");
         expect(mockRange).toHaveBeenCalledWith(0, 9);
-        expect(mockOrder).toHaveBeenCalledWith("created_at", {
-          ascending: false,
-        });
+        expect(mockOrder).toHaveBeenCalledWith("created_at", { ascending: false });
         expect(result.data).toEqual(mockStudents);
       });
 
@@ -255,16 +290,17 @@ describe("Supabase Client Integration", () => {
         const searchTerm = "محمد";
         const mockStudents = [{ id: "1", name: "محمد أحمد", grade: "Grade 1" }];
 
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockIlike = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          select: mockSelect,
-          ilike: mockIlike,
-        });
+        const mockIlike = vi.fn().mockResolvedValue({ data: mockStudents, error: null });
+        const mockSelect = vi.fn().mockReturnValue({ ilike: mockIlike });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-        mockIlike.mockResolvedValue({ data: mockStudents, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
 
+        const supabase = getSupabase();
         const result = await supabase
           .from("students")
           .select("*")
@@ -282,19 +318,18 @@ describe("Supabase Client Integration", () => {
           { id: "1", studentId, surahName: "البقرة", performanceRating: 8 },
         ];
 
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockEq = vi.fn().mockReturnThis();
-        const mockOrder = vi.fn().mockReturnThis();
-        const mockFrom = vi.fn().mockReturnValue({
-          select: mockSelect,
-          eq: mockEq,
-          order: mockOrder,
-        });
+        const mockOrder = vi.fn().mockResolvedValue({ data: mockSessions, error: null });
+        const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+        const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-        // The order method should be the last in the chain that resolves
-        mockOrder.mockResolvedValue({ data: mockSessions, error: null });
-        (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+        vi.mocked(getSupabase).mockReturnValue({
+          auth: mockAuth,
+          from: mockFrom,
+          channel: mockChannel,
+        } as any);
 
+        const supabase = getSupabase();
         const result = await supabase
           .from("quran_sessions")
           .select("*")
@@ -312,29 +347,32 @@ describe("Supabase Client Integration", () => {
 
   describe("Realtime Subscriptions", () => {
     it("should subscribe to table changes", () => {
-      const mockSubscribe = vi.fn().mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        subscribe: vi
-          .fn()
-          .mockReturnValue({ subscription: "mock-subscription" }),
-      });
+      const mockOn = vi.fn().mockReturnThis();
+      const mockSubscribe = vi.fn().mockReturnValue({ subscription: "mock-subscription" });
 
-      (supabase as unknown as { channel: typeof vi.fn }).channel = vi.fn().mockReturnValue({
-        on: mockSubscribe,
+      const channelMock = vi.fn().mockReturnValue({
+        on: mockOn,
         subscribe: mockSubscribe,
       });
 
-      const subscription = supabase
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: vi.fn(),
+        channel: channelMock,
+      } as any);
+
+      const supabase = getSupabase();
+      supabase
         .channel("teachers-changes")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "teachers" },
-          (payload) => console.log(payload)
+          (payload: unknown) => console.log(payload)
         )
         .subscribe();
 
-      expect(supabase.channel).toHaveBeenCalledWith("teachers-changes");
-      expect(mockSubscribe).toHaveBeenCalled();
+      expect(channelMock).toHaveBeenCalledWith("teachers-changes");
+      expect(mockOn).toHaveBeenCalled();
     });
   });
 
@@ -345,14 +383,16 @@ describe("Supabase Client Integration", () => {
         details: "Connection failed",
       };
 
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockFrom = vi.fn().mockReturnValue({
-        select: mockSelect,
-      });
+      const mockSelect = vi.fn().mockResolvedValue({ data: null, error: mockError });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-      mockSelect.mockResolvedValue({ data: null, error: mockError });
-      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: mockFrom,
+        channel: mockChannel,
+      } as any);
 
+      const supabase = getSupabase();
       const result = await supabase.from("teachers").select("*");
 
       expect(result.error).toEqual(mockError);
@@ -370,18 +410,18 @@ describe("Supabase Client Integration", () => {
         details: "Invalid department",
       };
 
-      const mockInsert = vi.fn().mockReturnThis();
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockSingle = vi.fn().mockReturnThis();
-      const mockFrom = vi.fn().mockReturnValue({
-        insert: mockInsert,
-        select: mockSelect,
-        single: mockSingle,
-      });
+      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: mockError });
+      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
 
-      mockSingle.mockResolvedValue({ data: null, error: mockError });
-      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: mockFrom,
+        channel: mockChannel,
+      } as any);
 
+      const supabase = getSupabase();
       const result = await supabase
         .from("teachers")
         .insert(invalidData)
@@ -395,7 +435,6 @@ describe("Supabase Client Integration", () => {
 
   describe("Row Level Security (RLS)", () => {
     it("should respect user permissions", async () => {
-      // Mock authenticated user
       const mockUser = {
         id: "user-1",
         role: "teacher",
@@ -404,30 +443,30 @@ describe("Supabase Client Integration", () => {
         aud: "authenticated",
         created_at: new Date().toISOString(),
       };
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+
+      mockAuth.getUser.mockResolvedValue({
         data: { user: mockUser },
         error: null,
       });
 
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockFrom = vi.fn().mockReturnValue({
-        select: mockSelect,
-      });
-
-      // Mock filtered response based on user role
       const filteredData = [
         { id: "1", teacher_id: "user-1", name: "Allowed Student" },
       ];
-      mockSelect.mockResolvedValue({ data: filteredData, error: null });
-      (supabase as unknown as { from: typeof mockFrom }).from = mockFrom;
 
+      const mockSelect = vi.fn().mockResolvedValue({ data: filteredData, error: null });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+      vi.mocked(getSupabase).mockReturnValue({
+        auth: mockAuth,
+        from: mockFrom,
+        channel: mockChannel,
+      } as any);
+
+      const supabase = getSupabase();
       const result = await supabase.from("students").select("*");
 
       expect(result.data).toEqual(filteredData);
-      // Verify that only data accessible to the user is returned
-      expect(result.data.every((item) => item.teacher_id === "user-1")).toBe(
-        true
-      );
+      expect(result.data!.every((item) => item.teacher_id === "user-1")).toBe(true);
     });
   });
 });
