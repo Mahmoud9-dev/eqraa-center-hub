@@ -55,15 +55,16 @@ export interface Teacher {
 /**
  * Student images interface
  * Represents multiple Quran memorization images for tracking student progress
+ * All properties are optional since images may be added incrementally
  */
 export interface StudentImages {
-  new: string;
-  recent1: string;
-  recent2: string;
-  recent3: string;
-  distant1: string;
-  distant2: string;
-  distant3: string;
+  new?: string;
+  recent1?: string;
+  recent2?: string;
+  recent3?: string;
+  distant1?: string;
+  distant2?: string;
+  distant3?: string;
 }
 
 /**
@@ -125,12 +126,13 @@ export interface QuranSession {
  */
 export interface TajweedLesson {
   id: string;
-  teacherId: string;
-  date: Date;
+  teacher_id?: string | null;
+  lesson_date?: string | null;
   topic: string;
   description: string;
-  attendees?: string[];
-  resources?: string[];
+  attendees?: string[] | null;
+  resources?: string[] | null;
+  created_at?: string | null;
 }
 
 /**
@@ -362,6 +364,28 @@ export interface UserSettings {
   theme: "فاتح" | "داكن";
   language: "ar" | "en";
   updatedAt: Date;
+}
+
+/**
+ * Student note interface
+ * Represents notes/observations about student behavior or performance
+ */
+export interface StudentNote {
+  id: string;
+  type: "إيجابي" | "سلبي";
+  content: string;
+  date: string;
+  teacher: string;
+}
+
+/**
+ * Student grade interface
+ * Represents a student's grade in a subject
+ */
+export interface StudentGrade {
+  subject: string;
+  grade: number;
+  status: string;
 }
 
 // Utility types for API responses

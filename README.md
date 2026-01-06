@@ -79,7 +79,7 @@ src/
 
 ### المتطلبات
 
-- Node.js 18+
+- Node.js 19+
 - npm أو yarn
 
 ### التثبيت
@@ -91,11 +91,13 @@ npm install
 ### إعداد البيئة (Environment Setup)
 
 1. انسخ ملف `.env.example` إلى `.env`:
+
    ```bash
    cp .env.example .env
    ```
 
 2. املأ قيم متغيرات البيئة في ملف `.env` ببيانات Supabase الخاصة بك:
+
    - `NEXT_PUBLIC_SUPABASE_PROJECT_ID`: معرف المشروع
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: مفتاح API العام
    - `NEXT_PUBLIC_SUPABASE_URL`: رابط المشروع

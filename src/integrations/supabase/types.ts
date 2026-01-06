@@ -161,6 +161,44 @@ export type Database = {
           },
         ]
       }
+      student_notes: {
+        Row: {
+          id: string
+          student_id: string
+          type: string
+          content: string
+          note_date: string
+          teacher_name: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          type: string
+          content: string
+          note_date?: string
+          teacher_name: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          type?: string
+          content?: string
+          note_date?: string
+          teacher_name?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           age: number
@@ -170,6 +208,7 @@ export type Database = {
           department: string
           grade: string
           id: string
+          images: Json | null
           is_active: boolean | null
           name: string
           parent_name: string | null
@@ -186,6 +225,7 @@ export type Database = {
           department: string
           grade: string
           id?: string
+          images?: Json | null
           is_active?: boolean | null
           name: string
           parent_name?: string | null
@@ -202,6 +242,7 @@ export type Database = {
           department?: string
           grade?: string
           id?: string
+          images?: Json | null
           is_active?: boolean | null
           name?: string
           parent_name?: string | null
@@ -326,6 +367,51 @@ export type Database = {
           specialization?: string
         }
         Relationships: []
+      }
+      attendance_records: {
+        Row: {
+          id: string
+          student_id: string | null
+          teacher_id: string | null
+          record_date: string
+          status: string
+          notes: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id?: string | null
+          teacher_id?: string | null
+          record_date?: string
+          status: string
+          notes?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string | null
+          teacher_id?: string | null
+          record_date?: string
+          status?: string
+          notes?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

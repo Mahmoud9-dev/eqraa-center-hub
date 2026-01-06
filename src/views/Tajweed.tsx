@@ -13,8 +13,11 @@ interface TajweedLesson {
   id: string;
   topic: string;
   description: string;
-  lesson_date: string;
-  teacher_id?: string;
+  lesson_date: string | null;
+  teacher_id?: string | null;
+  attendees?: string[] | null;
+  resources?: string[] | null;
+  created_at?: string | null;
 }
 
 const Tajweed = () => {
@@ -133,7 +136,7 @@ const Tajweed = () => {
                     <h4 className="font-bold text-lg mb-2">{lesson.topic}</h4>
                     <p className="text-muted-foreground mb-2">{lesson.description}</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(lesson.lesson_date).toLocaleDateString("ar")}
+                      {lesson.lesson_date ? new Date(lesson.lesson_date).toLocaleDateString("ar") : "بدون تاريخ"}
                     </p>
                   </CardContent>
                 </Card>

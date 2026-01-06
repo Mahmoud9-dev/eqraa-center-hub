@@ -557,9 +557,9 @@ const Teachers = () => {
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm hidden md:table-cell">
                             <Badge
-                              className={getExperienceColor(teacher.experience)}
+                              className={getExperienceColor(teacher.experience ?? 0)}
                             >
-                              {teacher.experience} سنة
+                              {teacher.experience ?? 0} سنة
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm hidden lg:table-cell">

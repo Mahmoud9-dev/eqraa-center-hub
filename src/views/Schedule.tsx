@@ -10,14 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -29,7 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -39,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import { Schedule as ScheduleType } from "@/types";
 
 const Schedule = () => {
   const [isAddSessionDialogOpen, setIsAddSessionDialogOpen] = useState(false);
@@ -199,7 +189,7 @@ const Schedule = () => {
     },
   ]);
 
-  const [upcomingSessions, setUpcomingSessions] = useState([
+  const [upcomingSessions, _setUpcomingSessions] = useState([
     {
       id: "1",
       title: "حلقة حفظ القرآن",
@@ -253,7 +243,7 @@ const Schedule = () => {
     }
   };
 
-  const getDayName = (dayOfWeek: number) => {
+  const _getDayName = (dayOfWeek: number) => {
     const days = [
       "الأحد",
       "الإثنين",

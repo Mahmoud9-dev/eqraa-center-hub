@@ -198,7 +198,9 @@ test.describe("Login Form", () => {
     await page.context().close();
 
     // Create new context and page
-    const context = await page.browser().newContext();
+    const browser = page.context().browser();
+    if (!browser) throw new Error("Browser not available");
+    const context = await browser.newContext();
     const newPage = await context.newPage();
 
     // Should still be logged in

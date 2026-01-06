@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -44,6 +43,16 @@ import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { UserRole, UserSettings } from "@/types";
 
+interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: Date;
+  lastLogin: Date | null;
+}
+
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
@@ -51,12 +60,12 @@ const Settings = () => {
   const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
     useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
+  useTheme(); // Theme provider hook - used by child components
 
   // Mock data - will be replaced with actual data from Supabase
-  const [users, setUsers] = useState([
+  const [users, setUsers] = useState<SystemUser[]>([
     {
       id: "1",
       name: "أحمد محمد علي",

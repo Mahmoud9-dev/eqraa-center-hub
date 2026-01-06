@@ -37,3 +37,7 @@ SuperClaude/
 # Test artifacts
 coverage/
 test-results/
+
+# Local Netlify folder
+.netlify
+.vercel

@@ -144,8 +144,8 @@ export const mockQuranSessions: QuranSession[] = [
 export const mockTajweedLessons: TajweedLesson[] = [
   {
     id: "tajweed-1",
-    teacherId: "teacher-1",
-    date: new Date("2024-01-15"),
+    teacher_id: "teacher-1",
+    lesson_date: "2024-01-15",
     topic: "أحكام النون الساكنة والتنوين",
     description: "شرح مفصل لأحكام الإظهار، الإدغام، الإقلاب، والإخفاء",
     attendees: ["student-1", "student-3"],
@@ -153,8 +153,8 @@ export const mockTajweedLessons: TajweedLesson[] = [
   },
   {
     id: "tajweed-2",
-    teacherId: "teacher-1",
-    date: new Date("2024-01-22"),
+    teacher_id: "teacher-1",
+    lesson_date: "2024-01-22",
     topic: "أحكام الميم الساكنة",
     description: "شرح أحكام الإخفاء الشفوي والإدغام الصغير",
     attendees: ["student-1", "student-2"],

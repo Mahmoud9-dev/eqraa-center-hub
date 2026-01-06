@@ -13,7 +13,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 // Helper to get the mocked supabase
-const mockSupabase = getSupabase() as { from: ReturnType<typeof vi.fn> };
+const mockSupabase = getSupabase() as unknown as { from: ReturnType<typeof vi.fn> };
 
 const createWrapper = () => {
   const queryClient = new QueryClient({

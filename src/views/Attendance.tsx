@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,13 @@ import {
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { getSupabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+
+// Supabase types
+type DbStudent = Tables<"students">;
+type DbTeacher = Tables<"teachers">;
+type DbAttendanceRecord = Tables<"attendance_records">;
 
 interface Student {
   id: string;
@@ -39,13 +46,19 @@ interface Student {
   age: number;
   grade: string;
   department: string;
-  teacherId: string;
-  partsMemorized: number;
-  currentProgress: string;
-  attendance: number;
+  teacherId?: string;
+  teacher_id?: string | null;
+  partsMemorized?: number;
+  parts_memorized?: number | null;
+  currentProgress?: string;
+  current_progress?: string | null;
+  attendance?: number | null;
   parentName?: string;
+  parent_name?: string | null;
   parentPhone?: string;
-  isActive: boolean;
+  parent_phone?: string | null;
+  isActive?: boolean;
+  is_active?: boolean | null;
 }
 
 interface Teacher {
@@ -53,16 +66,20 @@ interface Teacher {
   name: string;
   specialization: string;
   department: string;
-  isActive: boolean;
+  isActive?: boolean;
+  is_active?: boolean | null;
 }
 
 interface AttendanceRecord {
   id: string;
-  studentId: string;
-  teacherId: string;
-  date: string;
+  studentId?: string;
+  student_id?: string | null;
+  teacherId?: string;
+  teacher_id?: string | null;
+  date?: string;
+  record_date?: string;
   status: "حاضر" | "غائب" | "مأذون";
-  notes?: string;
+  notes?: string | null;
   student?: Student;
   teacher?: Teacher;
 }
@@ -73,6 +90,7 @@ const Attendance = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("all");
   const [isRecording, setIsRecording] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedStudents, setSelectedStudents] = useState<{
     [key: string]: "حاضر" | "غائب" | "مأذون";
   }>({});
@@ -81,116 +99,105 @@ const Attendance = () => {
   }>({});
   const { toast } = useToast();
 
-  // Mock data
-  const [students] = useState<Student[]>([
-    {
-      id: "1",
-      name: "أحمد محمد علي",
-      age: 12,
-      grade: "السادس ابتدائي",
-      department: "quran",
-      teacherId: "teacher1",
-      partsMemorized: 5,
-      currentProgress: "سورة آل عمران - الآية 50",
-      attendance: 85,
-      parentName: "محمد علي",
-      parentPhone: "01234567890",
-      isActive: true,
-    },
-    {
-      id: "2",
-      name: "عمر خالد حسن",
-      age: 14,
-      grade: "الثالث إعدادي",
-      department: "tajweed",
-      teacherId: "teacher2",
-      partsMemorized: 8,
-      currentProgress: "سورة النساء - الآية 100",
-      attendance: 92,
-      parentName: "خالد حسن",
-      parentPhone: "01234567891",
-      isActive: true,
-    },
-    {
-      id: "3",
-      name: "محمد سعيد أحمد",
-      age: 11,
-      grade: "الخامس ابتدائي",
-      department: "tarbawi",
-      teacherId: "teacher3",
-      partsMemorized: 3,
-      currentProgress: "سورة البقرة - الآية 150",
-      attendance: 78,
-      parentName: "سعيد أحمد",
-      parentPhone: "01234567892",
-      isActive: true,
-    },
-  ]);
+  // State for data from Supabase
+  const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
 
-  const [teachers] = useState<Teacher[]>([
-    {
-      id: "teacher1",
-      name: "الشيخ خالد أحمد",
-      specialization: "تحفيظ القرآن",
-      department: "quran",
-      isActive: true,
-    },
-    {
-      id: "teacher2",
-      name: "الشيخ أحمد محمد",
-      specialization: "تجويد القرآن",
-      department: "tajweed",
-      isActive: true,
-    },
-    {
-      id: "teacher3",
-      name: "الشيخ محمد حسن",
-      specialization: "تربوي",
-      department: "tarbawi",
-      isActive: true,
-    },
-  ]);
+  // Load students from Supabase
+  const loadStudents = useCallback(async () => {
+    try {
+      const { data, error } = await getSupabase()
+        .from("students")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
 
-  const [attendanceRecords, setAttendanceRecords] = useState<
-    AttendanceRecord[]
-  >(() => {
-    // Try to load from localStorage first
-    const savedRecords = localStorage.getItem("attendanceRecords");
-    if (savedRecords) {
-      try {
-        return JSON.parse(savedRecords);
-      } catch (error) {
-        console.error(
-          "Error loading attendance records from localStorage:",
-          error
-        );
+      if (error) {
+        console.error("Error loading students:", error);
+        return;
       }
-    }
 
-    // Default records if no saved data
-    return [
-      {
-        id: "1",
-        studentId: "1",
-        teacherId: "teacher1",
-        date: "2025-11-05",
-        status: "حاضر",
-        notes: "حضور ممتاز",
-        student: students[0],
-        teacher: teachers[0],
-      },
-      {
-        id: "2",
-        studentId: "2",
-        teacherId: "teacher2",
-        date: "2025-11-05",
-        status: "غائب",
-        notes: "غياب بعذر",
-        student: students[1],
-        teacher: teachers[1],
-      },
-    ];
-  });
+      if (data) {
+        const transformedStudents: Student[] = data.map((s) => ({
+          ...s,
+          teacherId: s.teacher_id || "",
+          partsMemorized: s.parts_memorized ?? 0,
+          currentProgress: s.current_progress || "",
+          parentName: s.parent_name || "",
+          parentPhone: s.parent_phone || "",
+          isActive: s.is_active ?? true,
+        }));
+        setStudents(transformedStudents);
+      }
+    } catch (error) {
+      console.error("Error loading students:", error);
+    }
+  }, []);
+
+  // Load teachers from Supabase
+  const loadTeachers = useCallback(async () => {
+    try {
+      const { data, error } = await getSupabase()
+        .from("teachers")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
+
+      if (error) {
+        console.error("Error loading teachers:", error);
+        return;
+      }
+
+      if (data) {
+        const transformedTeachers: Teacher[] = data.map((t) => ({
+          ...t,
+          isActive: t.is_active ?? true,
+        }));
+        setTeachers(transformedTeachers);
+      }
+    } catch (error) {
+      console.error("Error loading teachers:", error);
+    }
+  }, []);
+
+  // Load attendance records from Supabase
+  const loadAttendanceRecords = useCallback(async () => {
+    try {
+      const { data, error } = await getSupabase()
+        .from("attendance_records")
+        .select("*")
+        .order("record_date", { ascending: false });
+
+      if (error) {
+        console.error("Error loading attendance records:", error);
+        return;
+      }
+
+      if (data) {
+        const transformedRecords: AttendanceRecord[] = data.map((r) => ({
+          ...r,
+          studentId: r.student_id || "",
+          teacherId: r.teacher_id || "",
+          date: r.record_date,
+          status: r.status as "حاضر" | "غائب" | "مأذون",
+        }));
+        setAttendanceRecords(transformedRecords);
+      }
+    } catch (error) {
+      console.error("Error loading attendance records:", error);
+    }
+  }, []);
+
+  // Load all data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([loadStudents(), loadTeachers(), loadAttendanceRecords()]);
+      setIsLoading(false);
+    };
+    loadData();
+  }, [loadStudents, loadTeachers, loadAttendanceRecords]);
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch = student.name
@@ -227,46 +234,62 @@ const Attendance = () => {
     }
   };
 
-  const handleRecordAttendance = () => {
+  const handleRecordAttendance = async () => {
     setIsRecording(true);
 
-    // Create new attendance records for selected students
-    const newRecords: AttendanceRecord[] = Object.entries(selectedStudents).map(
-      ([studentId, status]) => {
-        const student = students.find((s) => s.id === studentId);
-        return {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          studentId,
-          teacherId: student?.teacherId || "",
-          date: selectedDate.toISOString().split("T")[0],
-          status,
-          notes:
-            status === "حاضر"
-              ? "حضور منتظم"
-              : status === "غائب"
-              ? "غياب بدون عذر"
-              : "غياب بعذر",
-          student,
-          teacher: teachers.find((t) => t.id === student?.teacherId),
-        };
+    try {
+      // Create new attendance records for selected students
+      const recordsToInsert = Object.entries(selectedStudents).map(
+        ([studentId, status]) => {
+          const student = students.find((s) => s.id === studentId);
+          return {
+            student_id: studentId,
+            teacher_id: student?.teacherId || student?.teacher_id || null,
+            record_date: selectedDate.toISOString().split("T")[0],
+            status,
+            notes:
+              status === "حاضر"
+                ? "حضور منتظم"
+                : status === "غائب"
+                ? "غياب بدون عذر"
+                : "غياب بعذر",
+          };
+        }
+      );
+
+      const { error } = await getSupabase()
+        .from("attendance_records")
+        .insert(recordsToInsert);
+
+      if (error) {
+        console.error("Error recording attendance:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء تسجيل الحضور",
+          variant: "destructive",
+        });
+        setIsRecording(false);
+        return;
       }
-    );
 
-    // Add new records to existing ones
-    const updatedRecords = [...attendanceRecords, ...newRecords];
-    setAttendanceRecords(updatedRecords);
+      // Reload attendance records
+      await loadAttendanceRecords();
 
-    // Save to localStorage for persistence
-    localStorage.setItem("attendanceRecords", JSON.stringify(updatedRecords));
-
-    setTimeout(() => {
       setIsRecording(false);
       setSelectedStudents({});
       toast({
         title: "تم تسجيل الحضور",
-        description: `تم تسجيل حضور ${newRecords.length} طالب بنجاح وحفظ البيانات`,
+        description: `تم تسجيل حضور ${recordsToInsert.length} طالب بنجاح`,
       });
-    }, 1000);
+    } catch (error) {
+      console.error("Error recording attendance:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تسجيل الحضور",
+        variant: "destructive",
+      });
+      setIsRecording(false);
+    }
   };
 
   const handleStudentStatusChange = (
@@ -289,46 +312,101 @@ const Attendance = () => {
     }));
   };
 
-  const handleRecordTeacherAttendance = () => {
+  const handleRecordTeacherAttendance = async () => {
     setIsRecording(true);
 
-    // Create new attendance records for selected teachers
-    const newRecords: AttendanceRecord[] = Object.entries(selectedTeachers).map(
-      ([teacherId, status]) => {
-        const teacher = teachers.find((t) => t.id === teacherId);
-        return {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          studentId: "", // No student for teacher attendance
-          teacherId,
-          date: selectedDate.toISOString().split("T")[0],
-          status: status as "حاضر" | "غائب" | "مأذون",
-          notes:
-            status === "حاضر"
-              ? "حضور منتظم"
-              : status === "غائب"
-              ? "غياب بدون عذر"
-              : "إجازة معتمدة",
-          teacher,
-        };
+    try {
+      // Create new attendance records for selected teachers
+      const recordsToInsert = Object.entries(selectedTeachers).map(
+        ([teacherId, status]) => {
+          // Map إجازة to مأذون for database compatibility
+          const dbStatus = status === "إجازة" ? "مأذون" : status;
+          return {
+            student_id: null, // No student for teacher attendance
+            teacher_id: teacherId,
+            record_date: selectedDate.toISOString().split("T")[0],
+            status: dbStatus as "حاضر" | "غائب" | "مأذون",
+            notes:
+              status === "حاضر"
+                ? "حضور منتظم"
+                : status === "غائب"
+                ? "غياب بدون عذر"
+                : "إجازة معتمدة",
+          };
+        }
+      );
+
+      const { error } = await getSupabase()
+        .from("attendance_records")
+        .insert(recordsToInsert);
+
+      if (error) {
+        console.error("Error recording teacher attendance:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء تسجيل الحضور",
+          variant: "destructive",
+        });
+        setIsRecording(false);
+        return;
       }
-    );
 
-    // Add new records to existing ones
-    const updatedRecords = [...attendanceRecords, ...newRecords];
-    setAttendanceRecords(updatedRecords);
+      // Reload attendance records
+      await loadAttendanceRecords();
 
-    // Save to localStorage for persistence
-    localStorage.setItem("attendanceRecords", JSON.stringify(updatedRecords));
-
-    setTimeout(() => {
       setIsRecording(false);
       setSelectedTeachers({});
       toast({
         title: "تم تسجيل الحضور",
-        description: `تم تسجيل حضور ${newRecords.length} معلم بنجاح وحفظ البيانات`,
+        description: `تم تسجيل حضور ${recordsToInsert.length} معلم بنجاح`,
       });
-    }, 1000);
+    } catch (error) {
+      console.error("Error recording teacher attendance:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تسجيل الحضور",
+        variant: "destructive",
+      });
+      setIsRecording(false);
+    }
   };
+
+  // Helper to get student name from ID
+  const getStudentName = (studentId: string | undefined | null) => {
+    if (!studentId) return "-";
+    const student = students.find((s) => s.id === studentId);
+    return student?.name || "-";
+  };
+
+  // Helper to get teacher name from ID
+  const getTeacherName = (teacherId: string | undefined | null) => {
+    if (!teacherId) return "-";
+    const teacher = teachers.find((t) => t.id === teacherId);
+    return teacher?.name || "-";
+  };
+
+  // Helper to get student department from ID
+  const getStudentDepartment = (studentId: string | undefined | null) => {
+    if (!studentId) return "";
+    const student = students.find((s) => s.id === studentId);
+    return student?.department || "";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <PageHeader title="الحضور والانصراف" showBack={true} />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">جاري تحميل البيانات...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -515,16 +593,16 @@ const Attendance = () => {
                     <TableBody>
                       {attendanceRecords.map((record) => (
                         <TableRow key={record.id}>
-                          <TableCell>{record.date}</TableCell>
-                          <TableCell>{record.student?.name}</TableCell>
+                          <TableCell>{record.date || record.record_date}</TableCell>
+                          <TableCell>{getStudentName(record.studentId || record.student_id)}</TableCell>
                           <TableCell>
                             <Badge variant="outline">
                               {getDepartmentName(
-                                record.student?.department || ""
+                                getStudentDepartment(record.studentId || record.student_id)
                               )}
                             </Badge>
                           </TableCell>
-                          <TableCell>{record.teacher?.name}</TableCell>
+                          <TableCell>{getTeacherName(record.teacherId || record.teacher_id)}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(record.status)}>
                               {record.status}

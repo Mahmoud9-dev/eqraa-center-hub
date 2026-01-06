@@ -1,16 +1,16 @@
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect, Page, BrowserContext } from "@playwright/test";
 
 // Define custom fixtures for authentication
 type AuthFixtures = {
-  authenticatedPage: any;
-  adminPage: any;
-  teacherPage: any;
-  studentPage: any;
+  authenticatedPage: Page;
+  adminPage: Page;
+  teacherPage: Page;
+  studentPage: Page;
 };
 
 // Extend base test with custom fixtures
 export const test = base.extend<AuthFixtures>({
-  authenticatedPage: async ({ page, context }, use) => {
+  authenticatedPage: async ({ page, context }: { page: Page; context: BrowserContext }, use: (page: Page) => Promise<void>) => {
     // Mock authentication for a regular user
     await context.addInitScript(() => {
       window.localStorage.setItem("sb-access-token", "mock-access-token");
@@ -29,7 +29,7 @@ export const test = base.extend<AuthFixtures>({
     await use(page);
   },
 
-  adminPage: async ({ page, context }, use) => {
+  adminPage: async ({ page, context }: { page: Page; context: BrowserContext }, use: (page: Page) => Promise<void>) => {
     // Mock authentication for admin user
     await context.addInitScript(() => {
       window.localStorage.setItem("sb-access-token", "admin-access-token");
@@ -48,7 +48,7 @@ export const test = base.extend<AuthFixtures>({
     await use(page);
   },
 
-  teacherPage: async ({ page, context }, use) => {
+  teacherPage: async ({ page, context }: { page: Page; context: BrowserContext }, use: (page: Page) => Promise<void>) => {
     // Mock authentication for teacher user
     await context.addInitScript(() => {
       window.localStorage.setItem("sb-access-token", "teacher-access-token");
@@ -67,7 +67,7 @@ export const test = base.extend<AuthFixtures>({
     await use(page);
   },
 
-  studentPage: async ({ page, context }, use) => {
+  studentPage: async ({ page, context }: { page: Page; context: BrowserContext }, use: (page: Page) => Promise<void>) => {
     // Mock authentication for student user
     await context.addInitScript(() => {
       window.localStorage.setItem("sb-access-token", "student-access-token");

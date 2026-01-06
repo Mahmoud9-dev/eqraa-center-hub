@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -38,10 +38,71 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import { Department, Student, StudentImages } from "@/types";
+import { Department, StudentGrade } from "@/types";
+import { getSupabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+
+// Supabase types
+type DbStudent = Tables<"students">;
+type DbStudentNote = Tables<"student_notes">;
+
+// Local Student interface that extends Supabase data with camelCase aliases
+interface Student extends Omit<DbStudent, 'images'> {
+  images?: {
+    new?: string;
+    recent1?: string;
+    recent2?: string;
+    recent3?: string;
+    distant1?: string;
+    distant2?: string;
+    distant3?: string;
+  };
+  // camelCase aliases for compatibility
+  teacherId?: string;
+  partsMemorized?: number;
+  currentProgress?: string;
+  previousProgress?: string;
+  parentName?: string;
+  parentPhone?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+}
+
+interface StudentNote {
+  id: string;
+  student_id: string;
+  type: "إيجابي" | "سلبي";
+  content: string;
+  note_date: string;
+  teacher_name: string;
+}
+
+// Form state interface (uses camelCase for form inputs)
+interface StudentFormData {
+  name: string;
+  age: number;
+  grade: string;
+  department: Department | string;
+  teacherId: string;
+  partsMemorized: number;
+  currentProgress: string;
+  previousProgress: string;
+  attendance: number;
+  parentName: string;
+  parentPhone: string;
+  isActive: boolean;
+  images?: {
+    new?: string;
+    recent1?: string;
+    recent2?: string;
+    recent3?: string;
+    distant1?: string;
+    distant2?: string;
+    distant3?: string;
+  };
+}
 
 const Students = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,99 +110,51 @@ const Students = () => {
     "all"
   );
   const [activeTab, setActiveTab] = useState("all");
-  const [students, setStudents] = useState<Student[]>(() => {
-    // محاولة استرجاع البيانات من localStorage عند تحميل الصفحة
-    const savedStudents = localStorage.getItem("students");
-    if (savedStudents) {
-      try {
-        return JSON.parse(savedStudents);
-      } catch (error) {
-        console.error("Error loading students from localStorage:", error);
-      }
-    }
+  const [isLoading, setIsLoading] = useState(true);
+  const [students, setStudents] = useState<Student[]>([]);
 
-    // البيانات الافتراضية إذا لم توجد بيانات محفوظة
-    return [
-      {
-        id: "1",
-        name: "أحمد محمد علي",
-        age: 12,
-        grade: "السادس ابتدائي",
-        department: "quran" as Department,
-        teacherId: "teacher1",
-        partsMemorized: 5,
-        currentProgress: "سورة آل عمران - الآية 50",
-        previousProgress: "سورة البقرة - الآية 200",
-        attendance: 85,
-        parentName: "محمد علي",
-        parentPhone: "01234567890",
-        isActive: true,
-        createdAt: new Date(),
-        // إضافة خانات الصور المتعددة
-        images: {
-          new: "سورة النساء - الآية 1-30",
-          recent1: "سورة آل عمران - الآية 1-50",
-          recent2: "سورة البقرة - الآية 200-250",
-          recent3: "سورة البقرة - الآية 150-200",
-          distant1: "سورة البقرة - الآية 100-150",
-          distant2: "سورة البقرة - الآية 50-100",
-          distant3: "سورة الفاتحة",
-        },
-      },
-      {
-        id: "2",
-        name: "عمر خالد حسن",
-        age: 14,
-        grade: "الثالث إعدادي",
-        department: "tajweed" as Department,
-        teacherId: "teacher2",
-        partsMemorized: 8,
-        currentProgress: "سورة النساء - الآية 100",
-        previousProgress: "سورة آل عمران - الآية 50",
-        attendance: 92,
-        parentName: "خالد حسن",
-        parentPhone: "01234567891",
-        isActive: true,
-        createdAt: new Date(),
-        // إضافة خانات الصور المتعددة
-        images: {
-          new: "سورة المائدة - الآية 1-20",
-          recent1: "سورة النساء - الآية 50-100",
-          recent2: "سورة آل عمران - الآية 50-100",
-          recent3: "سورة آل عمران - الآية 1-50",
-          distant1: "سورة البقرة - الآية 200-285",
-          distant2: "سورة البقرة - الآية 150-200",
-          distant3: "سورة البقرة - الآية 100-150",
-        },
-      },
-      {
-        id: "3",
-        name: "محمد سعيد أحمد",
-        age: 11,
-        grade: "الخامس ابتدائي",
-        department: "tarbawi" as Department,
-        teacherId: "teacher3",
-        partsMemorized: 3,
-        currentProgress: "سورة البقرة - الآية 150",
-        previousProgress: "سورة البقرة - الآية 100",
-        attendance: 78,
-        parentName: "سعيد أحمد",
-        parentPhone: "01234567892",
-        isActive: true,
-        createdAt: new Date(),
-        // إضافة خانات الصور المتعددة
-        images: {
-          new: "سورة الأنعام - الآية 1-30",
-          recent1: "سورة البقرة - الآية 150-200",
-          recent2: "سورة البقرة - الآية 100-150",
-          recent3: "سورة البقرة - الآية 50-100",
-          distant1: "سورة البقرة - الآية 1-50",
-          distant2: "سورة الفاتحة",
-          distant3: "",
-        },
-      },
-    ];
-  });
+  // Load students from Supabase on mount
+  const loadStudents = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await getSupabase()
+        .from("students")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error loading students:", error);
+        return;
+      }
+
+      if (data) {
+        // Transform Supabase data to local Student format
+        const transformedStudents: Student[] = data.map((s) => ({
+          ...s,
+          // Parse images from JSON if it's a string
+          images: typeof s.images === 'string' ? JSON.parse(s.images) : s.images as Student['images'],
+          // Map snake_case to camelCase for compatibility
+          teacherId: s.teacher_id || "",
+          partsMemorized: s.parts_memorized ?? 0,
+          currentProgress: s.current_progress || "",
+          previousProgress: s.previous_progress || "",
+          parentName: s.parent_name || "",
+          parentPhone: s.parent_phone || "",
+          isActive: s.is_active ?? true,
+          createdAt: s.created_at ? new Date(s.created_at) : new Date(),
+        }));
+        setStudents(transformedStudents);
+      }
+    } catch (error) {
+      console.error("Error loading students:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStudents();
+  }, [loadStudents]);
 
   // Mock teacher data for display
   const teachers = {
@@ -151,7 +164,7 @@ const Students = () => {
   };
 
   // Mock grades and notes data
-  const studentsGrades = {
+  const studentsGrades: { [key: string]: StudentGrade[] } = {
     "1": [
       { subject: "قرآن", grade: 85, status: "ممتاز" },
       { subject: "تجويد", grade: 78, status: "جيد جداً" },
@@ -169,58 +182,57 @@ const Students = () => {
     ],
   };
 
-  const [studentsNotes, setStudentsNotes] = useState<{ [key: string]: any[] }>(
-    () => {
-      // محاولة استرجاع بيانات الملاحظات من localStorage
-      const savedNotes = localStorage.getItem("studentsNotes");
-      if (savedNotes) {
-        try {
-          return JSON.parse(savedNotes);
-        } catch (error) {
-          console.error("Error loading notes from localStorage:", error);
-        }
+  const [studentsNotes, setStudentsNotes] = useState<{ [key: string]: StudentNote[] }>({});
+
+  // Load student notes from Supabase
+  const loadStudentNotes = useCallback(async () => {
+    try {
+      const { data, error } = await getSupabase()
+        .from("student_notes")
+        .select("*")
+        .order("note_date", { ascending: false });
+
+      if (error) {
+        console.error("Error loading student notes:", error);
+        return;
       }
 
-      // البيانات الافتراضية إذا لم توجد بيانات محفوظة
-      return {
-        "1": [
-          {
-            id: "1",
-            type: "إيجابي",
-            content: "مشاركة ممتازة في الحلقة",
-            date: "2025-11-01",
-            teacher: "الشيخ خالد",
-          },
-          {
-            id: "2",
-            type: "سلبي",
-            content: "تأخير في الحضور",
-            date: "2025-10-28",
-            teacher: "الشيخ خالد",
-          },
-        ],
-        "2": [
-          {
-            id: "3",
-            type: "إيجابي",
-            content: "حفظ ممتاز للأحكام",
-            date: "2025-11-02",
-            teacher: "الشيخ أحمد",
-          },
-        ],
-        "3": [],
-      };
+      if (data) {
+        // Group notes by student_id
+        const notesMap: { [key: string]: StudentNote[] } = {};
+        data.forEach((note) => {
+          const studentId = note.student_id;
+          if (!notesMap[studentId]) {
+            notesMap[studentId] = [];
+          }
+          notesMap[studentId].push({
+            id: note.id,
+            student_id: note.student_id,
+            type: note.type as "إيجابي" | "سلبي",
+            content: note.content,
+            note_date: note.note_date,
+            teacher_name: note.teacher_name,
+          });
+        });
+        setStudentsNotes(notesMap);
+      }
+    } catch (error) {
+      console.error("Error loading student notes:", error);
     }
-  );
+  }, []);
+
+  useEffect(() => {
+    loadStudentNotes();
+  }, [loadStudentNotes]);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditImagesDialogOpen, setIsEditImagesDialogOpen] = useState(false);
-  const [isAddNoteDialogOpen, setIsAddNoteDialogOpen] = useState(false);
-  const [isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
+  const [_isAddNoteDialogOpen, setIsAddNoteDialogOpen] = useState(false);
+  const [_isEditNoteDialogOpen, setIsEditNoteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
+  const [selectedNote, setSelectedNote] = useState<StudentNote | null>(null);
   const [editingImageType, setEditingImageType] = useState<
     "new" | "recent" | "distant"
   >("new");
@@ -230,7 +242,7 @@ const Students = () => {
     date: new Date().toISOString().split("T")[0],
     teacher: "المعلم الحالي",
   });
-  const [newStudent, setNewStudent] = useState<Partial<Student>>({
+  const [newStudent, setNewStudent] = useState<StudentFormData>({
     name: "",
     age: 0,
     grade: "",
@@ -243,7 +255,6 @@ const Students = () => {
     parentName: "",
     parentPhone: "",
     isActive: true,
-    // إضافة خانات الصور المتعددة
     images: {
       new: "",
       recent1: "",
@@ -267,12 +278,7 @@ const Students = () => {
     return matchesSearch && matchesDepartment;
   });
 
-  // Filter students by department for specific views
-  const getStudentsByDepartment = (dept: Department) => {
-    return students.filter((student) => student.department === dept);
-  };
-
-  const getDepartmentName = (dept: Department) => {
+  const getDepartmentName = (dept: Department | string) => {
     switch (dept) {
       case "quran":
         return "قرآن";
@@ -305,7 +311,7 @@ const Students = () => {
   };
 
   // Functions for CRUD operations
-  const handleAddStudent = () => {
+  const handleAddStudent = async () => {
     if (!newStudent.name || !newStudent.grade || !newStudent.teacherId) {
       toast({
         title: "خطأ",
@@ -315,61 +321,79 @@ const Students = () => {
       return;
     }
 
-    const student: Student = {
-      id: Date.now().toString(),
-      name: newStudent.name || "",
-      age: newStudent.age || 0,
-      grade: newStudent.grade || "",
-      department: newStudent.department as Department,
-      teacherId: newStudent.teacherId || "",
-      partsMemorized: newStudent.partsMemorized || 0,
-      currentProgress: newStudent.currentProgress || "",
-      previousProgress: newStudent.previousProgress || "",
-      attendance: newStudent.attendance || 0,
-      parentName: newStudent.parentName,
-      parentPhone: newStudent.parentPhone,
-      isActive: newStudent.isActive || true,
-      createdAt: new Date(),
-      images: newStudent.images,
-    };
+    try {
+      const { data, error } = await getSupabase()
+        .from("students")
+        .insert({
+          name: newStudent.name || "",
+          age: newStudent.age || 0,
+          grade: newStudent.grade || "",
+          department: newStudent.department || "quran",
+          teacher_id: newStudent.teacherId || null,
+          parts_memorized: newStudent.partsMemorized || 0,
+          current_progress: newStudent.currentProgress || "",
+          previous_progress: newStudent.previousProgress || "",
+          attendance: newStudent.attendance || 0,
+          parent_name: newStudent.parentName || null,
+          parent_phone: newStudent.parentPhone || null,
+          is_active: newStudent.isActive ?? true,
+          images: newStudent.images || null,
+        })
+        .select()
+        .single();
 
-    const updatedStudents = [...students, student];
-    setStudents(updatedStudents);
+      if (error) {
+        console.error("Error adding student:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء إضافة الطالب",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
-    localStorage.setItem("students", JSON.stringify(updatedStudents));
+      // Reload students to get the updated list
+      await loadStudents();
 
-    setNewStudent({
-      name: "",
-      age: 0,
-      grade: "",
-      department: "quran",
-      teacherId: "",
-      partsMemorized: 0,
-      currentProgress: "",
-      previousProgress: "",
-      attendance: 0,
-      parentName: "",
-      parentPhone: "",
-      isActive: true,
-      images: {
-        new: "",
-        recent1: "",
-        recent2: "",
-        recent3: "",
-        distant1: "",
-        distant2: "",
-        distant3: "",
-      },
-    });
-    setIsAddDialogOpen(false);
-    toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الطالب بنجاح وحفظ البيانات",
-    });
+      setNewStudent({
+        name: "",
+        age: 0,
+        grade: "",
+        department: "quran",
+        teacherId: "",
+        partsMemorized: 0,
+        currentProgress: "",
+        previousProgress: "",
+        attendance: 0,
+        parentName: "",
+        parentPhone: "",
+        isActive: true,
+        images: {
+          new: "",
+          recent1: "",
+          recent2: "",
+          recent3: "",
+          distant1: "",
+          distant2: "",
+          distant3: "",
+        },
+      });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "تم الإضافة",
+        description: "تم إضافة الطالب بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إضافة الطالب",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditStudent = () => {
+  const handleEditStudent = async () => {
     if (
       !selectedStudent ||
       !newStudent.name ||
@@ -384,86 +408,114 @@ const Students = () => {
       return;
     }
 
-    const updatedStudents = students.map((student) =>
-      student.id === selectedStudent.id
-        ? {
-            ...student,
-            name: newStudent.name || student.name,
-            age: newStudent.age || student.age,
-            grade: newStudent.grade || student.grade,
-            department:
-              (newStudent.department as Department) || student.department,
-            teacherId: newStudent.teacherId || student.teacherId,
-            partsMemorized: newStudent.partsMemorized || student.partsMemorized,
-            currentProgress:
-              newStudent.currentProgress || student.currentProgress,
-            previousProgress:
-              newStudent.previousProgress || student.previousProgress,
-            attendance: newStudent.attendance || student.attendance,
-            parentName: newStudent.parentName || student.parentName,
-            parentPhone: newStudent.parentPhone || student.parentPhone,
-            isActive:
-              newStudent.isActive !== undefined
-                ? newStudent.isActive
-                : student.isActive,
-            images: newStudent.images || student.images,
-          }
-        : student
-    );
+    try {
+      const { error } = await getSupabase()
+        .from("students")
+        .update({
+          name: newStudent.name,
+          age: newStudent.age,
+          grade: newStudent.grade,
+          department: newStudent.department,
+          teacher_id: newStudent.teacherId || null,
+          parts_memorized: newStudent.partsMemorized,
+          current_progress: newStudent.currentProgress,
+          previous_progress: newStudent.previousProgress,
+          attendance: newStudent.attendance,
+          parent_name: newStudent.parentName || null,
+          parent_phone: newStudent.parentPhone || null,
+          is_active: newStudent.isActive,
+          images: newStudent.images || null,
+        })
+        .eq("id", selectedStudent.id);
 
-    setStudents(updatedStudents);
+      if (error) {
+        console.error("Error updating student:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء تعديل الطالب",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
-    localStorage.setItem("students", JSON.stringify(updatedStudents));
+      // Reload students to get the updated list
+      await loadStudents();
 
-    setIsEditDialogOpen(false);
-    setSelectedStudent(null);
-    setNewStudent({
-      name: "",
-      age: 0,
-      grade: "",
-      department: "quran",
-      teacherId: "",
-      partsMemorized: 0,
-      currentProgress: "",
-      previousProgress: "",
-      attendance: 0,
-      parentName: "",
-      parentPhone: "",
-      isActive: true,
-      images: {
-        new: "",
-        recent1: "",
-        recent2: "",
-        recent3: "",
-        distant1: "",
-        distant2: "",
-        distant3: "",
-      },
-    });
-    toast({
-      title: "تم التعديل",
-      description: "تم تعديل بيانات الطالب بنجاح وحفظ البيانات",
-    });
+      setIsEditDialogOpen(false);
+      setSelectedStudent(null);
+      setNewStudent({
+        name: "",
+        age: 0,
+        grade: "",
+        department: "quran",
+        teacherId: "",
+        partsMemorized: 0,
+        currentProgress: "",
+        previousProgress: "",
+        attendance: 0,
+        parentName: "",
+        parentPhone: "",
+        isActive: true,
+        images: {
+          new: "",
+          recent1: "",
+          recent2: "",
+          recent3: "",
+          distant1: "",
+          distant2: "",
+          distant3: "",
+        },
+      });
+      toast({
+        title: "تم التعديل",
+        description: "تم تعديل بيانات الطالب بنجاح",
+      });
+    } catch (error) {
+      console.error("Error updating student:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تعديل الطالب",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteStudent = () => {
+  const handleDeleteStudent = async () => {
     if (!selectedStudent) return;
 
-    const updatedStudents = students.filter(
-      (student) => student.id !== selectedStudent.id
-    );
-    setStudents(updatedStudents);
+    try {
+      const { error } = await getSupabase()
+        .from("students")
+        .delete()
+        .eq("id", selectedStudent.id);
 
-    // حفظ البيانات في localStorage للبقاء بعد الخروج من الصفحة
-    localStorage.setItem("students", JSON.stringify(updatedStudents));
+      if (error) {
+        console.error("Error deleting student:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء حذف الطالب",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setIsDeleteDialogOpen(false);
-    setSelectedStudent(null);
-    toast({
-      title: "تم الحذف",
-      description: "تم حذف الطالب بنجاح وحفظ البيانات",
-    });
+      // Reload students to get the updated list
+      await loadStudents();
+
+      setIsDeleteDialogOpen(false);
+      setSelectedStudent(null);
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الطالب بنجاح",
+      });
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف الطالب",
+        variant: "destructive",
+      });
+    }
   };
 
   const openEditDialog = (student: Student) => {
@@ -473,14 +525,14 @@ const Students = () => {
       age: student.age,
       grade: student.grade,
       department: student.department,
-      teacherId: student.teacherId,
-      partsMemorized: student.partsMemorized,
-      currentProgress: student.currentProgress,
-      previousProgress: student.previousProgress,
-      attendance: student.attendance,
-      parentName: student.parentName,
-      parentPhone: student.parentPhone,
-      isActive: student.isActive,
+      teacherId: student.teacherId || student.teacher_id || "",
+      partsMemorized: student.partsMemorized ?? student.parts_memorized ?? 0,
+      currentProgress: student.currentProgress || student.current_progress || "",
+      previousProgress: student.previousProgress || student.previous_progress || "",
+      attendance: student.attendance ?? 0,
+      parentName: student.parentName || student.parent_name || "",
+      parentPhone: student.parentPhone || student.parent_phone || "",
+      isActive: student.isActive ?? student.is_active ?? true,
       images: student.images || {
         new: "",
         recent1: "",
@@ -508,30 +560,48 @@ const Students = () => {
     setIsEditImagesDialogOpen(true);
   };
 
-  const handleEditImages = () => {
+  const handleEditImages = async () => {
     if (!selectedStudent) return;
 
-    const updatedStudents = students.map((student) =>
-      student.id === selectedStudent.id
-        ? { ...student, images: newStudent.images || student.images }
-        : student
-    );
+    try {
+      const { error } = await getSupabase()
+        .from("students")
+        .update({
+          images: newStudent.images || null,
+        })
+        .eq("id", selectedStudent.id);
 
-    setStudents(updatedStudents);
+      if (error) {
+        console.error("Error updating images:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء تعديل السور المحفوظة",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Save to localStorage
-    localStorage.setItem("students", JSON.stringify(updatedStudents));
+      // Reload students to get the updated list
+      await loadStudents();
 
-    setIsEditImagesDialogOpen(false);
-    setSelectedStudent(null);
-    toast({
-      title: "تم التعديل",
-      description: "تم تعديل السور المحفوظة بنجاح وحفظ البيانات",
-    });
+      setIsEditImagesDialogOpen(false);
+      setSelectedStudent(null);
+      toast({
+        title: "تم التعديل",
+        description: "تم تعديل السور المحفوظة بنجاح",
+      });
+    } catch (error) {
+      console.error("Error updating images:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تعديل السور المحفوظة",
+        variant: "destructive",
+      });
+    }
   };
 
   // Functions for notes operations
-  const handleAddNote = () => {
+  const _handleAddNote = async () => {
     if (!selectedStudent || !newNote.content.trim()) {
       toast({
         title: "خطأ",
@@ -541,40 +611,53 @@ const Students = () => {
       return;
     }
 
-    const note = {
-      id: Date.now().toString(),
-      type: newNote.type,
-      content: newNote.content,
-      date: newNote.date,
-      teacher: newNote.teacher,
-    };
+    try {
+      const { error } = await getSupabase()
+        .from("student_notes")
+        .insert({
+          student_id: selectedStudent.id,
+          type: newNote.type,
+          content: newNote.content,
+          note_date: newNote.date,
+          teacher_name: newNote.teacher,
+        });
 
-    const updatedNotes = {
-      ...studentsNotes,
-      [selectedStudent.id]: [
-        ...(studentsNotes[selectedStudent.id] || []),
-        note,
-      ],
-    };
+      if (error) {
+        console.error("Error adding note:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء إضافة الملاحظة",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setStudentsNotes(updatedNotes);
-    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+      // Reload notes to get the updated list
+      await loadStudentNotes();
 
-    setNewNote({
-      type: "إيجابي",
-      content: "",
-      date: new Date().toISOString().split("T")[0],
-      teacher: "المعلم الحالي",
-    });
+      setNewNote({
+        type: "إيجابي",
+        content: "",
+        date: new Date().toISOString().split("T")[0],
+        teacher: "المعلم الحالي",
+      });
 
-    setIsAddNoteDialogOpen(false);
-    toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الملاحظة بنجاح وحفظ البيانات",
-    });
+      setIsAddNoteDialogOpen(false);
+      toast({
+        title: "تم الإضافة",
+        description: "تم إضافة الملاحظة بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding note:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إضافة الملاحظة",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditNote = () => {
+  const _handleEditNote = async () => {
     if (!selectedStudent || !selectedNote || !newNote.content.trim()) {
       toast({
         title: "خطأ",
@@ -584,54 +667,85 @@ const Students = () => {
       return;
     }
 
-    const updatedNotes = {
-      ...studentsNotes,
-      [selectedStudent.id]: studentsNotes[selectedStudent.id].map((note) =>
-        note.id === selectedNote.id
-          ? {
-              ...note,
-              type: newNote.type,
-              content: newNote.content,
-              date: newNote.date,
-              teacher: newNote.teacher,
-            }
-          : note
-      ),
-    };
+    try {
+      const { error } = await getSupabase()
+        .from("student_notes")
+        .update({
+          type: newNote.type,
+          content: newNote.content,
+          note_date: newNote.date,
+          teacher_name: newNote.teacher,
+        })
+        .eq("id", selectedNote.id);
 
-    setStudentsNotes(updatedNotes);
-    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+      if (error) {
+        console.error("Error updating note:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء تعديل الملاحظة",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setNewNote({
-      type: "إيجابي",
-      content: "",
-      date: new Date().toISOString().split("T")[0],
-      teacher: "المعلم الحالي",
-    });
+      // Reload notes to get the updated list
+      await loadStudentNotes();
 
-    setIsEditNoteDialogOpen(false);
-    setSelectedNote(null);
-    toast({
-      title: "تم التعديل",
-      description: "تم تعديل الملاحظة بنجاح وحفظ البيانات",
-    });
+      setNewNote({
+        type: "إيجابي",
+        content: "",
+        date: new Date().toISOString().split("T")[0],
+        teacher: "المعلم الحالي",
+      });
+
+      setIsEditNoteDialogOpen(false);
+      setSelectedNote(null);
+      toast({
+        title: "تم التعديل",
+        description: "تم تعديل الملاحظة بنجاح",
+      });
+    } catch (error) {
+      console.error("Error updating note:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تعديل الملاحظة",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteNote = (studentId: string, noteId: string) => {
-    const updatedNotes = {
-      ...studentsNotes,
-      [studentId]: studentsNotes[studentId].filter(
-        (note) => note.id !== noteId
-      ),
-    };
+  const handleDeleteNote = async (studentId: string, noteId: string) => {
+    try {
+      const { error } = await getSupabase()
+        .from("student_notes")
+        .delete()
+        .eq("id", noteId);
 
-    setStudentsNotes(updatedNotes);
-    localStorage.setItem("studentsNotes", JSON.stringify(updatedNotes));
+      if (error) {
+        console.error("Error deleting note:", error);
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء حذف الملاحظة",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    toast({
-      title: "تم الحذف",
-      description: "تم حذف الملاحظة بنجاح وحفظ البيانات",
-    });
+      // Reload notes to get the updated list
+      await loadStudentNotes();
+
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الملاحظة بنجاح",
+      });
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف الملاحظة",
+        variant: "destructive",
+      });
+    }
   };
 
   const openAddNoteDialog = (student: Student) => {
@@ -645,17 +759,33 @@ const Students = () => {
     setIsAddNoteDialogOpen(true);
   };
 
-  const openEditNoteDialog = (student: Student, note: any) => {
+  const openEditNoteDialog = (student: Student, note: StudentNote) => {
     setSelectedStudent(student);
     setSelectedNote(note);
     setNewNote({
       type: note.type,
       content: note.content,
-      date: note.date,
-      teacher: note.teacher,
+      date: note.note_date,
+      teacher: note.teacher_name,
     });
     setIsEditNoteDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <PageHeader title="إدارة الطلاب" showBack={true} />
+        <main className="container mx-auto px-4 py-6 sm:py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">جاري تحميل بيانات الطلاب...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -1071,10 +1201,10 @@ const Students = () => {
                           </TableCell>
                           <TableCell
                             className={`text-xs sm:text-sm hidden xl:table-cell ${getAttendanceColor(
-                              student.attendance
+                              student.attendance ?? 0
                             )}`}
                           >
-                            {student.attendance}%
+                            {student.attendance ?? 0}%
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm">
                             <Badge
@@ -1145,9 +1275,9 @@ const Students = () => {
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">{student.name}</h3>
                         <Badge
-                          className={getAttendanceColor(student.attendance)}
+                          className={getAttendanceColor(student.attendance ?? 0)}
                         >
-                          {student.attendance}%
+                          {student.attendance ?? 0}%
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -1158,7 +1288,7 @@ const Students = () => {
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
                             className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${student.attendance}%` }}
+                            style={{ width: `${student.attendance ?? 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -1379,7 +1509,7 @@ const Students = () => {
                                     {note.type}
                                   </Badge>
                                   <span className="text-sm text-muted-foreground">
-                                    {note.date} • {note.teacher}
+                                    {note.note_date} • {note.teacher_name}
                                   </span>
                                 </div>
                                 <p>{note.content}</p>
