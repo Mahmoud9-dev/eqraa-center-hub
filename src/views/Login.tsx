@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Building2 } from 'lucide-react';
-import { getSupabase } from '@/integrations/supabase/client';
+import { signIn } from '@/lib/auth/auth-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 
 import { LoginLeftPanel } from '@/components/auth/LoginLeftPanel';
@@ -16,7 +15,6 @@ import { PasswordInput } from '@/components/auth/PasswordInput';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -24,19 +22,16 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await getSupabase().auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast.error('خطأ في تسجيل الدخول: ' + error.message);
-    } else {
+    try {
+      await signIn(email, password);
       toast.success('تم تسجيل الدخول بنجاح');
       router.push('/');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+      toast.error('خطأ في تسجيل الدخول: ' + message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -96,30 +91,6 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-              </div>
-
-              {/* Remember me & Forgot password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  />
-                  <Label
-                    htmlFor="remember"
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    تذكرني
-                  </Label>
-                </div>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto text-sm text-primary"
-                >
-                  نسيت كلمة المرور؟
-                </Button>
               </div>
 
               {/* Sign in button */}

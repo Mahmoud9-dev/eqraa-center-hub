@@ -2,7 +2,8 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as suggestionsService from "@/lib/db/services/suggestions";
+import type { DbSuggestion } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,18 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface Suggestion {
-  id: string;
-  title: string;
-  description: string;
-  status: "تم" | "لم يتم";
-  suggested_by?: string;
-  priority?: "عالي" | "متوسط" | "منخفض";
-  created_at: string;
-}
-
 const Suggestions = () => {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<DbSuggestion[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [suggestedBy, setSuggestedBy] = useState("");
@@ -31,15 +22,12 @@ const Suggestions = () => {
   const { toast } = useToast();
 
   const loadSuggestions = async () => {
-    const { data, error } = await getSupabase()
-      .from("suggestions")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const data = await suggestionsService.getAll();
+      setSuggestions(data || []);
+    } catch (error) {
+      console.error("Error loading suggestions:", error);
       toast({ title: "خطأ في تحميل المقترحات", variant: "destructive" });
-    } else {
-      setSuggestions((data as Suggestion[]) || []);
     }
   };
 
@@ -52,40 +40,35 @@ const Suggestions = () => {
     if (!title || !description) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("suggestions").insert([
-      {
+    try {
+      await suggestionsService.add({
         title,
         description,
-        suggested_by: suggestedBy || null,
+        suggestedBy: suggestedBy || null,
         priority,
         status: "لم يتم",
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة المقترح", variant: "destructive" });
-    } else {
+      });
       toast({ title: "تم إضافة المقترح بنجاح" });
       setTitle("");
       setDescription("");
       setSuggestedBy("");
       setPriority("متوسط");
       loadSuggestions();
+    } catch (error) {
+      console.error("Error adding suggestion:", error);
+      toast({ title: "خطأ في إضافة المقترح", variant: "destructive" });
     }
     setIsLoading(false);
   };
 
   const updateStatus = async (id: string, newStatus: "تم" | "لم يتم") => {
-    const { error } = await getSupabase()
-      .from("suggestions")
-      .update({ status: newStatus })
-      .eq("id", id);
-
-    if (error) {
-      toast({ title: "خطأ في تحديث الحالة", variant: "destructive" });
-    } else {
+    try {
+      await suggestionsService.updateStatus(id, newStatus);
       toast({ title: "تم تحديث الحالة بنجاح" });
       loadSuggestions();
+    } catch (error) {
+      console.error("Error updating suggestion status:", error);
+      toast({ title: "خطأ في تحديث الحالة", variant: "destructive" });
     }
   };
 
@@ -130,7 +113,7 @@ const Suggestions = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">الأولوية</label>
-                  <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
+                  <Select value={priority} onValueChange={(v) => setPriority(v as "عالي" | "متوسط" | "منخفض")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -168,9 +151,9 @@ const Suggestions = () => {
                       </Badge>
                     </div>
                     <p className="text-muted-foreground mb-4">{suggestion.description}</p>
-                    {suggestion.suggested_by && (
+                    {suggestion.suggestedBy && (
                       <p className="text-sm text-muted-foreground mb-2">
-                        مقدم من: {suggestion.suggested_by}
+                        مقدم من: {suggestion.suggestedBy}
                       </p>
                     )}
                     <div className="flex gap-2 mt-4">

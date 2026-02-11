@@ -2,39 +2,28 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as tajweedLessonsService from "@/lib/db/services/tajweedLessons";
+import type { DbTajweedLesson } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface TajweedLesson {
-  id: string;
-  topic: string;
-  description: string;
-  lesson_date: string | null;
-  teacher_id?: string | null;
-  attendees?: string[] | null;
-  resources?: string[] | null;
-  created_at?: string | null;
-}
-
 const Tajweed = () => {
-  const [lessons, setLessons] = useState<TajweedLesson[]>([]);
+  const [lessons, setLessons] = useState<DbTajweedLesson[]>([]);
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const loadLessons = async () => {
-    const { data, error } = await getSupabase()
-      .from("tajweed_lessons")
-      .select("*")
-      .order("lesson_date", { ascending: false });
-
-    if (!error) {
+    try {
+      const data = await tajweedLessonsService.getAll();
       setLessons(data || []);
+    } catch (error) {
+      console.error("Error loading tajweed lessons:", error);
+      toast({ title: "خطأ", description: "فشل تحميل دروس التجويد", variant: "destructive" });
     }
   };
 
@@ -47,17 +36,22 @@ const Tajweed = () => {
     if (!topic || !description) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("tajweed_lessons").insert([
-      { topic, description },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الدرس", variant: "destructive" });
-    } else {
+    try {
+      await tajweedLessonsService.add({
+        topic,
+        description,
+        teacherId: null,
+        lessonDate: null,
+        attendees: null,
+        resources: null,
+      });
       toast({ title: "تم إضافة الدرس بنجاح" });
       setTopic("");
       setDescription("");
       loadLessons();
+    } catch (error) {
+      console.error("Error adding tajweed lesson:", error);
+      toast({ title: "خطأ في إضافة الدرس", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -136,7 +130,7 @@ const Tajweed = () => {
                     <h4 className="font-bold text-lg mb-2">{lesson.topic}</h4>
                     <p className="text-muted-foreground mb-2">{lesson.description}</p>
                     <p className="text-sm text-muted-foreground">
-                      {lesson.lesson_date ? new Date(lesson.lesson_date).toLocaleDateString("ar") : "بدون تاريخ"}
+                      {lesson.lessonDate ? new Date(lesson.lessonDate).toLocaleDateString("ar") : "بدون تاريخ"}
                     </p>
                   </CardContent>
                 </Card>

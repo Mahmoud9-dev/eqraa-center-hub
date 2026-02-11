@@ -10,6 +10,18 @@ import type {
   Announcement,
   Suggestion,
 } from "@/types";
+import type {
+  DbStudent,
+  DbTeacher,
+  DbStudentNote,
+  DbAttendanceRecord,
+  DbMeeting,
+  DbSuggestion,
+} from "@/lib/db/types";
+
+// ============================================================
+// Legacy mock data (using @/types interfaces - kept for backward compatibility)
+// ============================================================
 
 // Mock Teachers data
 export const mockTeachers: Teacher[] = [
@@ -318,7 +330,10 @@ export const mockSuggestions: Suggestion[] = [
   },
 ];
 
-// Utility functions for testing
+// ============================================================
+// Legacy utility functions (using @/types interfaces)
+// ============================================================
+
 export const createMockTeacher = (
   overrides: Partial<Teacher> = {}
 ): Teacher => ({
@@ -360,5 +375,99 @@ export const createMockQuranSession = (
   versesTo: 7,
   performanceRating: 8,
   attendance: true,
+  ...overrides,
+});
+
+// ============================================================
+// Dexie/camelCase mock data generators (using @/lib/db/types)
+// ============================================================
+
+export const createDbStudent = (
+  overrides: Partial<DbStudent> = {}
+): DbStudent => ({
+  id: crypto.randomUUID(),
+  name: "أحمد محمد",
+  age: 12,
+  grade: "السادس ابتدائي",
+  department: "quran",
+  teacherId: null,
+  partsMemorized: 5,
+  currentProgress: "سورة آل عمران",
+  previousProgress: "سورة البقرة",
+  isActive: true,
+  parentName: "محمد علي",
+  parentPhone: "0512345678",
+  attendance: 85,
+  images: null,
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+export const createDbTeacher = (
+  overrides: Partial<DbTeacher> = {}
+): DbTeacher => ({
+  id: crypto.randomUUID(),
+  name: "الشيخ خالد",
+  department: "quran",
+  specialization: "حفظ القرآن",
+  isActive: true,
+  email: "khalid@eqraa.com",
+  phone: "0512345678",
+  experience: 10,
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+export const createDbStudentNote = (
+  overrides: Partial<DbStudentNote> = {}
+): DbStudentNote => ({
+  id: crypto.randomUUID(),
+  studentId: "student-1",
+  type: "إيجابي",
+  content: "مشاركة ممتازة",
+  noteDate: "2025-11-05",
+  teacherName: "الشيخ خالد",
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+export const createDbAttendanceRecord = (
+  overrides: Partial<DbAttendanceRecord> = {}
+): DbAttendanceRecord => ({
+  id: crypto.randomUUID(),
+  studentId: "student-1",
+  teacherId: "teacher-1",
+  recordDate: "2025-11-05",
+  status: "حاضر",
+  notes: "حضور ممتاز",
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+export const createDbMeeting = (
+  overrides: Partial<DbMeeting> = {}
+): DbMeeting => ({
+  id: crypto.randomUUID(),
+  title: "اجتماع تجريبي",
+  description: "وصف الاجتماع",
+  meetingDate: new Date().toISOString(),
+  attendees: null,
+  agenda: null,
+  notes: null,
+  status: "مجدولة",
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+export const createDbSuggestion = (
+  overrides: Partial<DbSuggestion> = {}
+): DbSuggestion => ({
+  id: crypto.randomUUID(),
+  title: "اقتراح تجريبي",
+  description: "وصف الاقتراح",
+  status: "لم يتم",
+  priority: "متوسط",
+  suggestedBy: "teacher-1",
+  createdAt: new Date().toISOString(),
   ...overrides,
 });

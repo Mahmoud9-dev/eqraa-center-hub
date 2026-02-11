@@ -2,7 +2,11 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as studentsService from "@/lib/db/services/students";
+import * as teachersService from "@/lib/db/services/teachers";
+import * as quranSessionsService from "@/lib/db/services/quranSessions";
+import type { QuranSessionWithNames } from "@/lib/db/services/quranSessions";
+import type { DbStudent, DbTeacher } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,36 +29,10 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Teacher {
-  id: string;
-  name: string;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  age: number;
-  parts_memorized: number;
-  current_progress: string;
-  teacher_id: string | null;
-  teachers?: { name: string };
-}
-
-interface QuranSession {
-  id: string;
-  student_id: string;
-  surah_name: string;
-  verses_from: number;
-  verses_to: number;
-  performance_rating: number;
-  session_date: string;
-  students: { name: string };
-}
-
 const Quran = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [sessions, setSessions] = useState<QuranSession[]>([]);
+  const [students, setStudents] = useState<DbStudent[]>([]);
+  const [teachers, setTeachers] = useState<DbTeacher[]>([]);
+  const [sessions, setSessions] = useState<QuranSessionWithNames[]>([]);
   const [studentName, setStudentName] = useState("");
   const [studentAge, setStudentAge] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
@@ -73,26 +51,19 @@ const Quran = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: studentsData } = await getSupabase()
-      .from("students")
-      .select("*, teachers(name)")
-      .eq("department", "quran")
-      .order("name");
-
-    const { data: teachersData } = await getSupabase()
-      .from("teachers")
-      .select("*")
-      .eq("department", "quran")
-      .order("name");
-
-    const { data: sessionsData } = await getSupabase()
-      .from("quran_sessions")
-      .select("*, students(name)")
-      .order("session_date", { ascending: false });
-
-    if (studentsData) setStudents(studentsData as Student[]);
-    if (teachersData) setTeachers(teachersData as Teacher[]);
-    if (sessionsData) setSessions(sessionsData as QuranSession[]);
+    try {
+      const [studentsData, teachersData, sessionsData] = await Promise.all([
+        studentsService.getByDepartment("quran"),
+        teachersService.getByDepartment("quran"),
+        quranSessionsService.getAllWithNames(),
+      ]);
+      setStudents(studentsData);
+      setTeachers(teachersData);
+      setSessions(sessionsData);
+    } catch (error) {
+      console.error("Error loading quran data:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات القرآن", variant: "destructive" });
+    }
   };
 
   useEffect(() => {
@@ -107,28 +78,26 @@ const Quran = () => {
 
     let teacherId = selectedTeacher;
 
-    // إذا لم يكن هناك شيخ محدد ولكن هناك نص مكتوب، أضف الشيخ أولاً
+    // If no teacher selected but there's text, add the teacher first
     if (!teacherId && teacherSearchValue.trim()) {
-      const { data: newTeacher, error: teacherError } = await getSupabase()
-        .from("teachers")
-        .insert([
-          {
-            name: teacherSearchValue.trim(),
-            department: "quran",
-            specialization: "تحفيظ القرآن",
-          },
-        ])
-        .select()
-        .single();
-
-      if (teacherError) {
+      try {
+        const newTeacher = await teachersService.add({
+          name: teacherSearchValue.trim(),
+          department: "quran",
+          specialization: "تحفيظ القرآن",
+          isActive: true,
+          email: null,
+          phone: null,
+          experience: null,
+        });
+        teacherId = newTeacher.id;
+        toast({ title: "تم إضافة الشيخ الجديد" });
+      } catch (error) {
+        console.error("Error adding teacher:", error);
         toast({ title: "خطأ في إضافة الشيخ", variant: "destructive" });
         setIsLoading(false);
         return;
       }
-
-      teacherId = newTeacher.id;
-      toast({ title: "تم إضافة الشيخ الجديد" });
     }
 
     if (!teacherId) {
@@ -137,28 +106,31 @@ const Quran = () => {
       return;
     }
 
-    const { error } = await getSupabase().from("students").insert([
-      {
+    try {
+      await studentsService.add({
         name: studentName,
         age: parseInt(studentAge),
         grade: "تحفيظ",
         department: "quran",
-        teacher_id: teacherId,
-        parts_memorized: 0,
-        current_progress: "بداية الحفظ",
-        previous_progress: "",
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
-    } else {
+        teacherId: teacherId,
+        partsMemorized: 0,
+        currentProgress: "بداية الحفظ",
+        previousProgress: "",
+        isActive: true,
+        parentName: null,
+        parentPhone: null,
+        attendance: null,
+        images: null,
+      });
       toast({ title: "تم إضافة الطالب بنجاح" });
       setStudentName("");
       setStudentAge("");
       setSelectedTeacher("");
       setTeacherSearchValue("");
       loadData();
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -168,25 +140,27 @@ const Quran = () => {
     if (!selectedStudent || !surahName || !versesFrom || !versesTo) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("quran_sessions").insert([
-      {
-        student_id: selectedStudent,
-        surah_name: surahName,
-        verses_from: parseInt(versesFrom),
-        verses_to: parseInt(versesTo),
-        performance_rating: parseInt(rating),
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الجلسة", variant: "destructive" });
-    } else {
+    try {
+      await quranSessionsService.add({
+        studentId: selectedStudent,
+        teacherId: null,
+        sessionDate: null,
+        surahName: surahName,
+        versesFrom: parseInt(versesFrom),
+        versesTo: parseInt(versesTo),
+        performanceRating: parseInt(rating),
+        notes: null,
+        attendance: null,
+      });
       toast({ title: "تم إضافة الجلسة بنجاح" });
       setSurahName("");
       setVersesFrom("");
       setVersesTo("");
       setRating("5");
       loadData();
+    } catch (error) {
+      console.error("Error adding session:", error);
+      toast({ title: "خطأ في إضافة الجلسة", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -369,20 +343,20 @@ const Quran = () => {
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-bold text-lg">
-                            {session.students.name}
+                            {session.studentName}
                           </h4>
                           <span className="text-sm bg-primary/10 px-3 py-1 rounded-full">
-                            {session.performance_rating}/10
+                            {session.performanceRating}/10
                           </span>
                         </div>
                         <p className="text-muted-foreground">
-                          {session.surah_name} - الآيات {session.verses_from}{" "}
-                          إلى {session.verses_to}
+                          {session.surahName} - الآيات {session.versesFrom}{" "}
+                          إلى {session.versesTo}
                         </p>
                         <p className="text-sm text-muted-foreground mt-2">
-                          {new Date(session.session_date).toLocaleDateString(
+                          {session.sessionDate ? new Date(session.sessionDate).toLocaleDateString(
                             "ar"
-                          )}
+                          ) : "-"}
                         </p>
                       </CardContent>
                     </Card>
@@ -538,7 +512,7 @@ const Quran = () => {
                 ) : (
                   students.map((student) => (
                     <div key={student.id} className="space-y-4">
-                      {/* المربع الرئيسي */}
+                      {/* Main card */}
                       <Card className="border-r-4 border-r-primary">
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start">
@@ -549,9 +523,9 @@ const Quran = () => {
                               <p className="text-sm text-muted-foreground">
                                 العمر: {student.age} سنة
                               </p>
-                              {student.teachers && (
+                              {student.teacherId && (
                                 <p className="text-sm text-primary font-medium mt-1">
-                                  الشيخ: {student.teachers.name}
+                                  الشيخ: {teachers.find(t => t.id === student.teacherId)?.name || "-"}
                                 </p>
                               )}
                             </div>
@@ -560,19 +534,19 @@ const Quran = () => {
                                 الأجزاء المحفوظة
                               </p>
                               <p className="text-2xl font-bold text-primary">
-                                {student.parts_memorized}
+                                {student.partsMemorized}
                               </p>
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-2">
-                            {student.current_progress}
+                            {student.currentProgress}
                           </p>
                         </CardContent>
                       </Card>
 
-                      {/* المربعات الفرعية */}
+                      {/* Sub-cards */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* الماضي القريب */}
+                        {/* Recent past */}
                         <Card className="border-r-4 border-r-blue-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-blue-700 mb-2">
@@ -594,7 +568,7 @@ const Quran = () => {
                           </CardContent>
                         </Card>
 
-                        {/* الماضي البعيد */}
+                        {/* Distant past */}
                         <Card className="border-r-4 border-r-green-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-green-700 mb-2">
@@ -615,7 +589,7 @@ const Quran = () => {
                           </CardContent>
                         </Card>
 
-                        {/* الجديد */}
+                        {/* New */}
                         <Card className="border-r-4 border-r-orange-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-orange-700 mb-2">

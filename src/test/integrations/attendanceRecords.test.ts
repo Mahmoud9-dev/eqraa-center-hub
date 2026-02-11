@@ -1,472 +1,305 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getSupabase } from "@/integrations/supabase/client";
-
-// Mock the supabase client
-vi.mock("@/integrations/supabase/client", () => ({
-  getSupabase: vi.fn(),
-}));
+import { describe, it, expect } from "vitest";
+import * as attendanceRecordsService from "@/lib/db/services/attendanceRecords";
+import { seedAttendanceRecord } from "../utils/db-helpers";
 
 describe("Attendance Records CRUD Operations", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe("Fetch Attendance Records", () => {
-    it("should fetch all attendance records successfully", async () => {
-      const mockRecords = [
-        {
-          id: "record-1",
-          student_id: "student-1",
-          teacher_id: "teacher-1",
-          record_date: "2025-11-05",
-          status: "حاضر",
-          notes: "حضور ممتاز",
-          created_at: "2025-11-05T08:00:00Z",
-        },
-        {
-          id: "record-2",
-          student_id: "student-2",
-          teacher_id: "teacher-1",
-          record_date: "2025-11-05",
-          status: "غائب",
-          notes: "غياب بعذر",
-          created_at: "2025-11-05T08:00:00Z",
-        },
-      ];
+    it("should fetch all attendance records ordered by recordDate descending", async () => {
+      await seedAttendanceRecord({ recordDate: "2025-11-03" });
+      await seedAttendanceRecord({ recordDate: "2025-11-05" });
+      await seedAttendanceRecord({ recordDate: "2025-11-01" });
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: mockRecords, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .order("record_date", { ascending: false });
-
-      expect(mockFrom).toHaveBeenCalledWith("attendance_records");
-      expect(mockSelect).toHaveBeenCalledWith("*");
-      expect(result.data).toEqual(mockRecords);
-      expect(result.error).toBeNull();
+      const records = await attendanceRecordsService.getAll();
+      expect(records).toHaveLength(3);
+      expect(records[0].recordDate).toBe("2025-11-05");
+      expect(records[1].recordDate).toBe("2025-11-03");
+      expect(records[2].recordDate).toBe("2025-11-01");
     });
 
     it("should fetch attendance records for a specific date", async () => {
-      const targetDate = "2025-11-05";
-      const mockRecords = [
-        {
-          id: "record-1",
-          student_id: "student-1",
-          record_date: targetDate,
-          status: "حاضر",
-        },
-      ];
+      await seedAttendanceRecord({
+        recordDate: "2025-11-05",
+        status: "حاضر",
+      });
+      await seedAttendanceRecord({
+        recordDate: "2025-11-05",
+        status: "غائب",
+      });
+      await seedAttendanceRecord({
+        recordDate: "2025-11-06",
+        status: "حاضر",
+      });
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: mockRecords, error: null });
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .eq("record_date", targetDate)
-        .order("created_at", { ascending: false });
-
-      expect(mockEq).toHaveBeenCalledWith("record_date", targetDate);
-      expect(result.data!.every((r) => r.record_date === targetDate)).toBe(true);
+      const records = await attendanceRecordsService.getByDate("2025-11-05");
+      expect(records).toHaveLength(2);
+      expect(records.every((r) => r.recordDate === "2025-11-05")).toBe(true);
     });
 
     it("should fetch attendance records for a specific student", async () => {
-      const studentId = "student-1";
-      const mockRecords = [
-        { id: "1", student_id: studentId, status: "حاضر", record_date: "2025-11-05" },
-        { id: "2", student_id: studentId, status: "حاضر", record_date: "2025-11-04" },
-        { id: "3", student_id: studentId, status: "غائب", record_date: "2025-11-03" },
-      ];
+      await seedAttendanceRecord({ studentId: "student-1", recordDate: "2025-11-05" });
+      await seedAttendanceRecord({ studentId: "student-1", recordDate: "2025-11-04" });
+      await seedAttendanceRecord({ studentId: "student-2", recordDate: "2025-11-05" });
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: mockRecords, error: null });
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .eq("student_id", studentId)
-        .order("record_date", { ascending: false });
-
-      expect(mockEq).toHaveBeenCalledWith("student_id", studentId);
-      expect(result.data).toHaveLength(3);
+      const records = await attendanceRecordsService.getByStudentId("student-1");
+      expect(records).toHaveLength(2);
+      expect(records.every((r) => r.studentId === "student-1")).toBe(true);
     });
 
     it("should handle empty results gracefully", async () => {
-      const mockOrder = vi.fn().mockResolvedValue({ data: [], error: null });
-      const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .order("record_date", { ascending: false });
-
-      expect(result.data).toEqual([]);
-      expect(result.error).toBeNull();
+      const records = await attendanceRecordsService.getAll();
+      expect(records).toEqual([]);
     });
 
-    it("should handle fetch errors", async () => {
-      const mockError = { message: "Database error", code: "PGRST301" };
-      const mockOrder = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .order("record_date", { ascending: false });
-
-      expect(result.data).toBeNull();
-      expect(result.error).toEqual(mockError);
+    it("should return empty array for date with no records", async () => {
+      const records = await attendanceRecordsService.getByDate("2099-01-01");
+      expect(records).toEqual([]);
     });
   });
 
   describe("Create Attendance Record", () => {
     it("should create a new attendance record for a student", async () => {
-      const newRecord = {
-        student_id: "student-1",
-        teacher_id: "teacher-1",
-        record_date: "2025-11-06",
+      const created = await attendanceRecordsService.add({
+        studentId: "student-1",
+        teacherId: "teacher-1",
+        recordDate: "2025-11-06",
         status: "حاضر",
         notes: "حضور منتظم",
-      };
+      });
 
-      const createdRecord = {
-        id: "new-record-id",
-        ...newRecord,
-        created_at: "2025-11-06T08:00:00Z",
-      };
-
-      const mockSingle = vi.fn().mockResolvedValue({ data: createdRecord, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .insert(newRecord)
-        .select()
-        .single();
-
-      expect(mockFrom).toHaveBeenCalledWith("attendance_records");
-      expect(mockInsert).toHaveBeenCalledWith(newRecord);
-      expect(result.data).toEqual(createdRecord);
+      expect(created.id).toBeDefined();
+      expect(created.createdAt).toBeDefined();
+      expect(created.status).toBe("حاضر");
+      expect(created.studentId).toBe("student-1");
     });
 
     it("should create multiple attendance records in batch", async () => {
       const batchRecords = [
-        { student_id: "student-1", teacher_id: "teacher-1", record_date: "2025-11-06", status: "حاضر" },
-        { student_id: "student-2", teacher_id: "teacher-1", record_date: "2025-11-06", status: "غائب" },
-        { student_id: "student-3", teacher_id: "teacher-1", record_date: "2025-11-06", status: "مأذون" },
+        {
+          studentId: "student-1",
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "حاضر",
+          notes: null,
+        },
+        {
+          studentId: "student-2",
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "غائب",
+          notes: null,
+        },
+        {
+          studentId: "student-3" as string | null,
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "مأذون",
+          notes: null,
+        },
       ];
 
-      const mockInsert = vi.fn().mockResolvedValue({ data: batchRecords, error: null });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .insert(batchRecords);
-
-      expect(mockInsert).toHaveBeenCalledWith(batchRecords);
-      expect(result.error).toBeNull();
-    });
-
-    it("should validate status values (حاضر, غائب, مأذون)", async () => {
-      const invalidRecord = {
-        student_id: "student-1",
-        teacher_id: "teacher-1",
-        record_date: "2025-11-06",
-        status: "invalid_status",
-      };
-
-      const mockError = {
-        message: 'new row violates check constraint "attendance_records_status_check"',
-        code: "23514",
-      };
-
-      const mockInsert = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .insert(invalidRecord);
-
-      expect(result.error).not.toBeNull();
-      expect(result.error!.code).toBe("23514");
-    });
-
-    it("should handle foreign key constraint for student_id", async () => {
-      const recordWithInvalidStudent = {
-        student_id: "non-existent-student",
-        teacher_id: "teacher-1",
-        record_date: "2025-11-06",
-        status: "حاضر",
-      };
-
-      const mockError = {
-        message: 'insert violates foreign key constraint "attendance_records_student_id_fkey"',
-        code: "23503",
-      };
-
-      const mockInsert = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .insert(recordWithInvalidStudent);
-
-      expect(result.error!.code).toBe("23503");
+      const created = await attendanceRecordsService.addBatch(batchRecords);
+      expect(created).toHaveLength(3);
+      expect(created[0].status).toBe("حاضر");
+      expect(created[1].status).toBe("غائب");
+      expect(created[2].status).toBe("مأذون");
     });
 
     it("should allow null student_id for teacher attendance", async () => {
-      const teacherAttendance = {
-        student_id: null,
-        teacher_id: "teacher-1",
-        record_date: "2025-11-06",
+      const created = await attendanceRecordsService.add({
+        studentId: null,
+        teacherId: "teacher-1",
+        recordDate: "2025-11-06",
         status: "حاضر",
         notes: "حضور منتظم",
-      };
+      });
 
-      const createdRecord = {
-        id: "teacher-record-id",
-        ...teacherAttendance,
-        created_at: "2025-11-06T08:00:00Z",
-      };
+      expect(created.studentId).toBeNull();
+      expect(created.teacherId).toBe("teacher-1");
+    });
 
-      const mockInsert = vi.fn().mockResolvedValue({ data: createdRecord, error: null });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
+    it("should store حاضر status correctly", async () => {
+      const record = await attendanceRecordsService.add({
+        studentId: "student-1",
+        teacherId: "teacher-1",
+        recordDate: "2025-11-06",
+        status: "حاضر",
+        notes: null,
+      });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
+      const fetched = await attendanceRecordsService.getByDate("2025-11-06");
+      expect(fetched[0].status).toBe("حاضر");
+    });
 
-      const result = await getSupabase()
-        .from("attendance_records")
-        .insert(teacherAttendance);
+    it("should store غائب status correctly", async () => {
+      const record = await attendanceRecordsService.add({
+        studentId: "student-1",
+        teacherId: "teacher-1",
+        recordDate: "2025-11-06",
+        status: "غائب",
+        notes: "غياب بدون عذر",
+      });
 
-      expect(result.data!.student_id).toBeNull();
-      expect(result.data!.teacher_id).toBe("teacher-1");
+      const fetched = await attendanceRecordsService.getByDate("2025-11-06");
+      expect(fetched[0].status).toBe("غائب");
+    });
+
+    it("should store مأذون status correctly", async () => {
+      const record = await attendanceRecordsService.add({
+        studentId: "student-1",
+        teacherId: "teacher-1",
+        recordDate: "2025-11-06",
+        status: "مأذون",
+        notes: "غياب بعذر",
+      });
+
+      const fetched = await attendanceRecordsService.getByDate("2025-11-06");
+      expect(fetched[0].status).toBe("مأذون");
     });
   });
 
   describe("Update Attendance Record", () => {
     it("should update attendance status", async () => {
-      const recordId = "record-1";
-      const updates = {
+      const record = await seedAttendanceRecord({ status: "حاضر" });
+      await attendanceRecordsService.update(record.id, {
         status: "مأذون",
         notes: "غياب بإذن",
-      };
+      });
 
-      const updatedRecord = {
-        id: recordId,
-        student_id: "student-1",
-        teacher_id: "teacher-1",
-        record_date: "2025-11-05",
-        status: "مأذون",
-        notes: "غياب بإذن",
-      };
-
-      const mockSingle = vi.fn().mockResolvedValue({ data: updatedRecord, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .update(updates)
-        .eq("id", recordId)
-        .select()
-        .single();
-
-      expect(mockUpdate).toHaveBeenCalledWith(updates);
-      expect(mockEq).toHaveBeenCalledWith("id", recordId);
-      expect(result.data!.status).toBe("مأذون");
+      const records = await attendanceRecordsService.getByDate(record.recordDate);
+      const updated = records.find((r) => r.id === record.id);
+      expect(updated?.status).toBe("مأذون");
+      expect(updated?.notes).toBe("غياب بإذن");
     });
 
-    it("should handle update of non-existent record", async () => {
-      const nonExistentId = "non-existent-record";
-      const updates = { status: "حاضر" };
+    it("should only update specified fields", async () => {
+      const record = await seedAttendanceRecord({
+        status: "حاضر",
+        notes: "ملاحظة أصلية",
+      });
 
-      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
+      await attendanceRecordsService.update(record.id, { status: "غائب" });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .update(updates)
-        .eq("id", nonExistentId)
-        .select()
-        .single();
-
-      expect(result.data).toBeNull();
+      const records = await attendanceRecordsService.getByDate(record.recordDate);
+      const updated = records.find((r) => r.id === record.id);
+      expect(updated?.status).toBe("غائب");
+      expect(updated?.notes).toBe("ملاحظة أصلية");
     });
   });
 
   describe("Delete Attendance Record", () => {
     it("should delete an attendance record successfully", async () => {
-      const recordId = "record-1";
+      const record = await seedAttendanceRecord();
+      await attendanceRecordsService.remove(record.id);
 
-      const mockEq = vi.fn().mockResolvedValue({ error: null });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .delete()
-        .eq("id", recordId);
-
-      expect(mockFrom).toHaveBeenCalledWith("attendance_records");
-      expect(mockDelete).toHaveBeenCalled();
-      expect(mockEq).toHaveBeenCalledWith("id", recordId);
-      expect(result.error).toBeNull();
+      const records = await attendanceRecordsService.getByDate(record.recordDate);
+      expect(records).toHaveLength(0);
     });
 
-    it("should handle delete errors gracefully", async () => {
-      const recordId = "record-1";
-      const mockError = { message: "Permission denied", code: "42501" };
+    it("should only delete the specified record", async () => {
+      const record1 = await seedAttendanceRecord({ recordDate: "2025-11-05", notes: "سجل 1" });
+      const record2 = await seedAttendanceRecord({ recordDate: "2025-11-05", notes: "سجل 2" });
 
-      const mockEq = vi.fn().mockResolvedValue({ error: mockError });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
+      await attendanceRecordsService.remove(record1.id);
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .delete()
-        .eq("id", recordId);
-
-      expect(result.error).toEqual(mockError);
+      const records = await attendanceRecordsService.getByDate("2025-11-05");
+      expect(records).toHaveLength(1);
+      expect(records[0].notes).toBe("سجل 2");
     });
   });
 
   describe("Status Filtering", () => {
-    it("should filter records by status حاضر", async () => {
-      const presentRecords = [
-        { id: "1", status: "حاضر", record_date: "2025-11-05" },
-        { id: "2", status: "حاضر", record_date: "2025-11-04" },
-      ];
+    it("should be able to filter records by status حاضر in-memory", async () => {
+      await seedAttendanceRecord({ status: "حاضر", recordDate: "2025-11-05" });
+      await seedAttendanceRecord({ status: "حاضر", recordDate: "2025-11-05" });
+      await seedAttendanceRecord({ status: "غائب", recordDate: "2025-11-05" });
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: presentRecords, error: null });
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      const allRecords = await attendanceRecordsService.getByDate("2025-11-05");
+      const present = allRecords.filter((r) => r.status === "حاضر");
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .eq("status", "حاضر")
-        .order("record_date", { ascending: false });
-
-      expect(mockEq).toHaveBeenCalledWith("status", "حاضر");
-      expect(result.data!.every((r) => r.status === "حاضر")).toBe(true);
+      expect(present).toHaveLength(2);
+      expect(present.every((r) => r.status === "حاضر")).toBe(true);
     });
 
-    it("should filter records by status غائب", async () => {
-      const absentRecords = [
-        { id: "3", status: "غائب", record_date: "2025-11-03" },
-      ];
+    it("should be able to filter records by status غائب in-memory", async () => {
+      await seedAttendanceRecord({ status: "حاضر", recordDate: "2025-11-05" });
+      await seedAttendanceRecord({ status: "غائب", recordDate: "2025-11-05" });
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: absentRecords, error: null });
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      const allRecords = await attendanceRecordsService.getByDate("2025-11-05");
+      const absent = allRecords.filter((r) => r.status === "غائب");
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .eq("status", "غائب")
-        .order("record_date", { ascending: false });
-
-      expect(result.data!.every((r) => r.status === "غائب")).toBe(true);
-    });
-  });
-
-  describe("Date Range Queries", () => {
-    it("should fetch records within a date range", async () => {
-      const mockRecords = [
-        { id: "1", record_date: "2025-11-05" },
-        { id: "2", record_date: "2025-11-04" },
-        { id: "3", record_date: "2025-11-03" },
-      ];
-
-      const mockLte = vi.fn().mockResolvedValue({ data: mockRecords, error: null });
-      const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
-      const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .gte("record_date", "2025-11-01")
-        .lte("record_date", "2025-11-07");
-
-      expect(mockGte).toHaveBeenCalledWith("record_date", "2025-11-01");
-      expect(mockLte).toHaveBeenCalledWith("record_date", "2025-11-07");
-      expect(result.data).toHaveLength(3);
+      expect(absent).toHaveLength(1);
+      expect(absent[0].status).toBe("غائب");
     });
   });
 
   describe("Teacher Attendance", () => {
-    it("should fetch teacher-only attendance records", async () => {
-      const teacherRecords = [
-        { id: "1", student_id: null, teacher_id: "teacher-1", status: "حاضر" },
-        { id: "2", student_id: null, teacher_id: "teacher-2", status: "غائب" },
+    it("should store teacher-only attendance records (null studentId)", async () => {
+      await seedAttendanceRecord({
+        studentId: null,
+        teacherId: "teacher-1",
+        status: "حاضر",
+      });
+      await seedAttendanceRecord({
+        studentId: null,
+        teacherId: "teacher-2",
+        status: "غائب",
+      });
+
+      const allRecords = await attendanceRecordsService.getAll();
+      const teacherRecords = allRecords.filter((r) => r.studentId === null);
+
+      expect(teacherRecords).toHaveLength(2);
+      expect(teacherRecords.every((r) => r.studentId === null)).toBe(true);
+    });
+  });
+
+  describe("Batch Operations", () => {
+    it("should handle batch insert for multiple students", async () => {
+      const batchRecords = [
+        {
+          studentId: "student-1" as string | null,
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "حاضر",
+          notes: "حضور منتظم",
+        },
+        {
+          studentId: "student-2" as string | null,
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "حاضر",
+          notes: "حضور منتظم",
+        },
       ];
 
-      const mockOrder = vi.fn().mockResolvedValue({ data: teacherRecords, error: null });
-      const mockIsNull = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelect = vi.fn().mockReturnValue({ is: mockIsNull });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      const created = await attendanceRecordsService.addBatch(batchRecords);
+      expect(created).toHaveLength(2);
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
+      const records = await attendanceRecordsService.getByDate("2025-11-06");
+      expect(records).toHaveLength(2);
+    });
 
-      const result = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .is("student_id", null)
-        .order("record_date", { ascending: false });
+    it("should handle batch insert for multiple teachers", async () => {
+      const batchRecords = [
+        {
+          studentId: null,
+          teacherId: "teacher-1",
+          recordDate: "2025-11-06",
+          status: "حاضر",
+          notes: "حضور منتظم",
+        },
+        {
+          studentId: null,
+          teacherId: "teacher-2",
+          recordDate: "2025-11-06",
+          status: "حاضر",
+          notes: "حضور منتظم",
+        },
+      ];
 
-      expect(mockIsNull).toHaveBeenCalledWith("student_id", null);
-      expect(result.data!.every((r) => r.student_id === null)).toBe(true);
+      const created = await attendanceRecordsService.addBatch(batchRecords);
+      expect(created).toHaveLength(2);
+      expect(created.every((r) => r.studentId === null)).toBe(true);
     });
   });
 });

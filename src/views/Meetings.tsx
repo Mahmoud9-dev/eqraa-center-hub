@@ -2,7 +2,8 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as meetingsService from "@/lib/db/services/meetings";
+import type { DbMeeting } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,13 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface Meeting {
-  id: string;
-  title: string;
-  description: string;
-  meeting_date: string;
-  status: "مجدولة" | "مكتملة" | "ملغاة";
-  notes?: string;
+interface Meeting extends DbMeeting {
   type?: "المعلمين" | "أولياء الأمور" | "إدارية";
 }
 
@@ -50,13 +45,12 @@ const Meetings = () => {
   const { toast } = useToast();
 
   const loadMeetings = async () => {
-    const { data, error } = await getSupabase()
-      .from("meetings")
-      .select("*")
-      .order("meeting_date", { ascending: false });
-
-    if (!error) {
+    try {
+      const data = await meetingsService.getAll();
       setMeetings((data as Meeting[]) || []);
+    } catch (error) {
+      console.error("Error loading meetings:", error);
+      toast({ title: "خطأ", description: "فشل تحميل الاجتماعات", variant: "destructive" });
     }
   };
 
@@ -69,25 +63,25 @@ const Meetings = () => {
     if (!title || !description || !meetingDate) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("meetings").insert([
-      {
+    try {
+      await meetingsService.add({
         title,
         description,
-        meeting_date: new Date(meetingDate).toISOString(),
+        meetingDate: new Date(meetingDate).toISOString(),
         status: "مجدولة",
-        type: meetingType,
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الاجتماع", variant: "destructive" });
-    } else {
+        attendees: null,
+        agenda: null,
+        notes: meetingType, // Store type in notes field for backward compatibility
+      });
       toast({ title: "تم إضافة الاجتماع بنجاح" });
       setTitle("");
       setDescription("");
       setMeetingDate("");
       setMeetingType("المعلمين");
       loadMeetings();
+    } catch (error) {
+      console.error("Error adding meeting:", error);
+      toast({ title: "خطأ في إضافة الاجتماع", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -96,30 +90,26 @@ const Meetings = () => {
     id: string,
     newStatus: "مجدولة" | "مكتملة" | "ملغاة"
   ) => {
-    const { error } = await getSupabase()
-      .from("meetings")
-      .update({ status: newStatus })
-      .eq("id", id);
-
-    if (!error) {
+    try {
+      await meetingsService.updateStatus(id, newStatus);
       toast({ title: "تم تحديث الحالة" });
       loadMeetings();
+    } catch (error) {
+      console.error("Error updating meeting status:", error);
+      toast({ title: "خطأ", description: "فشل تحديث حالة الاجتماع", variant: "destructive" });
     }
   };
 
   const deleteMeeting = async () => {
     if (!selectedMeeting) return;
 
-    const { error } = await getSupabase()
-      .from("meetings")
-      .delete()
-      .eq("id", selectedMeeting.id);
-
-    if (error) {
-      toast({ title: "خطأ في حذف الاجتماع", variant: "destructive" });
-    } else {
+    try {
+      await meetingsService.remove(selectedMeeting.id);
       toast({ title: "تم حذف الاجتماع بنجاح" });
       loadMeetings();
+    } catch (error) {
+      console.error("Error deleting meeting:", error);
+      toast({ title: "خطأ في حذف الاجتماع", variant: "destructive" });
     }
     setIsDeleteDialogOpen(false);
     setSelectedMeeting(null);
@@ -354,7 +344,7 @@ const Meetings = () => {
                       {meeting.description}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                      {new Date(meeting.meeting_date).toLocaleString("ar")}
+                      {new Date(meeting.meetingDate).toLocaleString("ar")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button

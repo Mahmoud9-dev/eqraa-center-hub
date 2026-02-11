@@ -2,7 +2,9 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as teachersService from "@/lib/db/services/teachers";
+import * as studentsService from "@/lib/db/services/students";
+import type { DbTeacher, DbStudent } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,26 +19,9 @@ import {
 } from "@/components/ui/select";
 import { teacherSchema } from "@/lib/validations";
 
-interface Teacher {
-  id: string;
-  name: string;
-  specialization: string;
-  department: string;
-  email?: string;
-  phone?: string;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  age: number;
-  department: string;
-  parts_memorized: number;
-}
-
 const Admin = () => {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<DbTeacher[]>([]);
+  const [students, setStudents] = useState<DbStudent[]>([]);
   const [teacherName, setTeacherName] = useState("");
   const [specialization, setSpecialization] = useState("");
   const [department, setDepartment] = useState<"quran" | "tajweed" | "tarbawi">(
@@ -48,18 +33,17 @@ const Admin = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: teachersData } = await getSupabase()
-      .from("teachers")
-      .select("*")
-      .order("name");
-
-    const { data: studentsData } = await getSupabase()
-      .from("students")
-      .select("*")
-      .order("name");
-
-    if (teachersData) setTeachers(teachersData as Teacher[]);
-    if (studentsData) setStudents(studentsData as Student[]);
+    try {
+      const [teachersData, studentsData] = await Promise.all([
+        teachersService.getAll(),
+        studentsService.getAll(),
+      ]);
+      setTeachers(teachersData);
+      setStudents(studentsData);
+    } catch (error) {
+      console.error("Error loading admin data:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات الإدارة", variant: "destructive" });
+    }
   };
 
   useEffect(() => {
@@ -89,29 +73,29 @@ const Admin = () => {
     }
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("teachers").insert([
-      {
+    try {
+      await teachersService.add({
         name: validation.data.name,
         specialization: validation.data.specialization,
         department: validation.data.department,
         email: validation.data.email || null,
         phone: validation.data.phone || null,
-      },
-    ]);
-
-    if (error) {
-      toast({
-        title: "خطأ في إضافة المعلم",
-        description: error.message,
-        variant: "destructive",
+        isActive: true,
+        experience: null,
       });
-    } else {
       toast({ title: "تم إضافة المعلم بنجاح" });
       setTeacherName("");
       setSpecialization("");
       setEmail("");
       setPhone("");
       loadData();
+    } catch (error) {
+      console.error("Error adding teacher:", error);
+      toast({
+        title: "خطأ في إضافة المعلم",
+        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
+        variant: "destructive",
+      });
     }
     setIsLoading(false);
   };
@@ -203,7 +187,7 @@ const Admin = () => {
                       </label>
                       <Select
                         value={department}
-                        onValueChange={(v) => setDepartment(v as any)}
+                        onValueChange={(v) => setDepartment(v as "quran" | "tajweed" | "tarbawi")}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -322,7 +306,7 @@ const Admin = () => {
                         </p>
                         {student.department === "quran" && (
                           <p className="text-sm text-muted-foreground">
-                            محفوظ: {student.parts_memorized} جزء
+                            محفوظ: {student.partsMemorized} جزء
                           </p>
                         )}
                       </CardContent>

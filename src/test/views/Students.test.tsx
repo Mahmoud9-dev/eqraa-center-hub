@@ -1,334 +1,164 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getSupabase } from "@/integrations/supabase/client";
+import { describe, it, expect } from "vitest";
+import * as studentsService from "@/lib/db/services/students";
+import * as studentNotesService from "@/lib/db/services/studentNotes";
+import {
+  seedStudent,
+  seedStudentNote,
+} from "../utils/db-helpers";
 
-// Mock the supabase client
-vi.mock("@/integrations/supabase/client", () => ({
-  getSupabase: vi.fn(),
-}));
-
-// Mock toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  useToast: () => ({
-    toast: vi.fn(),
-  }),
-}));
-
-// Mock students data
-const mockStudents = [
-  {
-    id: "student-1",
-    name: "أحمد محمد علي",
-    age: 12,
-    grade: "السادس ابتدائي",
-    department: "quran",
-    teacher_id: "teacher-1",
-    parts_memorized: 5,
-    current_progress: "سورة آل عمران - الآية 50",
-    previous_progress: "سورة البقرة - الآية 200",
-    attendance: 85,
-    parent_name: "محمد علي",
-    parent_phone: "01234567890",
-    is_active: true,
-    images: null,
-    created_at: "2025-11-01T10:00:00Z",
-  },
-  {
-    id: "student-2",
-    name: "عمر خالد حسن",
-    age: 14,
-    grade: "الثالث إعدادي",
-    department: "tajweed",
-    teacher_id: "teacher-2",
-    parts_memorized: 8,
-    current_progress: "سورة النساء - الآية 100",
-    previous_progress: "سورة آل عمران - الآية 50",
-    attendance: 92,
-    parent_name: "خالد حسن",
-    parent_phone: "01234567891",
-    is_active: true,
-    images: null,
-    created_at: "2025-11-02T10:00:00Z",
-  },
-];
-
-// Mock student notes data
-const mockStudentNotes = [
-  {
-    id: "note-1",
-    student_id: "student-1",
-    type: "إيجابي",
-    content: "مشاركة ممتازة في الحلقة",
-    note_date: "2025-11-01",
-    teacher_name: "الشيخ خالد",
-    created_at: "2025-11-01T10:00:00Z",
-  },
-];
-
-describe("Students View - Supabase Integration", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
+describe("Students View - Dexie Service Integration", () => {
   describe("Data Loading", () => {
-    it("should load students from Supabase on mount", async () => {
-      const mockOrder = vi.fn().mockResolvedValue({ data: mockStudents, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+    it("should load students ordered by createdAt descending", async () => {
+      await seedStudent({
+        name: "طالب أول",
+        createdAt: "2025-11-01T10:00:00Z",
+      });
+      await seedStudent({
+        name: "طالب ثاني",
+        createdAt: "2025-11-02T10:00:00Z",
+      });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      await supabase.from("students").select("*").order("created_at", { ascending: false });
-
-      expect(mockFrom).toHaveBeenCalledWith("students");
-      expect(mockSelect).toHaveBeenCalledWith("*");
+      const students = await studentsService.getAll();
+      expect(students).toHaveLength(2);
+      expect(students[0].name).toBe("طالب ثاني");
+      expect(students[1].name).toBe("طالب أول");
     });
 
-    it("should load student notes from Supabase", async () => {
-      const mockNotesOrder = vi.fn().mockResolvedValue({ data: mockStudentNotes, error: null });
-      const mockNotesSelect = vi.fn().mockReturnValue({ order: mockNotesOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockNotesSelect });
+    it("should load student notes ordered by noteDate descending", async () => {
+      const student = await seedStudent();
+      await seedStudentNote({
+        studentId: student.id,
+        noteDate: "2025-10-01",
+        content: "ملاحظة قديمة",
+      });
+      await seedStudentNote({
+        studentId: student.id,
+        noteDate: "2025-11-01",
+        content: "ملاحظة جديدة",
+      });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      await supabase.from("student_notes").select("*").order("note_date", { ascending: false });
-
-      expect(mockFrom).toHaveBeenCalledWith("student_notes");
+      const notes = await studentNotesService.getAll();
+      expect(notes).toHaveLength(2);
+      expect(notes[0].noteDate).toBe("2025-11-01");
     });
 
-    it("should handle loading errors gracefully", async () => {
-      const mockError = { message: "Database connection failed" };
-      const mockOrder = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").select("*").order("created_at", { ascending: false });
-
-      expect(result.error).toEqual(mockError);
+    it("should return empty arrays when no data exists", async () => {
+      const students = await studentsService.getAll();
+      const notes = await studentNotesService.getAll();
+      expect(students).toEqual([]);
+      expect(notes).toEqual([]);
     });
   });
 
   describe("Add Student", () => {
-    it("should insert new student into Supabase", async () => {
-      const newStudent = {
+    it("should insert a new student with generated id and createdAt", async () => {
+      const added = await studentsService.add({
         name: "طالب جديد",
         age: 10,
         grade: "الرابع ابتدائي",
         department: "quran",
-        teacher_id: "teacher-1",
-        parts_memorized: 2,
-        current_progress: "سورة البقرة - الآية 50",
-        previous_progress: "",
+        teacherId: "teacher-1",
+        partsMemorized: 2,
+        currentProgress: "سورة البقرة - الآية 50",
+        previousProgress: "",
         attendance: 100,
-        parent_name: "الأب",
-        parent_phone: "01234567899",
-        is_active: true,
+        parentName: "الأب",
+        parentPhone: "0512345678",
+        isActive: true,
         images: null,
-      };
+      });
 
-      const insertedStudent = {
-        id: "new-student-id",
-        ...newStudent,
-        created_at: "2025-11-06T10:00:00Z",
-      };
+      expect(added.id).toBeDefined();
+      expect(added.createdAt).toBeDefined();
+      expect(added.name).toBe("طالب جديد");
 
-      const mockSingle = vi.fn().mockResolvedValue({ data: insertedStudent, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").insert(newStudent).select().single();
-
-      expect(mockInsert).toHaveBeenCalledWith(newStudent);
-      expect(result.data).toEqual(insertedStudent);
-      expect(result.data!.id).toBe("new-student-id");
-    });
-
-    it("should validate required fields", async () => {
-      const invalidStudent = {
-        name: "",
-        age: 0,
-        grade: "",
-        department: "quran",
-      };
-
-      const mockError = { message: "Validation failed", code: "23502" };
-      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").insert(invalidStudent).select().single();
-
-      expect(result.error).not.toBeNull();
+      const fetched = await studentsService.getById(added.id);
+      expect(fetched?.name).toBe("طالب جديد");
+      expect(fetched?.teacherId).toBe("teacher-1");
     });
   });
 
   describe("Edit Student", () => {
-    it("should update student in Supabase", async () => {
-      const studentId = "student-1";
-      const updates = {
+    it("should update student fields", async () => {
+      const student = await seedStudent({
+        name: "أحمد محمد",
+        partsMemorized: 5,
+      });
+
+      await studentsService.update(student.id, {
         name: "أحمد محمد (محدث)",
-        parts_memorized: 6,
-        current_progress: "سورة النساء - الآية 1",
-      };
+        partsMemorized: 6,
+        currentProgress: "سورة النساء - الآية 1",
+      });
 
-      const updatedStudent = {
-        id: studentId,
-        ...mockStudents[0],
-        ...updates,
-      };
-
-      const mockSingle = vi.fn().mockResolvedValue({ data: updatedStudent, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase
-        .from("students")
-        .update(updates)
-        .eq("id", studentId)
-        .select()
-        .single();
-
-      expect(mockUpdate).toHaveBeenCalledWith(updates);
-      expect(mockEq).toHaveBeenCalledWith("id", studentId);
-      expect(result.data!.name).toBe("أحمد محمد (محدث)");
-      expect(result.data!.parts_memorized).toBe(6);
+      const updated = await studentsService.getById(student.id);
+      expect(updated?.name).toBe("أحمد محمد (محدث)");
+      expect(updated?.partsMemorized).toBe(6);
+      expect(updated?.currentProgress).toBe("سورة النساء - الآية 1");
     });
   });
 
   describe("Delete Student", () => {
-    it("should delete student from Supabase", async () => {
-      const studentId = "student-1";
+    it("should delete a student", async () => {
+      const student = await seedStudent();
+      await studentsService.remove(student.id);
 
-      const mockEq = vi.fn().mockResolvedValue({ error: null });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").delete().eq("id", studentId);
-
-      expect(mockDelete).toHaveBeenCalled();
-      expect(mockEq).toHaveBeenCalledWith("id", studentId);
-      expect(result.error).toBeNull();
-    });
-
-    it("should cascade delete student notes when student is deleted", async () => {
-      const studentId = "student-1";
-
-      const mockEq = vi.fn().mockResolvedValue({ error: null });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      await supabase.from("students").delete().eq("id", studentId);
-
-      expect(mockEq).toHaveBeenCalledWith("id", studentId);
+      const deleted = await studentsService.getById(student.id);
+      expect(deleted).toBeUndefined();
     });
   });
 
   describe("Student Notes Operations", () => {
     it("should add a note to a student", async () => {
-      const newNote = {
-        student_id: "student-1",
+      const student = await seedStudent();
+      const note = await studentNotesService.add({
+        studentId: student.id,
         type: "إيجابي",
         content: "حفظ ممتاز اليوم",
-        note_date: "2025-11-06",
-        teacher_name: "الشيخ أحمد",
-      };
+        noteDate: "2025-11-06",
+        teacherName: "الشيخ أحمد",
+      });
 
-      const createdNote = {
-        id: "new-note-id",
-        ...newNote,
-        created_at: "2025-11-06T10:00:00Z",
-      };
+      expect(note.id).toBeDefined();
+      expect(note.content).toBe("حفظ ممتاز اليوم");
 
-      const mockSingle = vi.fn().mockResolvedValue({ data: createdNote, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("student_notes").insert(newNote).select().single();
-
-      expect(mockFrom).toHaveBeenCalledWith("student_notes");
-      expect(result.data!.content).toBe("حفظ ممتاز اليوم");
+      const notes = await studentNotesService.getByStudentId(student.id);
+      expect(notes).toHaveLength(1);
     });
 
     it("should update a student note", async () => {
-      const noteId = "note-1";
-      const updates = {
+      const student = await seedStudent();
+      const note = await seedStudentNote({
+        studentId: student.id,
+        content: "محتوى أصلي",
+        type: "إيجابي",
+      });
+
+      await studentNotesService.update(note.id, {
         content: "محتوى محدث",
         type: "سلبي",
-      };
+      });
 
-      const updatedNote = {
-        id: noteId,
-        ...mockStudentNotes[0],
-        ...updates,
-      };
-
-      const mockSingle = vi.fn().mockResolvedValue({ data: updatedNote, error: null });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
-
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase
-        .from("student_notes")
-        .update(updates)
-        .eq("id", noteId)
-        .select()
-        .single();
-
-      expect(result.data!.content).toBe("محتوى محدث");
-      expect(result.data!.type).toBe("سلبي");
+      const notes = await studentNotesService.getByStudentId(student.id);
+      expect(notes[0].content).toBe("محتوى محدث");
+      expect(notes[0].type).toBe("سلبي");
     });
 
     it("should delete a student note", async () => {
-      const noteId = "note-1";
+      const student = await seedStudent();
+      const note = await seedStudentNote({ studentId: student.id });
 
-      const mockEq = vi.fn().mockResolvedValue({ error: null });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
+      await studentNotesService.remove(note.id);
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("student_notes").delete().eq("id", noteId);
-
-      expect(mockEq).toHaveBeenCalledWith("id", noteId);
-      expect(result.error).toBeNull();
+      const notes = await studentNotesService.getByStudentId(student.id);
+      expect(notes).toHaveLength(0);
     });
   });
 
   describe("Student Images Update", () => {
     it("should update student images (Quran progress)", async () => {
-      const studentId = "student-1";
+      const student = await seedStudent({ images: null });
+
       const newImages = {
         new: "سورة المائدة - الآية 1-20",
         recent1: "سورة النساء - الآية 100-176",
@@ -339,122 +169,69 @@ describe("Students View - Supabase Integration", () => {
         distant3: "سورة البقرة - الآية 1-100",
       };
 
-      const mockSingle = vi.fn().mockResolvedValue({
-        data: { id: studentId, images: newImages },
-        error: null,
-      });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
+      await studentsService.update(student.id, { images: newImages });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase
-        .from("students")
-        .update({ images: newImages })
-        .eq("id", studentId)
-        .select()
-        .single();
-
-      expect(mockUpdate).toHaveBeenCalledWith({ images: newImages });
-      expect(result.data!.images).toEqual(newImages);
+      const updated = await studentsService.getById(student.id);
+      expect(updated?.images).toEqual(newImages);
     });
   });
 
-  describe("Data Transformation", () => {
-    it("should transform snake_case to camelCase for compatibility", () => {
-      const dbStudent = mockStudents[0];
+  describe("Data Grouping", () => {
+    it("should group notes by studentId", async () => {
+      const student1 = await seedStudent({ name: "طالب أ" });
+      const student2 = await seedStudent({ name: "طالب ب" });
 
-      const transformedStudent = {
-        ...dbStudent,
-        teacherId: dbStudent.teacher_id || "",
-        partsMemorized: dbStudent.parts_memorized ?? 0,
-        currentProgress: dbStudent.current_progress || "",
-        previousProgress: dbStudent.previous_progress || "",
-        parentName: dbStudent.parent_name || "",
-        parentPhone: dbStudent.parent_phone || "",
-        isActive: dbStudent.is_active ?? true,
-      };
+      await seedStudentNote({ studentId: student1.id, content: "ملاحظة 1" });
+      await seedStudentNote({ studentId: student1.id, content: "ملاحظة 2" });
+      await seedStudentNote({ studentId: student2.id, content: "ملاحظة 3" });
 
-      expect(transformedStudent.teacherId).toBe("teacher-1");
-      expect(transformedStudent.partsMemorized).toBe(5);
-      expect(transformedStudent.currentProgress).toBe("سورة آل عمران - الآية 50");
-      expect(transformedStudent.parentName).toBe("محمد علي");
-      expect(transformedStudent.isActive).toBe(true);
-    });
-
-    it("should group notes by student_id", () => {
-      const notes = [
-        { id: "1", student_id: "student-1", content: "Note 1" },
-        { id: "2", student_id: "student-1", content: "Note 2" },
-        { id: "3", student_id: "student-2", content: "Note 3" },
-      ];
-
-      const notesMap: { [key: string]: typeof notes } = {};
-      notes.forEach((note) => {
-        if (!notesMap[note.student_id]) {
-          notesMap[note.student_id] = [];
+      const allNotes = await studentNotesService.getAll();
+      const notesMap: { [key: string]: typeof allNotes } = {};
+      allNotes.forEach((note) => {
+        if (!notesMap[note.studentId]) {
+          notesMap[note.studentId] = [];
         }
-        notesMap[note.student_id].push(note);
+        notesMap[note.studentId].push(note);
       });
 
-      expect(notesMap["student-1"]).toHaveLength(2);
-      expect(notesMap["student-2"]).toHaveLength(1);
+      expect(notesMap[student1.id]).toHaveLength(2);
+      expect(notesMap[student2.id]).toHaveLength(1);
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle network errors on add", async () => {
-      const mockError = { message: "Network error" };
-      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
+  describe("Filtering", () => {
+    it("should filter students by department", async () => {
+      await seedStudent({ department: "quran", name: "طالب قرآن" });
+      await seedStudent({ department: "tajweed", name: "طالب تجويد" });
+      await seedStudent({ department: "quran", name: "طالب قرآن 2" });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").insert({}).select().single();
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      const all = await studentsService.getAll();
+      const quranFiltered = all.filter((s) => s.department === "quran");
+      expect(quranFiltered).toHaveLength(2);
     });
 
-    it("should handle network errors on update", async () => {
-      const mockError = { message: "Network error" };
-      const mockSingle = vi.fn().mockResolvedValue({ data: null, error: mockError });
-      const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockEq = vi.fn().mockReturnValue({ select: mockSelect });
-      const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ update: mockUpdate });
+    it("should filter students by search term in name", async () => {
+      await seedStudent({ name: "أحمد محمد علي" });
+      await seedStudent({ name: "عمر خالد حسن" });
+      await seedStudent({ name: "أحمد خالد" });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase
-        .from("students")
-        .update({})
-        .eq("id", "student-1")
-        .select()
-        .single();
-
-      expect(result.error).toEqual(mockError);
+      const all = await studentsService.getAll();
+      const searchTerm = "أحمد";
+      const filtered = all.filter((s) => s.name.includes(searchTerm));
+      expect(filtered).toHaveLength(2);
     });
 
-    it("should handle network errors on delete", async () => {
-      const mockError = { message: "Network error" };
-      const mockEq = vi.fn().mockResolvedValue({ error: mockError });
-      const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockFrom = vi.fn().mockReturnValue({ delete: mockDelete });
+    it("should return all students when filter is 'all'", async () => {
+      await seedStudent({ department: "quran" });
+      await seedStudent({ department: "tajweed" });
+      await seedStudent({ department: "tarbawi" });
 
-      vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
-
-      const supabase = getSupabase();
-      const result = await supabase.from("students").delete().eq("id", "student-1");
-
-      expect(result.error).toEqual(mockError);
+      const all = await studentsService.getAll();
+      const filterDepartment = "all";
+      const filtered = all.filter(
+        (s) => filterDepartment === "all" || s.department === filterDepartment
+      );
+      expect(filtered).toHaveLength(3);
     });
   });
 });

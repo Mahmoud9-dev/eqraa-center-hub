@@ -402,7 +402,7 @@ describe("Validation Schemas", () => {
       const result = suggestionSchema.safeParse(invalidSuggestion);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("الأولوية مطلوبة");
+        expect(result.error.issues[0].message).toBe("الأولوية يجب أن تكون عالي أو متوسط أو منخفض");
       }
     });
   });

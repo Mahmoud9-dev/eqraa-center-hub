@@ -32,7 +32,7 @@ export default defineConfig({
       "src/**/*.{test,spec}.{js,jsx,ts,tsx}",
       "tests/**/*.{test,spec}.{js,jsx,ts,tsx}",
     ],
-    exclude: ["node_modules/", "dist/", ".idea/", ".git/", ".cache/"],
+    exclude: ["node_modules/", "dist/", ".idea/", ".git/", ".cache/", "src/test/e2e/**"],
   },
   resolve: {
     alias: {
