@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabase } from "@/integrations/supabase/client";
+import { signUp } from "@/lib/auth/auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,21 +32,13 @@ export default function Signup() {
 
     setLoading(true);
 
-    const { data, error } = await getSupabase().auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name,
-        },
-      },
-    });
-
-    if (error) {
-      toast.error("خطأ في إنشاء الحساب: " + error.message);
-    } else {
+    try {
+      await signUp(email, password, name);
       toast.success("تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن");
       router.push("/login");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "حدث خطأ غير متوقع";
+      toast.error("خطأ في إنشاء الحساب: " + message);
     }
 
     setLoading(false);

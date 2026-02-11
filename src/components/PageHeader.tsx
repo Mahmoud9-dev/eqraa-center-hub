@@ -4,10 +4,9 @@ import { ArrowRight, LogOut, User, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { getSupabase } from "@/integrations/supabase/client";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/lib/auth/useAuth";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface PageHeaderProps {
@@ -17,32 +16,13 @@ interface PageHeaderProps {
 
 const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   const router = useRouter();
-  const { roles, isAdmin } = useUserRole();
-  const [userName, setUserName] = useState<string | null>(null);
+  const { roles, isAdmin, userName, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await getSupabase().auth.getUser();
-      if (user) {
-        setUserName(
-          user.user_metadata?.name || user.email?.split("@")[0] || "مستخدم"
-        );
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const handleLogout = async () => {
-    const { error } = await getSupabase().auth.signOut();
-    if (error) {
-      toast.error("خطأ في تسجيل الخروج");
-    } else {
-      toast.success("تم تسجيل الخروج بنجاح");
-      router.push("/login");
-    }
+  const handleLogout = () => {
+    signOut();
+    toast.success("تم تسجيل الخروج بنجاح");
+    router.push("/login");
   };
 
   const getRoleLabel = () => {

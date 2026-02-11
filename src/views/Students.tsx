@@ -40,43 +40,24 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import { Department, StudentGrade } from "@/types";
-import { getSupabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { Department } from "@/types";
+import * as studentsService from "@/lib/db/services/students";
+import * as studentNotesService from "@/lib/db/services/studentNotes";
+import * as teachersService from "@/lib/db/services/teachers";
+import type { DbStudent, DbTeacher } from "@/lib/db/types";
 
-// Supabase types
-type DbStudent = Tables<"students">;
-type DbStudentNote = Tables<"student_notes">;
-
-// Local Student interface that extends Supabase data with camelCase aliases
-interface Student extends Omit<DbStudent, 'images'> {
-  images?: {
-    new?: string;
-    recent1?: string;
-    recent2?: string;
-    recent3?: string;
-    distant1?: string;
-    distant2?: string;
-    distant3?: string;
-  };
-  // camelCase aliases for compatibility
-  teacherId?: string;
-  partsMemorized?: number;
-  currentProgress?: string;
-  previousProgress?: string;
-  parentName?: string;
-  parentPhone?: string;
-  isActive?: boolean;
-  createdAt?: Date;
+// Local Student interface - now directly uses DbStudent fields (camelCase)
+interface Student extends DbStudent {
+  // No need for snake_case aliases since Dexie types are already camelCase
 }
 
 interface StudentNote {
   id: string;
-  student_id: string;
+  studentId: string;
   type: "إيجابي" | "سلبي";
   content: string;
-  note_date: string;
-  teacher_name: string;
+  noteDate: string;
+  teacherName: string;
 }
 
 // Form state interface (uses camelCase for form inputs)
@@ -105,6 +86,7 @@ interface StudentFormData {
 }
 
 const Students = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState<Department | "all">(
     "all"
@@ -113,113 +95,74 @@ const Students = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
 
-  // Load students from Supabase on mount
+  // Load students from Dexie on mount
   const loadStudents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await getSupabase()
-        .from("students")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error loading students:", error);
-        return;
-      }
-
-      if (data) {
-        // Transform Supabase data to local Student format
-        const transformedStudents: Student[] = data.map((s) => ({
-          ...s,
-          // Parse images from JSON if it's a string
-          images: typeof s.images === 'string' ? JSON.parse(s.images) : s.images as Student['images'],
-          // Map snake_case to camelCase for compatibility
-          teacherId: s.teacher_id || "",
-          partsMemorized: s.parts_memorized ?? 0,
-          currentProgress: s.current_progress || "",
-          previousProgress: s.previous_progress || "",
-          parentName: s.parent_name || "",
-          parentPhone: s.parent_phone || "",
-          isActive: s.is_active ?? true,
-          createdAt: s.created_at ? new Date(s.created_at) : new Date(),
-        }));
-        setStudents(transformedStudents);
-      }
+      const data = await studentsService.getAll();
+      setStudents(data as Student[]);
     } catch (error) {
       console.error("Error loading students:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات الطلاب", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
 
-  // Mock teacher data for display
-  const teachers = {
-    teacher1: "الشيخ خالد أحمد",
-    teacher2: "الشيخ أحمد محمد",
-    teacher3: "الشيخ محمد حسن",
-  };
+  // Teachers loaded from Dexie, keyed by ID for display
+  const [teachersMap, setTeachersMap] = useState<Record<string, string>>({});
 
-  // Mock grades and notes data
-  const studentsGrades: { [key: string]: StudentGrade[] } = {
-    "1": [
-      { subject: "قرآن", grade: 85, status: "ممتاز" },
-      { subject: "تجويد", grade: 78, status: "جيد جداً" },
-      { subject: "تربوي", grade: 92, status: "ممتاز" },
-    ],
-    "2": [
-      { subject: "قرآن", grade: 78, status: "جيد جداً" },
-      { subject: "تجويد", grade: 88, status: "ممتاز" },
-      { subject: "تربوي", grade: 85, status: "ممتاز" },
-    ],
-    "3": [
-      { subject: "قرآن", grade: 72, status: "جيد" },
-      { subject: "تجويد", grade: 75, status: "جيد" },
-      { subject: "تربوي", grade: 88, status: "ممتاز" },
-    ],
-  };
+  const loadTeachers = useCallback(async () => {
+    try {
+      const data = await teachersService.getAll();
+      const map: Record<string, string> = {};
+      data.forEach((t: DbTeacher) => {
+        map[t.id] = t.name;
+      });
+      setTeachersMap(map);
+    } catch (error) {
+      console.error("Error loading teachers:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات المعلمين", variant: "destructive" });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    loadTeachers();
+  }, [loadTeachers]);
 
   const [studentsNotes, setStudentsNotes] = useState<{ [key: string]: StudentNote[] }>({});
 
-  // Load student notes from Supabase
+  // Load student notes from Dexie
   const loadStudentNotes = useCallback(async () => {
     try {
-      const { data, error } = await getSupabase()
-        .from("student_notes")
-        .select("*")
-        .order("note_date", { ascending: false });
+      const data = await studentNotesService.getAll();
 
-      if (error) {
-        console.error("Error loading student notes:", error);
-        return;
-      }
-
-      if (data) {
-        // Group notes by student_id
-        const notesMap: { [key: string]: StudentNote[] } = {};
-        data.forEach((note) => {
-          const studentId = note.student_id;
-          if (!notesMap[studentId]) {
-            notesMap[studentId] = [];
-          }
-          notesMap[studentId].push({
-            id: note.id,
-            student_id: note.student_id,
-            type: note.type as "إيجابي" | "سلبي",
-            content: note.content,
-            note_date: note.note_date,
-            teacher_name: note.teacher_name,
-          });
+      // Group notes by studentId
+      const notesMap: { [key: string]: StudentNote[] } = {};
+      data.forEach((note) => {
+        const studentId = note.studentId;
+        if (!notesMap[studentId]) {
+          notesMap[studentId] = [];
+        }
+        notesMap[studentId].push({
+          id: note.id,
+          studentId: note.studentId,
+          type: note.type as "إيجابي" | "سلبي",
+          content: note.content,
+          noteDate: note.noteDate,
+          teacherName: note.teacherName,
         });
-        setStudentsNotes(notesMap);
-      }
+      });
+      setStudentsNotes(notesMap);
     } catch (error) {
       console.error("Error loading student notes:", error);
+      toast({ title: "خطأ", description: "فشل تحميل ملاحظات الطلاب", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadStudentNotes();
@@ -265,12 +208,11 @@ const Students = () => {
       distant3: "",
     },
   });
-  const { toast } = useToast();
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (teachers[student.teacherId as keyof typeof teachers] || "")
+      (teachersMap[student.teacherId || ""] || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     const matchesDepartment =
@@ -297,13 +239,6 @@ const Students = () => {
     return "text-red-600";
   };
 
-  const getGradeColor = (grade: number) => {
-    if (grade >= 90) return "bg-green-100 text-green-800";
-    if (grade >= 80) return "bg-blue-100 text-blue-800";
-    if (grade >= 70) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
-  };
-
   const getNoteTypeColor = (type: string) => {
     return type === "إيجابي"
       ? "bg-green-100 text-green-800"
@@ -322,35 +257,21 @@ const Students = () => {
     }
 
     try {
-      const { data, error } = await getSupabase()
-        .from("students")
-        .insert({
-          name: newStudent.name || "",
-          age: newStudent.age || 0,
-          grade: newStudent.grade || "",
-          department: newStudent.department || "quran",
-          teacher_id: newStudent.teacherId || null,
-          parts_memorized: newStudent.partsMemorized || 0,
-          current_progress: newStudent.currentProgress || "",
-          previous_progress: newStudent.previousProgress || "",
-          attendance: newStudent.attendance || 0,
-          parent_name: newStudent.parentName || null,
-          parent_phone: newStudent.parentPhone || null,
-          is_active: newStudent.isActive ?? true,
-          images: newStudent.images || null,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error adding student:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء إضافة الطالب",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentsService.add({
+        name: newStudent.name || "",
+        age: newStudent.age || 0,
+        grade: newStudent.grade || "",
+        department: newStudent.department || "quran",
+        teacherId: newStudent.teacherId || null,
+        partsMemorized: newStudent.partsMemorized || 0,
+        currentProgress: newStudent.currentProgress || "",
+        previousProgress: newStudent.previousProgress || "",
+        attendance: newStudent.attendance || 0,
+        parentName: newStudent.parentName || null,
+        parentPhone: newStudent.parentPhone || null,
+        isActive: newStudent.isActive ?? true,
+        images: newStudent.images || null,
+      });
 
       // Reload students to get the updated list
       await loadStudents();
@@ -409,34 +330,21 @@ const Students = () => {
     }
 
     try {
-      const { error } = await getSupabase()
-        .from("students")
-        .update({
-          name: newStudent.name,
-          age: newStudent.age,
-          grade: newStudent.grade,
-          department: newStudent.department,
-          teacher_id: newStudent.teacherId || null,
-          parts_memorized: newStudent.partsMemorized,
-          current_progress: newStudent.currentProgress,
-          previous_progress: newStudent.previousProgress,
-          attendance: newStudent.attendance,
-          parent_name: newStudent.parentName || null,
-          parent_phone: newStudent.parentPhone || null,
-          is_active: newStudent.isActive,
-          images: newStudent.images || null,
-        })
-        .eq("id", selectedStudent.id);
-
-      if (error) {
-        console.error("Error updating student:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل الطالب",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentsService.update(selectedStudent.id, {
+        name: newStudent.name,
+        age: newStudent.age,
+        grade: newStudent.grade,
+        department: newStudent.department,
+        teacherId: newStudent.teacherId || null,
+        partsMemorized: newStudent.partsMemorized,
+        currentProgress: newStudent.currentProgress,
+        previousProgress: newStudent.previousProgress,
+        attendance: newStudent.attendance,
+        parentName: newStudent.parentName || null,
+        parentPhone: newStudent.parentPhone || null,
+        isActive: newStudent.isActive,
+        images: newStudent.images || null,
+      });
 
       // Reload students to get the updated list
       await loadStudents();
@@ -484,20 +392,7 @@ const Students = () => {
     if (!selectedStudent) return;
 
     try {
-      const { error } = await getSupabase()
-        .from("students")
-        .delete()
-        .eq("id", selectedStudent.id);
-
-      if (error) {
-        console.error("Error deleting student:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء حذف الطالب",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentsService.remove(selectedStudent.id);
 
       // Reload students to get the updated list
       await loadStudents();
@@ -525,14 +420,14 @@ const Students = () => {
       age: student.age,
       grade: student.grade,
       department: student.department,
-      teacherId: student.teacherId || student.teacher_id || "",
-      partsMemorized: student.partsMemorized ?? student.parts_memorized ?? 0,
-      currentProgress: student.currentProgress || student.current_progress || "",
-      previousProgress: student.previousProgress || student.previous_progress || "",
+      teacherId: student.teacherId || "",
+      partsMemorized: student.partsMemorized ?? 0,
+      currentProgress: student.currentProgress || "",
+      previousProgress: student.previousProgress || "",
       attendance: student.attendance ?? 0,
-      parentName: student.parentName || student.parent_name || "",
-      parentPhone: student.parentPhone || student.parent_phone || "",
-      isActive: student.isActive ?? student.is_active ?? true,
+      parentName: student.parentName || "",
+      parentPhone: student.parentPhone || "",
+      isActive: student.isActive ?? true,
       images: student.images || {
         new: "",
         recent1: "",
@@ -564,22 +459,9 @@ const Students = () => {
     if (!selectedStudent) return;
 
     try {
-      const { error } = await getSupabase()
-        .from("students")
-        .update({
-          images: newStudent.images || null,
-        })
-        .eq("id", selectedStudent.id);
-
-      if (error) {
-        console.error("Error updating images:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل السور المحفوظة",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentsService.update(selectedStudent.id, {
+        images: newStudent.images || null,
+      });
 
       // Reload students to get the updated list
       await loadStudents();
@@ -612,25 +494,13 @@ const Students = () => {
     }
 
     try {
-      const { error } = await getSupabase()
-        .from("student_notes")
-        .insert({
-          student_id: selectedStudent.id,
-          type: newNote.type,
-          content: newNote.content,
-          note_date: newNote.date,
-          teacher_name: newNote.teacher,
-        });
-
-      if (error) {
-        console.error("Error adding note:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء إضافة الملاحظة",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentNotesService.add({
+        studentId: selectedStudent.id,
+        type: newNote.type,
+        content: newNote.content,
+        noteDate: newNote.date,
+        teacherName: newNote.teacher,
+      });
 
       // Reload notes to get the updated list
       await loadStudentNotes();
@@ -668,25 +538,12 @@ const Students = () => {
     }
 
     try {
-      const { error } = await getSupabase()
-        .from("student_notes")
-        .update({
-          type: newNote.type,
-          content: newNote.content,
-          note_date: newNote.date,
-          teacher_name: newNote.teacher,
-        })
-        .eq("id", selectedNote.id);
-
-      if (error) {
-        console.error("Error updating note:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل الملاحظة",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentNotesService.update(selectedNote.id, {
+        type: newNote.type,
+        content: newNote.content,
+        noteDate: newNote.date,
+        teacherName: newNote.teacher,
+      });
 
       // Reload notes to get the updated list
       await loadStudentNotes();
@@ -716,20 +573,7 @@ const Students = () => {
 
   const handleDeleteNote = async (studentId: string, noteId: string) => {
     try {
-      const { error } = await getSupabase()
-        .from("student_notes")
-        .delete()
-        .eq("id", noteId);
-
-      if (error) {
-        console.error("Error deleting note:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء حذف الملاحظة",
-          variant: "destructive",
-        });
-        return;
-      }
+      await studentNotesService.remove(noteId);
 
       // Reload notes to get the updated list
       await loadStudentNotes();
@@ -765,8 +609,8 @@ const Students = () => {
     setNewNote({
       type: note.type,
       content: note.content,
-      date: note.note_date,
-      teacher: note.teacher_name,
+      date: note.noteDate,
+      teacher: note.teacherName,
     });
     setIsEditNoteDialogOpen(true);
   };
@@ -927,13 +771,11 @@ const Students = () => {
                         <SelectValue placeholder="اختر المعلم" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="teacher1">
-                          الشيخ خالد أحمد
-                        </SelectItem>
-                        <SelectItem value="teacher2">
-                          الشيخ أحمد محمد
-                        </SelectItem>
-                        <SelectItem value="teacher3">الشيخ محمد حسن</SelectItem>
+                        {Object.entries(teachersMap).map(([id, name]) => (
+                          <SelectItem key={id} value={id}>
+                            {name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1190,11 +1032,7 @@ const Students = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm hidden md:table-cell">
-                            {
-                              teachers[
-                                student.teacherId as keyof typeof teachers
-                              ]
-                            }
+                            {teachersMap[student.teacherId || ""] || "-"}
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm hidden lg:table-cell">
                             {student.partsMemorized}
@@ -1281,7 +1119,7 @@ const Students = () => {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {teachers[student.teacherId as keyof typeof teachers]} •{" "}
+                        {teachersMap[student.teacherId || ""] || "-"} •{" "}
                         {getDepartmentName(student.department)}
                       </div>
                       <div className="mt-3">
@@ -1308,29 +1146,9 @@ const Students = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {filteredStudents.map((student) => (
-                    <div key={student.id} className="p-4 border rounded-lg">
-                      <h3 className="font-medium mb-3">{student.name}</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {(studentsGrades[student.id] || []).map(
-                          (grade, index) => (
-                            <div key={index} className="text-center">
-                              <div className="text-lg font-bold">
-                                {grade.grade}%
-                              </div>
-                              <Badge className={getGradeColor(grade.grade)}>
-                                {grade.status}
-                              </Badge>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                {grade.subject}
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-lg mb-2">قريبا</p>
+                  <p className="text-sm">نظام الدرجات قيد التطوير وسيتم إضافته في تحديث قادم.</p>
                 </div>
               </CardContent>
             </Card>
@@ -1509,7 +1327,7 @@ const Students = () => {
                                     {note.type}
                                   </Badge>
                                   <span className="text-sm text-muted-foreground">
-                                    {note.note_date} • {note.teacher_name}
+                                    {note.noteDate} • {note.teacherName}
                                   </span>
                                 </div>
                                 <p>{note.content}</p>
@@ -1646,9 +1464,11 @@ const Students = () => {
                   <SelectValue placeholder="اختر المعلم" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="teacher1">الشيخ خالد أحمد</SelectItem>
-                  <SelectItem value="teacher2">الشيخ أحمد محمد</SelectItem>
-                  <SelectItem value="teacher3">الشيخ محمد حسن</SelectItem>
+                  {Object.entries(teachersMap).map(([id, name]) => (
+                    <SelectItem key={id} value={id}>
+                      {name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -2,7 +2,11 @@
 
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/integrations/supabase/client";
+import * as studentsService from "@/lib/db/services/students";
+import * as teachersService from "@/lib/db/services/teachers";
+import * as educationalSessionsService from "@/lib/db/services/educationalSessions";
+import type { EducationalSessionWithNames } from "@/lib/db/services/educationalSessions";
+import type { DbStudent, DbTeacher } from "@/lib/db/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,34 +22,10 @@ import {
 import IconButton from "@/components/IconButton";
 import { BookOpen, HandHeart, Target, Star, Users, Lightbulb } from "lucide-react";
 
-interface Teacher {
-  id: string;
-  name: string;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  age: number;
-  grade: string;
-}
-
-interface EducationalSession {
-  id: string;
-  student_id: string;
-  teacher_id: string;
-  topic: string;
-  description: string;
-  performance_rating: number;
-  session_date: string;
-  students: { name: string };
-  teachers: { name: string };
-}
-
 const Educational = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [sessions, setSessions] = useState<EducationalSession[]>([]);
+  const [students, setStudents] = useState<DbStudent[]>([]);
+  const [teachers, setTeachers] = useState<DbTeacher[]>([]);
+  const [sessions, setSessions] = useState<EducationalSessionWithNames[]>([]);
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [grade, setGrade] = useState("");
@@ -58,26 +38,19 @@ const Educational = () => {
   const { toast } = useToast();
 
   const loadData = async () => {
-    const { data: studentsData } = await getSupabase()
-      .from("students")
-      .select("*")
-      .eq("department", "tarbawi")
-      .order("name");
-
-    const { data: teachersData } = await getSupabase()
-      .from("teachers")
-      .select("*")
-      .eq("department", "tarbawi")
-      .order("name");
-
-    const { data: sessionsData } = await getSupabase()
-      .from("educational_sessions")
-      .select("*, students(name), teachers(name)")
-      .order("session_date", { ascending: false });
-
-    if (studentsData) setStudents(studentsData as Student[]);
-    if (teachersData) setTeachers(teachersData as Teacher[]);
-    if (sessionsData) setSessions(sessionsData as EducationalSession[]);
+    try {
+      const [studentsData, teachersData, sessionsData] = await Promise.all([
+        studentsService.getByDepartment("tarbawi"),
+        teachersService.getByDepartment("tarbawi"),
+        educationalSessionsService.getAllWithNames(),
+      ]);
+      setStudents(studentsData);
+      setTeachers(teachersData);
+      setSessions(sessionsData);
+    } catch (error) {
+      console.error("Error loading educational data:", error);
+      toast({ title: "خطأ", description: "فشل تحميل البيانات التربوية", variant: "destructive" });
+    }
   };
 
   useEffect(() => {
@@ -89,26 +62,30 @@ const Educational = () => {
     if (!name || !age || !grade) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("students").insert([
-      {
+    try {
+      await studentsService.add({
         name,
         age: parseInt(age),
         grade,
         department: "tarbawi",
-        parts_memorized: 0,
-        current_progress: "مسجل في البرنامج التربوي",
-        previous_progress: "",
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
-    } else {
+        teacherId: null,
+        partsMemorized: 0,
+        currentProgress: "مسجل في البرنامج التربوي",
+        previousProgress: "",
+        isActive: true,
+        parentName: null,
+        parentPhone: null,
+        attendance: null,
+        images: null,
+      });
       toast({ title: "تم إضافة الطالب بنجاح" });
       setName("");
       setAge("");
       setGrade("");
       loadData();
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -118,19 +95,17 @@ const Educational = () => {
     if (!selectedStudent || !selectedTeacher || !topic || !description) return;
 
     setIsLoading(true);
-    const { error } = await getSupabase().from("educational_sessions").insert([
-      {
-        student_id: selectedStudent,
-        teacher_id: selectedTeacher,
+    try {
+      await educationalSessionsService.add({
+        studentId: selectedStudent,
+        teacherId: selectedTeacher,
+        sessionDate: null,
         topic,
         description,
-        performance_rating: parseInt(rating),
-      },
-    ]);
-
-    if (error) {
-      toast({ title: "خطأ في إضافة الحلقة", variant: "destructive" });
-    } else {
+        performanceRating: parseInt(rating),
+        notes: null,
+        attendance: null,
+      });
       toast({ title: "تم إضافة الحلقة بنجاح" });
       setSelectedStudent("");
       setSelectedTeacher("");
@@ -138,6 +113,9 @@ const Educational = () => {
       setDescription("");
       setRating("5");
       loadData();
+    } catch (error) {
+      console.error("Error adding session:", error);
+      toast({ title: "خطأ في إضافة الحلقة", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -357,21 +335,21 @@ const Educational = () => {
                           {session.topic}
                         </h4>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          الطالب: {session.students.name}
+                          الطالب: {session.studentName}
                         </p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          المعلم: {session.teachers.name}
+                          المعلم: {session.teacherName}
                         </p>
                       </div>
                       <span className="text-xs sm:text-sm bg-primary/10 px-3 py-1 rounded-full">
-                        {session.performance_rating}/10
+                        {session.performanceRating}/10
                       </span>
                     </div>
                     <p className="text-muted-foreground text-xs sm:text-sm mt-2">
                       {session.description}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                      {new Date(session.session_date).toLocaleDateString("ar")}
+                      {session.sessionDate ? new Date(session.sessionDate).toLocaleDateString("ar") : "-"}
                     </p>
                   </CardContent>
                 </Card>

@@ -1,7 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getSupabase } from '@/integrations/supabase/client';
+import * as studentsService from '@/lib/db/services/students';
+import * as teachersService from '@/lib/db/services/teachers';
+import * as meetingsService from '@/lib/db/services/meetings';
 
 interface HomeStats {
   totalStudents: number;
@@ -11,56 +13,13 @@ interface HomeStats {
 }
 
 async function fetchHomeStats(): Promise<HomeStats> {
-  const today = new Date().toISOString().split('T')[0];
-
   // Execute all queries in parallel for better performance
-  const supabase = getSupabase();
-  const [studentsResult, teachersResult, attendanceResult, meetingsResult] = await Promise.all([
-    supabase
-      .from('students')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_active', true),
-    supabase
-      .from('teachers')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_active', true),
-    supabase
-      .from('students')
-      .select('attendance')
-      .eq('is_active', true)
-      .not('attendance', 'is', null),
-    supabase
-      .from('meetings')
-      .select('id', { count: 'exact', head: true })
-      .gte('meeting_date', today)
-      .eq('status', 'scheduled'),
+  const [studentsCount, teachersCount, attendanceData, meetingsCount] = await Promise.all([
+    studentsService.getActiveCount(),
+    teachersService.getActiveCount(),
+    studentsService.getAttendanceData(),
+    meetingsService.getUpcomingCount(),
   ]);
-
-  const { count: studentsCount, error: studentsError } = studentsResult;
-  const { count: teachersCount, error: teachersError } = teachersResult;
-  const { data: attendanceData, error: attendanceError } = attendanceResult;
-  const { count: meetingsCount, error: meetingsError } = meetingsResult;
-
-  // Handle errors by throwing to trigger React Query error state
-  if (studentsError) {
-    console.error('Error fetching students count:', studentsError);
-    throw new Error('Failed to fetch student statistics');
-  }
-
-  if (teachersError) {
-    console.error('Error fetching teachers count:', teachersError);
-    throw new Error('Failed to fetch teacher statistics');
-  }
-
-  if (attendanceError) {
-    console.error('Error fetching attendance data:', attendanceError);
-    throw new Error('Failed to fetch attendance data');
-  }
-
-  if (meetingsError) {
-    console.error('Error fetching meetings count:', meetingsError);
-    throw new Error('Failed to fetch meeting statistics');
-  }
 
   // Calculate attendance percentage from students with attendance data
   let attendancePercentage = 0;

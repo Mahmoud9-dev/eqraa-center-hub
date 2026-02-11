@@ -32,57 +32,10 @@ import {
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { getSupabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-
-// Supabase types
-type DbStudent = Tables<"students">;
-type DbTeacher = Tables<"teachers">;
-type DbAttendanceRecord = Tables<"attendance_records">;
-
-interface Student {
-  id: string;
-  name: string;
-  age: number;
-  grade: string;
-  department: string;
-  teacherId?: string;
-  teacher_id?: string | null;
-  partsMemorized?: number;
-  parts_memorized?: number | null;
-  currentProgress?: string;
-  current_progress?: string | null;
-  attendance?: number | null;
-  parentName?: string;
-  parent_name?: string | null;
-  parentPhone?: string;
-  parent_phone?: string | null;
-  isActive?: boolean;
-  is_active?: boolean | null;
-}
-
-interface Teacher {
-  id: string;
-  name: string;
-  specialization: string;
-  department: string;
-  isActive?: boolean;
-  is_active?: boolean | null;
-}
-
-interface AttendanceRecord {
-  id: string;
-  studentId?: string;
-  student_id?: string | null;
-  teacherId?: string;
-  teacher_id?: string | null;
-  date?: string;
-  record_date?: string;
-  status: "حاضر" | "غائب" | "مأذون";
-  notes?: string | null;
-  student?: Student;
-  teacher?: Teacher;
-}
+import * as studentsService from "@/lib/db/services/students";
+import * as teachersService from "@/lib/db/services/teachers";
+import * as attendanceRecordsService from "@/lib/db/services/attendanceRecords";
+import type { DbStudent, DbTeacher, DbAttendanceRecord } from "@/lib/db/types";
 
 const Attendance = () => {
   const [activeTab, setActiveTab] = useState("students");
@@ -99,95 +52,43 @@ const Attendance = () => {
   }>({});
   const { toast } = useToast();
 
-  // State for data from Supabase
-  const [students, setStudents] = useState<Student[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  // State for data from Dexie
+  const [students, setStudents] = useState<DbStudent[]>([]);
+  const [teachers, setTeachers] = useState<DbTeacher[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<DbAttendanceRecord[]>([]);
 
-  // Load students from Supabase
+  // Load students from Dexie (active students)
   const loadStudents = useCallback(async () => {
     try {
-      const { data, error } = await getSupabase()
-        .from("students")
-        .select("*")
-        .eq("is_active", true)
-        .order("name");
-
-      if (error) {
-        console.error("Error loading students:", error);
-        return;
-      }
-
-      if (data) {
-        const transformedStudents: Student[] = data.map((s) => ({
-          ...s,
-          teacherId: s.teacher_id || "",
-          partsMemorized: s.parts_memorized ?? 0,
-          currentProgress: s.current_progress || "",
-          parentName: s.parent_name || "",
-          parentPhone: s.parent_phone || "",
-          isActive: s.is_active ?? true,
-        }));
-        setStudents(transformedStudents);
-      }
+      const data = await studentsService.getActive();
+      setStudents(data);
     } catch (error) {
       console.error("Error loading students:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات الطلاب", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
-  // Load teachers from Supabase
+  // Load teachers from Dexie (active teachers)
   const loadTeachers = useCallback(async () => {
     try {
-      const { data, error } = await getSupabase()
-        .from("teachers")
-        .select("*")
-        .eq("is_active", true)
-        .order("name");
-
-      if (error) {
-        console.error("Error loading teachers:", error);
-        return;
-      }
-
-      if (data) {
-        const transformedTeachers: Teacher[] = data.map((t) => ({
-          ...t,
-          isActive: t.is_active ?? true,
-        }));
-        setTeachers(transformedTeachers);
-      }
+      const data = await teachersService.getActive();
+      setTeachers(data);
     } catch (error) {
       console.error("Error loading teachers:", error);
+      toast({ title: "خطأ", description: "فشل تحميل بيانات المعلمين", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
-  // Load attendance records from Supabase
+  // Load attendance records from Dexie
   const loadAttendanceRecords = useCallback(async () => {
     try {
-      const { data, error } = await getSupabase()
-        .from("attendance_records")
-        .select("*")
-        .order("record_date", { ascending: false });
-
-      if (error) {
-        console.error("Error loading attendance records:", error);
-        return;
-      }
-
-      if (data) {
-        const transformedRecords: AttendanceRecord[] = data.map((r) => ({
-          ...r,
-          studentId: r.student_id || "",
-          teacherId: r.teacher_id || "",
-          date: r.record_date,
-          status: r.status as "حاضر" | "غائب" | "مأذون",
-        }));
-        setAttendanceRecords(transformedRecords);
-      }
+      const data = await attendanceRecordsService.getAll();
+      setAttendanceRecords(data);
     } catch (error) {
       console.error("Error loading attendance records:", error);
+      toast({ title: "خطأ", description: "فشل تحميل سجلات الحضور", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
   // Load all data on mount
   useEffect(() => {
@@ -243,9 +144,9 @@ const Attendance = () => {
         ([studentId, status]) => {
           const student = students.find((s) => s.id === studentId);
           return {
-            student_id: studentId,
-            teacher_id: student?.teacherId || student?.teacher_id || null,
-            record_date: selectedDate.toISOString().split("T")[0],
+            studentId: studentId,
+            teacherId: student?.teacherId || null,
+            recordDate: selectedDate.toISOString().split("T")[0],
             status,
             notes:
               status === "حاضر"
@@ -257,20 +158,7 @@ const Attendance = () => {
         }
       );
 
-      const { error } = await getSupabase()
-        .from("attendance_records")
-        .insert(recordsToInsert);
-
-      if (error) {
-        console.error("Error recording attendance:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تسجيل الحضور",
-          variant: "destructive",
-        });
-        setIsRecording(false);
-        return;
-      }
+      await attendanceRecordsService.addBatch(recordsToInsert);
 
       // Reload attendance records
       await loadAttendanceRecords();
@@ -322,9 +210,9 @@ const Attendance = () => {
           // Map إجازة to مأذون for database compatibility
           const dbStatus = status === "إجازة" ? "مأذون" : status;
           return {
-            student_id: null, // No student for teacher attendance
-            teacher_id: teacherId,
-            record_date: selectedDate.toISOString().split("T")[0],
+            studentId: null, // No student for teacher attendance
+            teacherId: teacherId,
+            recordDate: selectedDate.toISOString().split("T")[0],
             status: dbStatus as "حاضر" | "غائب" | "مأذون",
             notes:
               status === "حاضر"
@@ -336,20 +224,7 @@ const Attendance = () => {
         }
       );
 
-      const { error } = await getSupabase()
-        .from("attendance_records")
-        .insert(recordsToInsert);
-
-      if (error) {
-        console.error("Error recording teacher attendance:", error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تسجيل الحضور",
-          variant: "destructive",
-        });
-        setIsRecording(false);
-        return;
-      }
+      await attendanceRecordsService.addBatch(recordsToInsert);
 
       // Reload attendance records
       await loadAttendanceRecords();
@@ -593,16 +468,16 @@ const Attendance = () => {
                     <TableBody>
                       {attendanceRecords.map((record) => (
                         <TableRow key={record.id}>
-                          <TableCell>{record.date || record.record_date}</TableCell>
-                          <TableCell>{getStudentName(record.studentId || record.student_id)}</TableCell>
+                          <TableCell>{record.recordDate}</TableCell>
+                          <TableCell>{getStudentName(record.studentId)}</TableCell>
                           <TableCell>
                             <Badge variant="outline">
                               {getDepartmentName(
-                                getStudentDepartment(record.studentId || record.student_id)
+                                getStudentDepartment(record.studentId)
                               )}
                             </Badge>
                           </TableCell>
-                          <TableCell>{getTeacherName(record.teacherId || record.teacher_id)}</TableCell>
+                          <TableCell>{getTeacherName(record.teacherId)}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(record.status)}>
                               {record.status}

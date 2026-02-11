@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSupabase } from '@/integrations/supabase/client';
+import { getSession, SESSION_KEY } from '@/lib/auth/auth-service';
+import { BackupReminder } from '@/components/BackupReminder';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ProtectedLayout({
   children,
@@ -14,30 +16,29 @@ export default function ProtectedLayout({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await getSupabase().auth.getSession();
+    const session = getSession();
 
-      if (!session) {
-        router.replace('/login');
-        return;
-      }
+    if (!session) {
+      router.replace('/login');
+      return;
+    }
 
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    };
+    setIsAuthenticated(true);
+    setIsLoading(false);
 
-    checkAuth();
-
-    const { data: { subscription } } = getSupabase().auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === SESSION_KEY) {
+        const current = getSession();
+        if (!current) {
           router.replace('/login');
         }
       }
-    );
+    };
+
+    window.addEventListener('storage', handleStorage);
 
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorage);
     };
   }, [router]);
 
@@ -53,5 +54,10 @@ export default function ProtectedLayout({
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <ErrorBoundary>
+      <BackupReminder />
+      {children}
+    </ErrorBoundary>
+  );
 }

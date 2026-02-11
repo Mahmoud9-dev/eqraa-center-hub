@@ -20,14 +20,16 @@ export const teacherSchema = z.object({
   experience: z.number().min(0, "سنوات الخبرة لا يمكن أن تكون سالبة").max(50, "سنوات الخبرة يجب أن تكون 50 سنة كحد أقصى").optional(),
 });
 
-// Quran session validation
-export const quranSessionSchema = z.object({
+// Quran session validation (base schema exported for partial updates)
+export const quranSessionBaseSchema = z.object({
   surahName: z.string().trim().min(1, "اسم السورة مطلوب").max(50, "اسم السورة يجب أن يكون أقل من 50 حرف"),
   versesFrom: z.number().min(1, "رقم الآية يجب أن يكون على الأقل 1").max(286, "رقم الآية يجب أن يكون 286 كحد أقصى"),
   versesTo: z.number().min(1, "رقم الآية يجب أن يكون على الأقل 1").max(286, "رقم الآية يجب أن يكون 286 كحد أقصى"),
   performanceRating: z.number().min(1, "التقييم يجب أن يكون من 1 إلى 10").max(10, "التقييم يجب أن يكون من 1 إلى 10").optional(),
   notes: z.string().max(1000, "الملاحظات يجب أن تكون أقل من 1000 حرف").optional(),
-}).refine((data) => data.versesFrom <= data.versesTo, {
+});
+
+export const quranSessionSchema = quranSessionBaseSchema.refine((data) => data.versesFrom <= data.versesTo, {
   message: "رقم الآية الأولى يجب أن يكون أقل من أو يساوي رقم الآية الأخيرة",
   path: ["versesTo"],
 });
@@ -58,5 +60,20 @@ export const suggestionSchema = z.object({
   title: z.string().trim().min(1, "العنوان مطلوب").max(200, "العنوان يجب أن يكون أقل من 200 حرف"),
   description: z.string().trim().min(1, "الوصف مطلوب").max(1000, "الوصف يجب أن يكون أقل من 1000 حرف"),
   suggestedBy: z.string().trim().max(100, "اسم المقترح يجب أن يكون أقل من 100 حرف").optional(),
-  priority: z.string().trim().min(1, "الأولوية مطلوبة"),
+  priority: z.enum(["عالي", "متوسط", "منخفض"], { message: "الأولوية يجب أن تكون عالي أو متوسط أو منخفض" }),
+});
+
+// Student note validation
+export const studentNoteSchema = z.object({
+  studentId: z.string().min(1, "معرّف الطالب مطلوب"),
+  type: z.enum(["إيجابي", "سلبي"], { message: "نوع الملاحظة يجب أن يكون إيجابي أو سلبي" }),
+  content: z.string().trim().min(1, "محتوى الملاحظة مطلوب").max(1000, "المحتوى يجب أن يكون أقل من 1000 حرف"),
+  noteDate: z.string().min(1, "تاريخ الملاحظة مطلوب"),
+  teacherName: z.string().trim().min(1, "اسم المعلم مطلوب").max(100, "اسم المعلم يجب أن يكون أقل من 100 حرف"),
+});
+
+// Attendance record validation
+export const attendanceRecordSchema = z.object({
+  recordDate: z.string().min(1, "تاريخ الحضور مطلوب"),
+  status: z.enum(["حاضر", "غائب", "مأذون"], { message: "حالة الحضور يجب أن تكون حاضر أو غائب أو مأذون" }),
 });
