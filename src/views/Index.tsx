@@ -155,13 +155,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <PageHeader title="معهد فاطمة الزهراء" showBack={false} />
+      <PageHeader title="إقراء" showBack={false} />
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 max-w-7xl">
         {/* Welcome Section */}
         <div className="text-center mb-8 sm:mb-10 md:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3">
-            مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية
+            مرحباً بك في إقراء
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground">
             اختر القسم المناسب للبدء
@@ -224,7 +224,7 @@ const Index = () => {
       <footer className="bg-card border-t border-border py-4 sm:py-6 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            © {new Date().getFullYear()} جميع الحقوق محفوظة لمعهد فاطمة الزهراء
+            © {new Date().getFullYear()} جميع الحقوق محفوظة لـ إقراء
           </p>
         </div>
       </footer>

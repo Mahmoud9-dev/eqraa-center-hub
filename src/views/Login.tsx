@@ -50,7 +50,7 @@ export default function Login() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              معهد فاطمة الزهراء
+              إقراء
             </h1>
           </div>
         </div>
