@@ -5,7 +5,7 @@
 **Version**: 1.0
 **Application URL**: http://localhost:8080/
 **Language**: Arabic (RTL)
-**Institute**: معهد فاطمة الزهراء للعلوم الشرعية
+**Institute**: إقراء | Eqraa
 
 ## Purpose
 The homepage serves as the main navigation hub for the Eqraa Center Hub, an Islamic educational center management system. It provides users with quick access to all major functional areas of the application.
@@ -19,7 +19,7 @@ The homepage serves as the main navigation hub for the Eqraa Center Hub, an Isla
 
 **Acceptance Criteria**:
 - Homepage loads successfully at http://localhost:8080/
-- Page displays the institute name "معهد فاطمة الزهراء" in the header
+- Page displays the institute name "إقراء | Eqraa" in the header
 - Welcome message is displayed with proper Arabic text
 - All 16 navigation sections are visible
 
@@ -47,9 +47,9 @@ The homepage serves as the main navigation hub for the Eqraa Center Hub, an Isla
 ## Core Features to Test
 
 ### 1. Page Structure
-- **Header**: Displays "معهد فاطمة الزهراء"
+- **Header**: Displays "إقراء | Eqraa"
 - **Welcome Section**:
-  - Main heading: "مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية"
+  - Main heading: "مرحباً بك في إقراء | Eqraa"
   - Subheading: "اختر القسم المناسب للبدء"
 - **Navigation Grid**: 16 clickable section buttons
 - **Footer**: Copyright notice with current year

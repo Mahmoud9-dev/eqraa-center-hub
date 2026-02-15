@@ -6,18 +6,18 @@ The homepage (`src/pages/Index.tsx`) serves as the main landing page and navigat
 
 ## Page Title
 
-**معهد فاطمة الزهراء** (Fatima Al-Zahra Institute)
+**إقراء | Eqraa** (Eqraa Center)
 
 ## Page Structure
 
 ### 1. Header Section
 - **Component**: `PageHeader`
-- **Title**: معهد فاطمة الزهراء
+- **Title**: إقراء | Eqraa
 - **Back Navigation**: Disabled (since this is the root page)
 
 ### 2. Welcome Section
-- **Main Heading**: "مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية"
-  - Translation: "Welcome to Fatima Al-Zahra Institute for Islamic Sciences"
+- **Main Heading**: "مرحباً بك في إقراء | Eqraa"
+  - Translation: "Welcome to Eqraa Center"
 - **Subheading**: "اختر القسم المناسب للبدء"
   - Translation: "Choose the appropriate section to get started"
 
@@ -46,8 +46,8 @@ The homepage displays a responsive grid of navigation buttons organized into 16 
 | 💡 | المقترحات | Suggestions | `/suggestions` | Suggestion and feedback system |
 
 ### 4. Footer Section
-- **Copyright Notice**: © {current year} معهد فاطمة الزهراء للعلوم الشرعية - جميع الحقوق محفوظة
-  - Translation: "© 2025 Fatima Al-Zahra Institute for Islamic Sciences - All Rights Reserved"
+- **Copyright Notice**: © {current year} إقراء | Eqraa - جميع الحقوق محفوظة
+  - Translation: "© 2025 Eqraa Center - All Rights Reserved"
 
 ## Design System
 

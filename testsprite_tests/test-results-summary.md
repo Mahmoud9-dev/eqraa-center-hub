@@ -147,12 +147,12 @@ The 6 passing tests reveal important information:
 4. **Fix Text Selectors**
    ```typescript
    // Instead of:
-   page.getByText('معهد فاطمة الزهراء')
+   page.getByText('إقراء | Eqraa')
 
    // Try:
-   page.locator('text=معهد فاطمة الزهراء')
+   page.locator('text=إقراء | Eqraa')
    // Or:
-   page.locator('[class*="header"]').filter({ hasText: 'معهد' })
+   page.locator('[class*="header"]').filter({ hasText: 'إقراء' })
    ```
 
 5. **Add Explicit Waits**
