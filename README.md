@@ -1,5 +1,5 @@
 # Eqraa Center Hub
-### معهد فاطمة الزهراء للعلوم الشرعية
+### إقراء | Eqraa
 
 > **Advanced Management System for Islamic Educational Centers and Quran Memorization Institutions**
 
@@ -36,7 +36,7 @@
 
 ## 📖 About the Project
 
-**Eqraa Center Hub** is a comprehensive, production-ready management system specifically designed for Islamic educational centers, Quran memorization institutions, and madrasas. Built for **Fatima Al-Zahra Institute for Islamic Sciences**, it provides powerful tools to streamline educational operations, track student progress, and manage all aspects of Islamic education.
+**Eqraa Center Hub** is a comprehensive, production-ready management system specifically designed for Islamic educational centers, Quran memorization institutions, and madrasas. Built for **Eqraa Center Hub**, it provides powerful tools to streamline educational operations, track student progress, and manage all aspects of Islamic education.
 
 ### Problem Statement
 
@@ -856,7 +856,7 @@ Options:
 - **Proprietary** - Closed source, all rights reserved
 - **Creative Commons** - For documentation/content
 
-Copyright © 2026 Fatima Al-Zahra Institute for Islamic Sciences
+Copyright © 2026 Eqraa Center Hub
 
 ---
 

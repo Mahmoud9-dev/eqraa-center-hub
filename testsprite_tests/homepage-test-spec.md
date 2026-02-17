@@ -6,7 +6,7 @@ Verify that the homepage (Index page) of the Eqraa Center Hub loads correctly, d
 ## Application Under Test
 - **URL**: http://localhost:8080/
 - **Page**: Homepage (Index.tsx)
-- **Institute Name**: معهد فاطمة الزهراء
+- **Institute Name**: إقراء | Eqraa
 
 ## Test Scenarios
 
@@ -32,7 +32,7 @@ Verify that the homepage (Index page) of the Eqraa Center Hub loads correctly, d
 3. Verify header text
 
 **Expected Results**:
-- Header displays "معهد فاطمة الزهراء"
+- Header displays "إقراء | Eqraa"
 - Header is visible at the top of the page
 - Back button should NOT be visible (since this is the root page)
 
@@ -47,7 +47,7 @@ Verify that the homepage (Index page) of the Eqraa Center Hub loads correctly, d
 4. Verify subheading text
 
 **Expected Results**:
-- Main heading displays: "مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية"
+- Main heading displays: "مرحباً بك في إقراء | Eqraa"
 - Subheading displays: "اختر القسم المناسب للبدء"
 - Text is properly centered
 - Text is visible and readable
@@ -130,7 +130,7 @@ Verify that the homepage (Index page) of the Eqraa Center Hub loads correctly, d
 
 **Expected Results**:
 - Footer is visible at bottom of page
-- Copyright text includes: "معهد فاطمة الزهراء للعلوم الشرعية"
+- Copyright text includes: "إقراء"
 - Copyright text includes: "جميع الحقوق محفوظة"
 - Current year is displayed (2025)
 

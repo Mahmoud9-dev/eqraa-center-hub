@@ -19,8 +19,7 @@ export function LoginLeftPanel() {
             <Building2 className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-lg font-bold">معهد فاطمة الزهراء</h1>
-            <p className="text-white/80 text-sm">للعلوم الشرعية</p>
+            <h1 className="text-lg font-bold">إقراء</h1>
           </div>
         </div>
 
@@ -33,7 +32,7 @@ export function LoginLeftPanel() {
 
         {/* Footer */}
         <div className="flex flex-col gap-1 text-sm text-white/60">
-          <span>© {new Date().getFullYear()} معهد فاطمة الزهراء</span>
+          <span>© {new Date().getFullYear()} إقراء</span>
           <span>جميع الحقوق محفوظة</span>
         </div>
       </div>

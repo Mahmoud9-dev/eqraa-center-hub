@@ -10,8 +10,8 @@ const notoSansArabic = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: 'معهد فاطمة الزهراء للعلوم الشرعية',
-  description: 'معهد فاطمة الزهراء للعلوم الشرعية - لتحفيظ القرآن الكريم والعلوم الإسلامية',
+  title: 'إقراء',
+  description: 'إقراء - لتحفيظ القرآن الكريم والعلوم الإسلامية',
   icons: {
     icon: 'https://storage.googleapis.com/gpt-engineer-file-uploads/dhcNpa1gKFZ3DksMksiwOawAugs2/uploads/1762129696531-quran.png',
   },

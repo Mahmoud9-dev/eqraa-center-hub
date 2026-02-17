@@ -34,10 +34,10 @@ export interface Translations {
 export const translations: Record<Language, Translations> = {
   ar: {
     home: {
-      pageTitle: 'معهد فاطمة الزهراء',
-      welcome: 'مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية',
+      pageTitle: 'إقراء',
+      welcome: 'مرحباً بك في إقراء',
       subtitle: 'اختر القسم المناسب للبدء',
-      footer: 'جميع الحقوق محفوظة لمعهد فاطمة الزهراء',
+      footer: 'جميع الحقوق محفوظة - إقراء',
       stats: {
         totalStudents: 'إجمالي الطلاب',
         attendanceToday: 'الحضور اليوم',
@@ -81,10 +81,10 @@ export const translations: Record<Language, Translations> = {
   },
   en: {
     home: {
-      pageTitle: 'Fatimah Al-Zahra Institute',
-      welcome: 'Welcome to Fatimah Al-Zahra Institute for Islamic Studies',
+      pageTitle: 'Eqraa',
+      welcome: 'Welcome to Eqraa',
       subtitle: 'Choose a section to get started',
-      footer: 'All rights reserved - Fatimah Al-Zahra Institute',
+      footer: 'All rights reserved - Eqraa',
       stats: {
         totalStudents: 'Total Students',
         attendanceToday: 'Attendance Today',

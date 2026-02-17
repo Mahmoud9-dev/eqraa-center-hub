@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Homepage E2E Tests
  * Tests for the main landing page (Index.tsx)
- * Institute: معهد فاطمة الزهراء للعلوم الشرعية
+ * Institute: إقراء | Eqraa
  */
 
 test.describe('Homepage - Basic Structure', () => {
@@ -22,7 +22,7 @@ test.describe('Homepage - Basic Structure', () => {
 
   test('should display page header with institute name', async ({ page }) => {
     // Check header displays institute name
-    const header = page.getByText('معهد فاطمة الزهراء');
+    const header = page.getByText('إقراء | Eqraa');
     await expect(header).toBeVisible();
   });
 
@@ -39,7 +39,7 @@ test.describe('Homepage - Welcome Section', () => {
   });
 
   test('should display main welcome heading', async ({ page }) => {
-    const mainHeading = page.getByText('مرحباً بك في معهد فاطمة الزهراء للعلوم الشرعية');
+    const mainHeading = page.getByText('مرحباً بك في إقراء | Eqraa');
     await expect(mainHeading).toBeVisible();
   });
 
@@ -147,7 +147,7 @@ test.describe('Homepage - Footer', () => {
   });
 
   test('should display institute name in footer', async ({ page }) => {
-    const copyrightText = page.getByText(/معهد فاطمة الزهراء للعلوم الشرعية/);
+    const copyrightText = page.getByText(/إقراء \| Eqraa/);
     await expect(copyrightText).toBeVisible();
   });
 
@@ -170,7 +170,7 @@ test.describe('Homepage - Responsive Design', () => {
     await page.goto('/');
 
     // Verify content is visible
-    await expect(page.getByText('معهد فاطمة الزهراء')).toBeVisible();
+    await expect(page.getByText('إقراء | Eqraa')).toBeVisible();
     await expect(page.getByText('مرحباً بك')).toBeVisible();
 
     // Check grid is present
@@ -189,7 +189,7 @@ test.describe('Homepage - Responsive Design', () => {
     await page.goto('/');
 
     // Verify content is visible
-    await expect(page.getByText('معهد فاطمة الزهراء')).toBeVisible();
+    await expect(page.getByText('إقراء | Eqraa')).toBeVisible();
     await expect(page.getByText('مرحباً بك')).toBeVisible();
 
     // All buttons should be visible without scrolling (vertically)
@@ -203,7 +203,7 @@ test.describe('Homepage - Responsive Design', () => {
     await page.goto('/');
 
     // Verify content is visible
-    await expect(page.getByText('معهد فاطمة الزهراء')).toBeVisible();
+    await expect(page.getByText('إقراء | Eqraa')).toBeVisible();
 
     // Content should be centered with max-width
     const main = page.locator('main');
