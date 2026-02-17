@@ -4,7 +4,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 
 const notoSansArabic = Noto_Sans_Arabic({
-  subsets: ['arabic'],
+  subsets: ['arabic', 'latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-arabic',
 });

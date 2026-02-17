@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, LogOut, User, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, LogOut, User, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
@@ -9,6 +9,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PageHeaderProps {
   title: string;
@@ -18,6 +20,8 @@ interface PageHeaderProps {
 const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   const router = useRouter();
   const { roles, isAdmin } = useUserRole();
+  const { t, isRTL } = useLanguage();
+  const BackArrow = isRTL ? ArrowRight : ArrowLeft;
   const [userName, setUserName] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -28,7 +32,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
       } = await getSupabase().auth.getUser();
       if (user) {
         setUserName(
-          user.user_metadata?.name || user.email?.split("@")[0] || "مستخدم"
+          user.user_metadata?.name || user.email?.split("@")[0] || null
         );
       }
     };
@@ -38,19 +42,19 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
   const handleLogout = async () => {
     const { error } = await getSupabase().auth.signOut();
     if (error) {
-      toast.error("خطأ في تسجيل الخروج");
+      toast.error(t.header.logoutError);
     } else {
-      toast.success("تم تسجيل الخروج بنجاح");
+      toast.success(t.header.logoutSuccess);
       router.push("/login");
     }
   };
 
   const getRoleLabel = () => {
-    if (isAdmin) return "مدير";
-    if (roles.includes("teacher")) return "معلم";
-    if (roles.includes("student")) return "طالب";
-    if (roles.includes("parent")) return "ولي أمر";
-    return "مستخدم";
+    if (isAdmin) return t.header.roles.admin;
+    if (roles.includes("teacher")) return t.header.roles.teacher;
+    if (roles.includes("student")) return t.header.roles.student;
+    if (roles.includes("parent")) return t.header.roles.parent;
+    return t.header.roles.default;
   };
 
   return (
@@ -61,22 +65,23 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
             {title}
           </h1>
           <div className="flex items-center gap-1 xs:gap-2 md:gap-3">
+            <LanguageToggle />
             <ThemeToggle />
             {userName && (
               <div className="hidden md:flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-lg">
                 <User className="w-4 h-4" />
-                <span className="text-sm font-medium">{userName}</span>
+                <span className="text-sm font-medium">{userName || t.header.defaultUser}</span>
                 <span className="text-xs opacity-75">({getRoleLabel()})</span>
               </div>
             )}
-            {/* قائمة متنقلة للهواتف */}
+            {/* Mobile menu */}
             <div className="md:hidden">
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 xs:p-2.5 touch-target"
-                aria-label="فتح القائمة"
+                aria-label={t.header.openMenu}
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -85,13 +90,13 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 )}
               </Button>
             </div>
-            {/* أزرار سطح المكتب */}
+            {/* Desktop buttons */}
             <div className="hidden md:flex items-center gap-2">
               {showBack && (
                 <Link href="/">
                   <Button variant="secondary" size="lg" className="gap-2">
-                    <ArrowRight className="w-5 h-5" />
-                    الرئيسية
+                    <BackArrow className="w-5 h-5" />
+                    {t.header.home}
                   </Button>
                 </Link>
               )}
@@ -102,20 +107,20 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 onClick={handleLogout}
               >
                 <LogOut className="w-5 h-5" />
-                <span>خروج</span>
+                <span>{t.header.logout}</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* قائمة جانبية للهواتف */}
+        {/* Mobile sidebar menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden mt-3 xs:mt-4 pt-3 xs:pt-4 border-t border-primary-foreground/20 animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col space-y-1 xs:space-y-2">
-              {userName && (
+              {(userName || t.header.defaultUser) && (
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-3 py-2 xs:py-2.5 rounded-lg">
                   <User className="w-4 h-4" />
-                  <span className="text-sm font-medium">{userName}</span>
+                  <span className="text-sm font-medium">{userName || t.header.defaultUser}</span>
                   <span className="text-xs opacity-75">({getRoleLabel()})</span>
                 </div>
               )}
@@ -126,8 +131,8 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                     size="sm"
                     className="w-full justify-start gap-2 py-2.5 xs:py-3 touch-target"
                   >
-                    <ArrowRight className="w-4 h-4" />
-                    الرئيسية
+                    <BackArrow className="w-4 h-4" />
+                    {t.header.home}
                   </Button>
                 </Link>
               )}
@@ -141,7 +146,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
                 }}
               >
                 <LogOut className="w-4 h-4" />
-                خروج
+                {t.header.logout}
               </Button>
             </div>
           </div>
