@@ -203,7 +203,7 @@ test.describe('Homepage - Responsive Design', () => {
     await page.goto('/');
 
     // Verify content is visible
-    await expect(page.getByText('معهد فاطمة الزهراء')).toBeVisible();
+    await expect(page.getByText('إقراء | Eqraa')).toBeVisible();
 
     // Content should be centered with max-width
     const main = page.locator('main');

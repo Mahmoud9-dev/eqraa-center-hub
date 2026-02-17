@@ -26,6 +26,7 @@ import IconButton from '@/components/IconButton';
 import PageHeader from '@/components/PageHeader';
 import StatCard from '@/components/StatCard';
 import { useHomeStats } from '@/hooks/useHomeStats';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Section {
   to: string;
@@ -152,19 +153,21 @@ const sections: Section[] = [
 
 const Index = () => {
   const { data: stats, isLoading: statsLoading } = useHomeStats();
+  const { t, language } = useLanguage();
+  const locale = language === 'ar' ? 'ar-SA' : 'en-US';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <PageHeader title="إقراء" showBack={false} />
+      <PageHeader title={t.home.pageTitle} showBack={false} />
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 max-w-7xl">
         {/* Welcome Section */}
         <div className="text-center mb-8 sm:mb-10 md:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3">
-            مرحباً بك في إقراء
+            {t.home.welcome}
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground">
-            اختر القسم المناسب للبدء
+            {t.home.subtitle}
           </p>
         </div>
 
@@ -174,15 +177,15 @@ const Index = () => {
             icon={School}
             iconBgColor="bg-blue-100 dark:bg-blue-900/30"
             iconColor="text-blue-600 dark:text-blue-400"
-            label="إجمالي الطلاب"
-            value={stats?.totalStudents?.toLocaleString('ar-SA') || '0'}
+            label={t.home.stats.totalStudents}
+            value={stats?.totalStudents?.toLocaleString(locale) || '0'}
             loading={statsLoading}
           />
           <StatCard
             icon={CheckCircle}
             iconBgColor="bg-green-100 dark:bg-green-900/30"
             iconColor="text-green-600 dark:text-green-400"
-            label="الحضور اليوم"
+            label={t.home.stats.attendanceToday}
             value={`${stats?.attendancePercentage || 0}%`}
             loading={statsLoading}
           />
@@ -190,16 +193,16 @@ const Index = () => {
             icon={BookOpen}
             iconBgColor="bg-purple-100 dark:bg-purple-900/30"
             iconColor="text-purple-600 dark:text-purple-400"
-            label="الحلقات النشطة"
-            value={stats?.activeCircles?.toLocaleString('ar-SA') || '0'}
+            label={t.home.stats.activeCircles}
+            value={stats?.activeCircles?.toLocaleString(locale) || '0'}
             loading={statsLoading}
           />
           <StatCard
             icon={CalendarDays}
             iconBgColor="bg-orange-100 dark:bg-orange-900/30"
             iconColor="text-orange-600 dark:text-orange-400"
-            label="الاختبارات القادمة"
-            value={stats?.upcomingExams?.toLocaleString('ar-SA') || '0'}
+            label={t.home.stats.upcomingExams}
+            value={stats?.upcomingExams?.toLocaleString(locale) || '0'}
             loading={statsLoading}
           />
         </div>
@@ -213,7 +216,7 @@ const Index = () => {
               icon={section.icon}
               iconBgColor={section.iconBgColor}
               iconColor={section.iconColor}
-              label={section.label}
+              label={t.home.sections[section.to] || section.label}
             />
           ))}
         </div>
@@ -224,7 +227,7 @@ const Index = () => {
       <footer className="bg-card border-t border-border py-4 sm:py-6 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            © {new Date().getFullYear()} جميع الحقوق محفوظة لـ إقراء
+            © {new Date().getFullYear()} {t.home.footer}
           </p>
         </div>
       </footer>

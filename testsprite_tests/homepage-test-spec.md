@@ -130,7 +130,7 @@ Verify that the homepage (Index page) of the Eqraa Center Hub loads correctly, d
 
 **Expected Results**:
 - Footer is visible at bottom of page
-- Copyright text includes: "معهد فاطمة الزهراء للعلوم الشرعية"
+- Copyright text includes: "إقراء"
 - Copyright text includes: "جميع الحقوق محفوظة"
 - Current year is displayed (2025)
 
