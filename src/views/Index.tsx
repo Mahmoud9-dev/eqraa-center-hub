@@ -154,7 +154,7 @@ const sections: Section[] = [
 const Index = () => {
   const { data: stats, isLoading: statsLoading } = useHomeStats();
   const { t, language } = useLanguage();
-  const locale = language === 'ar' ? 'ar-SA' : undefined;
+  const locale = language === 'ar' ? 'ar-SA' : 'en-US';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -70,7 +70,7 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
             {userName && (
               <div className="hidden md:flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-lg">
                 <User className="w-4 h-4" />
-                <span className="text-sm font-medium">{userName || t.header.defaultUser}</span>
+                <span className="text-sm font-medium">{userName}</span>
                 <span className="text-xs opacity-75">({getRoleLabel()})</span>
               </div>
             )}
@@ -117,10 +117,10 @@ const PageHeader = ({ title, showBack = true }: PageHeaderProps) => {
         {isMobileMenuOpen && (
           <div className="md:hidden mt-3 xs:mt-4 pt-3 xs:pt-4 border-t border-primary-foreground/20 animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col space-y-1 xs:space-y-2">
-              {(userName || t.header.defaultUser) && (
+              {userName && (
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-3 py-2 xs:py-2.5 rounded-lg">
                   <User className="w-4 h-4" />
-                  <span className="text-sm font-medium">{userName || t.header.defaultUser}</span>
+                  <span className="text-sm font-medium">{userName}</span>
                   <span className="text-xs opacity-75">({getRoleLabel()})</span>
                 </div>
               )}
