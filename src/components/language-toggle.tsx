@@ -15,7 +15,7 @@ export function LanguageToggle() {
       aria-label={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
       title={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
-      <span className="text-xs font-bold">
+      <span className="text-xs font-bold text-primary">
         {language === 'ar' ? 'EN' : 'AR'}
       </span>
     </Button>
