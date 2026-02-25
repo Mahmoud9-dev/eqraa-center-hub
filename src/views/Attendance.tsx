@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -98,11 +99,27 @@ const Attendance = () => {
     [key: string]: "حاضر" | "غائب" | "إجازة";
   }>({});
   const { toast } = useToast();
-
-  // State for data from Supabase
+  const { t, tFunc, language } = useLanguage();
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+
+  // Label map for DB attendance status values
+  const statusLabels: Record<string, string> = {
+    "حاضر": t.attendance.status.present,
+    "غائب": t.attendance.status.absent,
+    "مأذون": t.attendance.status.excused,
+  };
+
+  // Label map for department DB values
+  const departmentLabels: Record<string, string> = {
+    quran: t.attendance.departments.quran,
+    tajweed: t.attendance.departments.tajweed,
+    tarbawi: t.attendance.departments.tarbawi,
+  };
+
+  // date-fns locale based on current language
+  const dateLocale = language === 'ar' ? ar : undefined;
 
   // Load students from Supabase
   const loadStudents = useCallback(async () => {
@@ -209,16 +226,7 @@ const Attendance = () => {
   });
 
   const getDepartmentName = (dept: string) => {
-    switch (dept) {
-      case "quran":
-        return "قرآن";
-      case "tajweed":
-        return "تجويد";
-      case "tarbawi":
-        return "تربوي";
-      default:
-        return dept;
-    }
+    return departmentLabels[dept] || dept;
   };
 
   const getStatusColor = (status: string) => {
@@ -232,6 +240,10 @@ const Attendance = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    return statusLabels[status] || status;
   };
 
   const handleRecordAttendance = async () => {
@@ -264,8 +276,8 @@ const Attendance = () => {
       if (error) {
         console.error("Error recording attendance:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تسجيل الحضور",
+          title: t.attendance.toast.error,
+          description: t.attendance.toast.recordError,
           variant: "destructive",
         });
         setIsRecording(false);
@@ -278,14 +290,14 @@ const Attendance = () => {
       setIsRecording(false);
       setSelectedStudents({});
       toast({
-        title: "تم تسجيل الحضور",
-        description: `تم تسجيل حضور ${recordsToInsert.length} طالب بنجاح`,
+        title: t.attendance.toast.recorded,
+        description: tFunc('attendance.toast.studentRecordedDesc', { count: recordsToInsert.length }),
       });
     } catch (error) {
       console.error("Error recording attendance:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تسجيل الحضور",
+        title: t.attendance.toast.error,
+        description: t.attendance.toast.recordError,
         variant: "destructive",
       });
       setIsRecording(false);
@@ -343,8 +355,8 @@ const Attendance = () => {
       if (error) {
         console.error("Error recording teacher attendance:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تسجيل الحضور",
+          title: t.attendance.toast.error,
+          description: t.attendance.toast.recordError,
           variant: "destructive",
         });
         setIsRecording(false);
@@ -357,14 +369,14 @@ const Attendance = () => {
       setIsRecording(false);
       setSelectedTeachers({});
       toast({
-        title: "تم تسجيل الحضور",
-        description: `تم تسجيل حضور ${recordsToInsert.length} معلم بنجاح`,
+        title: t.attendance.toast.recorded,
+        description: tFunc('attendance.toast.teacherRecordedDesc', { count: recordsToInsert.length }),
       });
     } catch (error) {
       console.error("Error recording teacher attendance:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تسجيل الحضور",
+        title: t.attendance.toast.error,
+        description: t.attendance.toast.recordError,
         variant: "destructive",
       });
       setIsRecording(false);
@@ -395,12 +407,12 @@ const Attendance = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <PageHeader title="الحضور والانصراف" showBack={true} />
+        <PageHeader title={t.attendance.pageTitle} showBack={true} />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">جاري تحميل البيانات...</p>
+              <p className="text-muted-foreground">{t.common.loading}</p>
             </div>
           </div>
         </main>
@@ -410,39 +422,38 @@ const Attendance = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الحضور والانصراف" showBack={true} />
+      <PageHeader title={t.attendance.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📊 الحضور والانصراف</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.attendance.sectionTitle}</h2>
           <p className="text-muted-foreground mb-6">
-            تسجيل ومتابعة حضور الطلاب والمعلمين
+            {t.attendance.sectionDescription}
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="students">حضور الطلاب</TabsTrigger>
-            <TabsTrigger value="teachers">حضور المعلمين</TabsTrigger>
+            <TabsTrigger value="students">{t.attendance.tabs.students}</TabsTrigger>
+            <TabsTrigger value="teachers">{t.attendance.tabs.teachers}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students" className="mt-6">
             <div className="space-y-6">
-              {/* تسجيل الحضور */}
               <Card>
                 <CardHeader>
-                  <CardTitle>تسجيل الحضور اليومي للطلاب</CardTitle>
+                  <CardTitle>{t.attendance.cards.dailyStudentAttendance}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <label className="text-sm font-medium">التاريخ:</label>
+                        <label className="text-sm font-medium">{t.attendance.filter.dateLabel}</label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" className="w-48">
-                              <CalendarIcon className="ml-2 h-4 w-4" />
-                              {format(selectedDate, "PPP", { locale: ar })}
+                              <CalendarIcon className="ms-2 h-4 w-4" />
+                              {format(selectedDate, "PPP", { locale: dateLocale })}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -457,37 +468,37 @@ const Attendance = () => {
                       </div>
 
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <label className="text-sm font-medium">القسم:</label>
+                        <label className="text-sm font-medium">{t.attendance.filter.departmentLabel}</label>
                         <Select
                           value={filterDepartment}
                           onValueChange={setFilterDepartment}
                         >
                           <SelectTrigger className="w-40">
-                            <SelectValue placeholder="اختر القسم" />
+                            <SelectValue placeholder={t.attendance.filter.selectDepartment} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">جميع الأقسام</SelectItem>
-                            <SelectItem value="quran">قرآن</SelectItem>
-                            <SelectItem value="tajweed">تجويد</SelectItem>
-                            <SelectItem value="tarbawi">تربوي</SelectItem>
+                            <SelectItem value="all">{t.attendance.filter.allDepartments}</SelectItem>
+                            <SelectItem value="quran">{t.attendance.departments.quran}</SelectItem>
+                            <SelectItem value="tajweed">{t.attendance.departments.tajweed}</SelectItem>
+                            <SelectItem value="tarbawi">{t.attendance.departments.tarbawi}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="flex-1 max-w-xs relative">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="البحث عن طالب..."
+                          placeholder={t.attendance.filter.searchStudent}
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pr-10"
+                          className="w-full pe-10"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-6">
-                    <h4 className="font-medium mb-4">سجل الحضور لليوم:</h4>
+                    <h4 className="font-medium mb-4">{t.attendance.cards.todayRecord}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {filteredStudents.map((student) => (
                         <Card
@@ -504,7 +515,7 @@ const Attendance = () => {
                                 </p>
                               </div>
                               <Badge variant="outline">
-                                {student.partsMemorized} جزء
+                                {student.partsMemorized} {t.attendance.units.parts}
                               </Badge>
                             </div>
 
@@ -521,7 +532,7 @@ const Attendance = () => {
                                   handleStudentStatusChange(student.id, "حاضر")
                                 }
                               >
-                                حاضر
+                                {t.attendance.status.present}
                               </Button>
                               <Button
                                 size="sm"
@@ -535,7 +546,7 @@ const Attendance = () => {
                                   handleStudentStatusChange(student.id, "غائب")
                                 }
                               >
-                                غائب
+                                {t.attendance.status.absent}
                               </Button>
                               <Button
                                 size="sm"
@@ -549,7 +560,7 @@ const Attendance = () => {
                                   handleStudentStatusChange(student.id, "مأذون")
                                 }
                               >
-                                مأذون
+                                {t.attendance.status.excused}
                               </Button>
                             </div>
                           </CardContent>
@@ -566,28 +577,27 @@ const Attendance = () => {
                         }
                         className="bg-primary text-primary-foreground"
                       >
-                        {isRecording ? "جاري التسجيل..." : "تسجيل الحضور"}
+                        {isRecording ? t.attendance.actions.recording : t.attendance.actions.recordAttendance}
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* سجلات الحضور السابقة */}
               <Card>
                 <CardHeader>
-                  <CardTitle>سجلات الحضور السابقة</CardTitle>
+                  <CardTitle>{t.attendance.cards.previousRecords}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>الطالب</TableHead>
-                        <TableHead>القسم</TableHead>
-                        <TableHead>المعلم</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>ملاحظات</TableHead>
+                        <TableHead>{t.attendance.table.date}</TableHead>
+                        <TableHead>{t.attendance.table.studentName}</TableHead>
+                        <TableHead>{t.attendance.table.department}</TableHead>
+                        <TableHead>{t.attendance.table.teacher}</TableHead>
+                        <TableHead>{t.attendance.table.status}</TableHead>
+                        <TableHead>{t.attendance.table.notes}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -605,7 +615,7 @@ const Attendance = () => {
                           <TableCell>{getTeacherName(record.teacherId || record.teacher_id)}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(record.status)}>
-                              {record.status}
+                              {getStatusLabel(record.status)}
                             </Badge>
                           </TableCell>
                           <TableCell>{record.notes || "-"}</TableCell>
@@ -620,21 +630,20 @@ const Attendance = () => {
 
           <TabsContent value="teachers" className="mt-6">
             <div className="space-y-6">
-              {/* تسجيل حضور المعلمين */}
               <Card>
                 <CardHeader>
-                  <CardTitle>تسجيل الحضور اليومي للمعلمين</CardTitle>
+                  <CardTitle>{t.attendance.cards.dailyTeacherAttendance}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <label className="text-sm font-medium">التاريخ:</label>
+                        <label className="text-sm font-medium">{t.attendance.filter.dateLabel}</label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" className="w-48">
-                              <CalendarIcon className="ml-2 h-4 w-4" />
-                              {format(selectedDate, "PPP", { locale: ar })}
+                              <CalendarIcon className="ms-2 h-4 w-4" />
+                              {format(selectedDate, "PPP", { locale: dateLocale })}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -649,37 +658,37 @@ const Attendance = () => {
                       </div>
 
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <label className="text-sm font-medium">القسم:</label>
+                        <label className="text-sm font-medium">{t.attendance.filter.departmentLabel}</label>
                         <Select
                           value={filterDepartment}
                           onValueChange={setFilterDepartment}
                         >
                           <SelectTrigger className="w-40">
-                            <SelectValue placeholder="اختر القسم" />
+                            <SelectValue placeholder={t.attendance.filter.selectDepartment} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">جميع الأقسام</SelectItem>
-                            <SelectItem value="quran">قرآن</SelectItem>
-                            <SelectItem value="tajweed">تجويد</SelectItem>
-                            <SelectItem value="tarbawi">تربوي</SelectItem>
+                            <SelectItem value="all">{t.attendance.filter.allDepartments}</SelectItem>
+                            <SelectItem value="quran">{t.attendance.departments.quran}</SelectItem>
+                            <SelectItem value="tajweed">{t.attendance.departments.tajweed}</SelectItem>
+                            <SelectItem value="tarbawi">{t.attendance.departments.tarbawi}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="flex-1 max-w-xs relative">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="البحث عن معلم..."
+                          placeholder={t.attendance.filter.searchTeacher}
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pr-10"
+                          className="w-full pe-10"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-6">
-                    <h4 className="font-medium mb-4">سجل الحضور لليوم:</h4>
+                    <h4 className="font-medium mb-4">{t.attendance.cards.todayRecord}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {teachers.map((teacher) => (
                         <Card
@@ -702,7 +711,7 @@ const Attendance = () => {
                                   teacher.isActive ? "default" : "secondary"
                                 }
                               >
-                                {teacher.isActive ? "نشط" : "غير نشط"}
+                                {teacher.isActive ? t.attendance.status.active : t.attendance.status.inactive}
                               </Badge>
                             </div>
 
@@ -719,7 +728,7 @@ const Attendance = () => {
                                   handleTeacherStatusChange(teacher.id, "حاضر")
                                 }
                               >
-                                حاضر
+                                {t.attendance.status.present}
                               </Button>
                               <Button
                                 size="sm"
@@ -733,7 +742,7 @@ const Attendance = () => {
                                   handleTeacherStatusChange(teacher.id, "غائب")
                                 }
                               >
-                                غائب
+                                {t.attendance.status.absent}
                               </Button>
                               <Button
                                 size="sm"
@@ -747,7 +756,7 @@ const Attendance = () => {
                                   handleTeacherStatusChange(teacher.id, "إجازة")
                                 }
                               >
-                                إجازة
+                                {t.attendance.status.leave}
                               </Button>
                             </div>
                           </CardContent>
@@ -764,7 +773,7 @@ const Attendance = () => {
                         }
                         className="bg-primary text-primary-foreground"
                       >
-                        {isRecording ? "جاري التسجيل..." : "تسجيل الحضور"}
+                        {isRecording ? t.attendance.actions.recording : t.attendance.actions.recordAttendance}
                       </Button>
                     </div>
                   </div>

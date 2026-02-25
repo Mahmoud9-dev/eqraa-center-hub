@@ -1,11 +1,26 @@
 #!/usr/bin/env sh
 
-echo "🔒 Running security checks..."
+echo "Running pre-commit checks..."
+
+# Step 1: Lint
+echo "  [1/4] Linting..."
+pnpm run lint || { echo "Lint failed. Fix errors before committing."; exit 1; }
+
+# Step 2: Type-check
+echo "  [2/4] Type checking..."
+pnpm run type-check || { echo "Type check failed. Fix errors before committing."; exit 1; }
+
+# Step 3: Unit tests
+echo "  [3/4] Running unit tests..."
+pnpm run test:unit || { echo "Unit tests failed. Fix failures before committing."; exit 1; }
+
+# Step 4: Security checks
+echo "  [4/4] Security checks..."
 
 # Check for .env files
 ENV_FILES=$(git diff --cached --name-only | grep -E '^\.env|/\.env' || true)
 if [ -n "$ENV_FILES" ]; then
-  echo "❌ ERROR: Attempting to commit .env file(s):"
+  echo "ERROR: Attempting to commit .env file(s):"
   echo "$ENV_FILES"
   echo ""
   echo "Remove them from staging with: git reset HEAD <file>"
@@ -15,7 +30,7 @@ fi
 # Check for potential secrets in staged files
 SECRETS=$(git diff --cached | grep -iE '(api[_-]?key|secret[_-]?key|password|auth[_-]?token|access[_-]?token|private[_-]?key)\s*[:=]\s*["\047][A-Za-z0-9+/=_-]{8,}["\047]' || true)
 if [ -n "$SECRETS" ]; then
-  echo "⚠️  WARNING: Potential hardcoded secrets detected!"
+  echo "WARNING: Potential hardcoded secrets detected!"
   echo "Please review your changes and use environment variables instead."
   echo ""
   echo "If this is a false positive (e.g., test data), you can bypass with:"
@@ -23,4 +38,4 @@ if [ -n "$SECRETS" ]; then
   exit 1
 fi
 
-echo "✓ Security checks passed"
+echo "All pre-commit checks passed"

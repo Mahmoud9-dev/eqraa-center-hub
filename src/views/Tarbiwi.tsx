@@ -41,8 +41,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 const Tarbiwi = () => {
+  const { t, tFunc, language } = useLanguage();
+  const tb = t.tarbiwi;
+
   const [activeTab, setActiveTab] = useState("programs");
   const [isAddProgramDialogOpen, setIsAddProgramDialogOpen] = useState(false);
   const [isEditProgramDialogOpen, setIsEditProgramDialogOpen] = useState(false);
@@ -176,6 +181,12 @@ const Tarbiwi = () => {
     teacher3: "الشيخ محمد سعيد",
   };
 
+  // Label map for assignment types (DB canonical values stay Arabic)
+  const assignmentTypeLabels: Record<string, string> = {
+    'عبادية': tb.assignments.typeLabels.worship,
+    'سلوكية': tb.assignments.typeLabels.behavioral,
+  };
+
   // Form state
   const [newProgram, setNewProgram] = useState({
     title: "",
@@ -206,17 +217,18 @@ const Tarbiwi = () => {
     evaluatedBy: "current_user",
   });
 
+  const daysArray = [
+    tb.days.sunday,
+    tb.days.monday,
+    tb.days.tuesday,
+    tb.days.wednesday,
+    tb.days.thursday,
+    tb.days.friday,
+    tb.days.saturday,
+  ];
+
   const getDayName = (dayOfWeek: number) => {
-    const days = [
-      "الأحد",
-      "الإثنين",
-      "الثلاثاء",
-      "الأربعاء",
-      "الخميس",
-      "الجمعة",
-      "السبت",
-    ];
-    return days[dayOfWeek];
+    return daysArray[dayOfWeek];
   };
 
   const getAssignmentTypeColor = (type: string) => {
@@ -236,8 +248,8 @@ const Tarbiwi = () => {
   const handleAddProgram = () => {
     if (!newProgram.title || !newProgram.description || !newProgram.time) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: tb.programs.toast.validationError,
+        description: tb.programs.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -267,8 +279,8 @@ const Tarbiwi = () => {
     });
     setIsAddProgramDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة البرنامج بنجاح",
+      title: tb.programs.toast.addSuccess,
+      description: tb.programs.toast.addSuccessDescription,
     });
   };
 
@@ -280,8 +292,8 @@ const Tarbiwi = () => {
       !newProgram.time
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: tb.programs.toast.validationError,
+        description: tb.programs.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -319,8 +331,8 @@ const Tarbiwi = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل البرنامج بنجاح",
+      title: tb.programs.toast.editSuccess,
+      description: tb.programs.toast.editSuccessDescription,
     });
   };
 
@@ -333,8 +345,8 @@ const Tarbiwi = () => {
     setIsDeleteProgramDialogOpen(false);
     setSelectedProgram(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف البرنامج بنجاح",
+      title: tb.programs.toast.deleteSuccess,
+      description: tb.programs.toast.deleteSuccessDescription,
     });
   };
 
@@ -345,8 +357,8 @@ const Tarbiwi = () => {
       !newAssignment.dueDate
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: tb.assignments.toast.validationError,
+        description: tb.assignments.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -376,8 +388,8 @@ const Tarbiwi = () => {
     });
     setIsAddAssignmentDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الواجب بنجاح",
+      title: tb.assignments.toast.addSuccess,
+      description: tb.assignments.toast.addSuccessDescription,
     });
   };
 
@@ -389,8 +401,8 @@ const Tarbiwi = () => {
       !newAssignment.dueDate
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: tb.assignments.toast.validationError,
+        description: tb.assignments.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -428,8 +440,8 @@ const Tarbiwi = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل الواجب بنجاح",
+      title: tb.assignments.toast.editSuccess,
+      description: tb.assignments.toast.editSuccessDescription,
     });
   };
 
@@ -444,8 +456,8 @@ const Tarbiwi = () => {
     setIsDeleteAssignmentDialogOpen(false);
     setSelectedAssignment(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الواجب بنجاح",
+      title: tb.assignments.toast.deleteSuccess,
+      description: tb.assignments.toast.deleteSuccessDescription,
     });
   };
 
@@ -456,8 +468,8 @@ const Tarbiwi = () => {
       newAssessment.rating === 0
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: tb.assessments.toast.validationError,
+        description: tb.assessments.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -484,8 +496,8 @@ const Tarbiwi = () => {
     });
     setIsAddAssessmentDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة التقييم بنجاح",
+      title: tb.assessments.toast.addSuccess,
+      description: tb.assessments.toast.addSuccessDescription,
     });
   };
 
@@ -527,20 +539,57 @@ const Tarbiwi = () => {
     setIsDeleteAssignmentDialogOpen(true);
   };
 
+  // Mock content data for the content tab
+  const articles = [
+    {
+      title: "أهمية الصلاة في حياة المسلم",
+      excerpt: "الصلاة هي عماد الدين وأهم ركن من أركان الإسلام بعد الشهادتين...",
+      date: "2025-11-01",
+    },
+    {
+      title: "آداب الطعام في الإسلام",
+      excerpt: "علمنا الإسلام آداب الطعام والشراب التي يجب على المسلم الالتزام بها...",
+      date: "2025-11-02",
+    },
+    {
+      title: "بر الوالدين في الإسلام",
+      excerpt: "بر الوالدين من أعظم الأعمال الصالحة التي حث عليها الإسلام...",
+      date: "2025-11-03",
+    },
+  ];
+
+  const videos = [
+    {
+      title: "كيفية الوضوء الصحيح",
+      description: "فيديو تعليمي يوضح خطوات الوضوء الصحيح بالتفصيل...",
+      duration: "5",
+    },
+    {
+      title: "أهمية الصدق في التعامل",
+      description: "محاضرة قصيرة عن أهمية الصدق في التعامل مع الآخرين...",
+      duration: "8",
+    },
+    {
+      title: "حقوق الجار في الإسلام",
+      description: "شرح لحقوق الجار في الإسلام وكيفية حسن الجوار...",
+      duration: "10",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الجانب التربوي" showBack={true} />
+      <PageHeader title={tb.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">🕌 الجانب التربوي</h2>
+          <h2 className="text-2xl font-bold mb-4">{tb.pageIcon} {tb.pageTitle}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة البرامج التربوية والواجبات السلوكية والتقييمات
+            {tb.subtitle}
           </p>
 
           <div className="flex justify-between items-center mb-6">
             <div className="flex space-x-4 space-x-reverse">
-              <Input placeholder="البحث عن برنامج..." className="w-64" />
+              <Input placeholder={tb.searchPlaceholder} className="w-64" />
             </div>
             <div className="flex space-x-2 space-x-reverse">
               <Dialog
@@ -548,19 +597,19 @@ const Tarbiwi = () => {
                 onOpenChange={setIsAddAssignmentDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline">إضافة واجب</Button>
+                  <Button variant="outline">{tb.assignments.addButton}</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إضافة واجب جديد</DialogTitle>
+                    <DialogTitle>{tb.assignments.addDialogTitle}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات الواجب الجديد
+                      {tb.assignments.addDialogDescription}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="assignment-title" className="text-right">
-                        العنوان
+                        {tb.assignments.form.title}
                       </Label>
                       <Input
                         id="assignment-title"
@@ -576,7 +625,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="assignment-type" className="text-right">
-                        النوع
+                        {tb.assignments.form.type}
                       </Label>
                       <Select
                         value={newAssignment.type}
@@ -585,11 +634,11 @@ const Tarbiwi = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر النوع" />
+                          <SelectValue placeholder={tb.assignments.form.typePlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="عبادية">عبادية</SelectItem>
-                          <SelectItem value="سلوكية">سلوكية</SelectItem>
+                          <SelectItem value="عبادية">{tb.assignments.typeLabels.worship}</SelectItem>
+                          <SelectItem value="سلوكية">{tb.assignments.typeLabels.behavioral}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -598,7 +647,7 @@ const Tarbiwi = () => {
                         htmlFor="assignment-description"
                         className="text-right"
                       >
-                        الوصف
+                        {tb.assignments.form.description}
                       </Label>
                       <Textarea
                         id="assignment-description"
@@ -618,7 +667,7 @@ const Tarbiwi = () => {
                         htmlFor="assignment-dueDate"
                         className="text-right"
                       >
-                        تاريخ التسليم
+                        {tb.assignments.form.dueDate}
                       </Label>
                       <Input
                         id="assignment-dueDate"
@@ -640,7 +689,7 @@ const Tarbiwi = () => {
                         htmlFor="assignment-targetAge"
                         className="text-right"
                       >
-                        الفئة العمرية
+                        {tb.assignments.form.targetAge}
                       </Label>
                       <Input
                         id="assignment-targetAge"
@@ -656,7 +705,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="assignment-points" className="text-right">
-                        النقاط
+                        {tb.assignments.form.points}
                       </Label>
                       <Input
                         id="assignment-points"
@@ -677,9 +726,9 @@ const Tarbiwi = () => {
                       variant="outline"
                       onClick={() => setIsAddAssignmentDialogOpen(false)}
                     >
-                      إلغاء
+                      {tb.common.cancel}
                     </Button>
-                    <Button onClick={handleAddAssignment}>إضافة واجب</Button>
+                    <Button onClick={handleAddAssignment}>{tb.assignments.addSubmitButton}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -690,20 +739,20 @@ const Tarbiwi = () => {
               >
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground">
-                    إنشاء برنامج جديد
+                    {tb.programs.addButton}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إنشاء برنامج جديد</DialogTitle>
+                    <DialogTitle>{tb.programs.addDialogTitle}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات البرنامج الجديد
+                      {tb.programs.addDialogDescription}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="program-title" className="text-right">
-                        العنوان
+                        {tb.programs.form.title}
                       </Label>
                       <Input
                         id="program-title"
@@ -722,7 +771,7 @@ const Tarbiwi = () => {
                         htmlFor="program-description"
                         className="text-right"
                       >
-                        الوصف
+                        {tb.programs.form.description}
                       </Label>
                       <Textarea
                         id="program-description"
@@ -739,7 +788,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="program-day" className="text-right">
-                        اليوم
+                        {tb.programs.form.day}
                       </Label>
                       <Select
                         value={newProgram.dayOfWeek.toString()}
@@ -751,22 +800,22 @@ const Tarbiwi = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر اليوم" />
+                          <SelectValue placeholder={tb.programs.form.dayPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="0">الأحد</SelectItem>
-                          <SelectItem value="1">الإثنين</SelectItem>
-                          <SelectItem value="2">الثلاثاء</SelectItem>
-                          <SelectItem value="3">الأربعاء</SelectItem>
-                          <SelectItem value="4">الخميس</SelectItem>
-                          <SelectItem value="5">الجمعة</SelectItem>
-                          <SelectItem value="6">السبت</SelectItem>
+                          <SelectItem value="0">{tb.days.sunday}</SelectItem>
+                          <SelectItem value="1">{tb.days.monday}</SelectItem>
+                          <SelectItem value="2">{tb.days.tuesday}</SelectItem>
+                          <SelectItem value="3">{tb.days.wednesday}</SelectItem>
+                          <SelectItem value="4">{tb.days.thursday}</SelectItem>
+                          <SelectItem value="5">{tb.days.friday}</SelectItem>
+                          <SelectItem value="6">{tb.days.saturday}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="program-time" className="text-right">
-                        الوقت
+                        {tb.programs.form.time}
                       </Label>
                       <Input
                         id="program-time"
@@ -780,7 +829,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="program-duration" className="text-right">
-                        المدة (دقائق)
+                        {tb.programs.form.durationMinutes}
                       </Label>
                       <Input
                         id="program-duration"
@@ -797,7 +846,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="program-targetAge" className="text-right">
-                        الفئة العمرية
+                        {tb.programs.form.targetAge}
                       </Label>
                       <Input
                         id="program-targetAge"
@@ -817,9 +866,9 @@ const Tarbiwi = () => {
                       variant="outline"
                       onClick={() => setIsAddProgramDialogOpen(false)}
                     >
-                      إلغاء
+                      {tb.common.cancel}
                     </Button>
-                    <Button onClick={handleAddProgram}>إنشاء برنامج</Button>
+                    <Button onClick={handleAddProgram}>{tb.programs.createButton}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -829,31 +878,31 @@ const Tarbiwi = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="programs">البرامج الأسبوعية</TabsTrigger>
-            <TabsTrigger value="assignments">الواجبات السلوكية</TabsTrigger>
-            <TabsTrigger value="assessments">التقييمات التربوية</TabsTrigger>
-            <TabsTrigger value="content">محتوى تربوي</TabsTrigger>
+            <TabsTrigger value="programs">{tb.tabs.programs}</TabsTrigger>
+            <TabsTrigger value="assignments">{tb.tabs.assignments}</TabsTrigger>
+            <TabsTrigger value="assessments">{tb.tabs.assessments}</TabsTrigger>
+            <TabsTrigger value="content">{tb.tabs.content}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="programs" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>البرامج الأسبوعية</CardTitle>
+                <CardTitle>{tb.programs.cardTitle}</CardTitle>
                 <CardDescription>
-                  عرض وإدارة جميع البرامج التربوية الأسبوعية
+                  {tb.programs.cardDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>عنوان البرنامج</TableHead>
-                      <TableHead>اليوم</TableHead>
-                      <TableHead>الوقت</TableHead>
-                      <TableHead>المدة</TableHead>
-                      <TableHead>الفئة العمرية</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead>{tb.programs.table.title}</TableHead>
+                      <TableHead>{tb.programs.table.day}</TableHead>
+                      <TableHead>{tb.programs.table.time}</TableHead>
+                      <TableHead>{tb.programs.table.duration}</TableHead>
+                      <TableHead>{tb.programs.table.targetAge}</TableHead>
+                      <TableHead>{tb.programs.table.status}</TableHead>
+                      <TableHead>{tb.programs.table.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -864,7 +913,7 @@ const Tarbiwi = () => {
                         </TableCell>
                         <TableCell>{getDayName(program.dayOfWeek)}</TableCell>
                         <TableCell>{program.time}</TableCell>
-                        <TableCell>{program.duration} دقيقة</TableCell>
+                        <TableCell>{program.duration} {tb.programs.minuteUnit}</TableCell>
                         <TableCell>{program.targetAge}</TableCell>
                         <TableCell>
                           <Badge
@@ -874,27 +923,27 @@ const Tarbiwi = () => {
                                 : "bg-red-100 text-red-800"
                             }
                           >
-                            {program.isActive ? "نشط" : "غير نشط"}
+                            {program.isActive ? tb.programs.status.active : tb.programs.status.inactive}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="outline" size="sm">
-                              عرض
+                              {tb.programs.actions.view}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => openEditProgramDialog(program)}
                             >
-                              تعديل
+                              {tb.programs.actions.edit}
                             </Button>
                             <Button
                               variant="destructive"
                               size="sm"
                               onClick={() => openDeleteProgramDialog(program)}
                             >
-                              حذف
+                              {tb.programs.actions.delete}
                             </Button>
                           </div>
                         </TableCell>
@@ -909,22 +958,22 @@ const Tarbiwi = () => {
           <TabsContent value="assignments" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>الواجبات السلوكية والعبادية</CardTitle>
+                <CardTitle>{tb.assignments.cardTitle}</CardTitle>
                 <CardDescription>
-                  عرض وإدارة جميع الواجبات السلوكية والعبادية
+                  {tb.assignments.cardDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>عنوان الواجب</TableHead>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>تاريخ التسليم</TableHead>
-                      <TableHead>الفئة العمرية</TableHead>
-                      <TableHead>النقاط</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead>{tb.assignments.table.title}</TableHead>
+                      <TableHead>{tb.assignments.table.type}</TableHead>
+                      <TableHead>{tb.assignments.table.dueDate}</TableHead>
+                      <TableHead>{tb.assignments.table.targetAge}</TableHead>
+                      <TableHead>{tb.assignments.table.points}</TableHead>
+                      <TableHead>{tb.assignments.table.status}</TableHead>
+                      <TableHead>{tb.assignments.table.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -937,13 +986,11 @@ const Tarbiwi = () => {
                           <Badge
                             className={getAssignmentTypeColor(assignment.type)}
                           >
-                            {assignment.type}
+                            {assignmentTypeLabels[assignment.type] ?? assignment.type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(assignment.dueDate).toLocaleDateString(
-                            "ar-SA"
-                          )}
+                          {formatDate(new Date(assignment.dueDate), language)}
                         </TableCell>
                         <TableCell>{assignment.targetAge}</TableCell>
                         <TableCell>{assignment.points}</TableCell>
@@ -955,13 +1002,13 @@ const Tarbiwi = () => {
                                 : "bg-red-100 text-red-800"
                             }
                           >
-                            {assignment.isActive ? "نشط" : "غير نشط"}
+                            {assignment.isActive ? tb.assignments.status.active : tb.assignments.status.inactive}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="outline" size="sm">
-                              عرض
+                              {tb.assignments.actions.view}
                             </Button>
                             <Button
                               variant="outline"
@@ -970,7 +1017,7 @@ const Tarbiwi = () => {
                                 openEditAssignmentDialog(assignment)
                               }
                             >
-                              تعديل
+                              {tb.assignments.actions.edit}
                             </Button>
                             <Button
                               variant="destructive"
@@ -979,7 +1026,7 @@ const Tarbiwi = () => {
                                 openDeleteAssignmentDialog(assignment)
                               }
                             >
-                              حذف
+                              {tb.assignments.actions.delete}
                             </Button>
                           </div>
                         </TableCell>
@@ -993,19 +1040,19 @@ const Tarbiwi = () => {
 
           <TabsContent value="assessments" className="mt-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium">التقييمات التربوية للطلاب</h3>
+              <h3 className="text-lg font-medium">{tb.assessments.sectionTitle}</h3>
               <Dialog
                 open={isAddAssessmentDialogOpen}
                 onOpenChange={setIsAddAssessmentDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button>إضافة تقييم جديد</Button>
+                  <Button>{tb.assessments.addButton}</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إضافة تقييم جديد</DialogTitle>
+                    <DialogTitle>{tb.assessments.addDialogTitle}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات التقييم الجديد
+                      {tb.assessments.addDialogDescription}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
@@ -1014,7 +1061,7 @@ const Tarbiwi = () => {
                         htmlFor="assessment-student"
                         className="text-right"
                       >
-                        الطالب
+                        {tb.assessments.form.student}
                       </Label>
                       <Select
                         value={newAssessment.studentId}
@@ -1026,7 +1073,7 @@ const Tarbiwi = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الطالب" />
+                          <SelectValue placeholder={tb.assessments.form.studentPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(students).map(([id, name]) => (
@@ -1042,7 +1089,7 @@ const Tarbiwi = () => {
                         htmlFor="assessment-criteria"
                         className="text-right"
                       >
-                        معيار التقييم
+                        {tb.assessments.form.criteria}
                       </Label>
                       <Input
                         id="assessment-criteria"
@@ -1058,7 +1105,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="assessment-rating" className="text-right">
-                        التقييم (من 10)
+                        {tb.assessments.form.ratingOutOf10}
                       </Label>
                       <Input
                         id="assessment-rating"
@@ -1077,7 +1124,7 @@ const Tarbiwi = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="assessment-notes" className="text-right">
-                        ملاحظات
+                        {tb.assessments.form.notes}
                       </Label>
                       <Textarea
                         id="assessment-notes"
@@ -1098,9 +1145,9 @@ const Tarbiwi = () => {
                       variant="outline"
                       onClick={() => setIsAddAssessmentDialogOpen(false)}
                     >
-                      إلغاء
+                      {tb.common.cancel}
                     </Button>
-                    <Button onClick={handleAddAssessment}>إضافة تقييم</Button>
+                    <Button onClick={handleAddAssessment}>{tb.assessments.addSubmitButton}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -1108,22 +1155,22 @@ const Tarbiwi = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>سجل التقييمات</CardTitle>
+                <CardTitle>{tb.assessments.cardTitle}</CardTitle>
                 <CardDescription>
-                  عرض جميع التقييمات التربوية للطلاب
+                  {tb.assessments.cardDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الطالب</TableHead>
-                      <TableHead>معيار التقييم</TableHead>
-                      <TableHead>التقييم</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>المقيم</TableHead>
-                      <TableHead>ملاحظات</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead>{tb.assessments.table.student}</TableHead>
+                      <TableHead>{tb.assessments.table.criteria}</TableHead>
+                      <TableHead>{tb.assessments.table.rating}</TableHead>
+                      <TableHead>{tb.assessments.table.date}</TableHead>
+                      <TableHead>{tb.assessments.table.evaluator}</TableHead>
+                      <TableHead>{tb.assessments.table.notes}</TableHead>
+                      <TableHead>{tb.assessments.table.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1143,9 +1190,7 @@ const Tarbiwi = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(assessment.date).toLocaleDateString(
-                            "ar-SA"
-                          )}
+                          {formatDate(new Date(assessment.date), language)}
                         </TableCell>
                         <TableCell>
                           {
@@ -1158,10 +1203,10 @@ const Tarbiwi = () => {
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="outline" size="sm">
-                              تعديل
+                              {tb.assessments.actions.edit}
                             </Button>
                             <Button variant="destructive" size="sm">
-                              حذف
+                              {tb.assessments.actions.delete}
                             </Button>
                           </div>
                         </TableCell>
@@ -1177,108 +1222,55 @@ const Tarbiwi = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>مقالات تربوية</CardTitle>
+                  <CardTitle>{tb.content.articles.cardTitle}</CardTitle>
                   <CardDescription>
-                    مقالات قصيرة ومحتوى تربوي يومي
+                    {tb.content.articles.cardDescription}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        أهمية الصلاة في حياة المسلم
-                      </h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        الصلاة هي عماد الدين وأهم ركن من أركان الإسلام بعد
-                        الشهادتين...
+                    {articles.map((article, idx) => (
+                      <div key={idx} className="p-4 border rounded-lg">
+                        <h4 className="font-medium mb-2">
+                          {article.title}
+                        </h4>
+                        <div className="text-sm text-muted-foreground mb-2">
+                          {article.excerpt}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {tb.content.articles.publishedPrefix} {formatDate(article.date, language)}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        نشر: 2025-11-01
-                      </div>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        آداب الطعام في الإسلام
-                      </h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        علمنا الإسلام آداب الطعام والشراب التي يجب على المسلم
-                        الالتزام بها...
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        نشر: 2025-11-02
-                      </div>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        بر الوالدين في الإسلام
-                      </h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        بر الوالدين من أعظم الأعمال الصالحة التي حث عليها
-                        الإسلام...
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        نشر: 2025-11-03
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>مقاطع فيديو تربوية</CardTitle>
+                  <CardTitle>{tb.content.videos.cardTitle}</CardTitle>
                   <CardDescription>
-                    مقاطع قصيرة ومحتوى مرئي تربوي
+                    {tb.content.videos.cardDescription}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">كيفية الوضوء الصحيح</h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        فيديو تعليمي يوضح خطوات الوضوء الصحيح بالتفصيل...
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-xs text-muted-foreground">
-                          مدة: 5 دقائق
+                    {videos.map((video, idx) => (
+                      <div key={idx} className="p-4 border rounded-lg">
+                        <h4 className="font-medium mb-2">{video.title}</h4>
+                        <div className="text-sm text-muted-foreground mb-2">
+                          {video.description}
                         </div>
-                        <Button variant="outline" size="sm">
-                          مشاهدة
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        أهمية الصدق في التعامل
-                      </h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        محاضرة قصيرة عن أهمية الصدق في التعامل مع الآخرين...
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-xs text-muted-foreground">
-                          مدة: 8 دقائق
+                        <div className="flex justify-between items-center">
+                          <div className="text-xs text-muted-foreground">
+                            {tb.content.videos.durationPrefix} {video.duration} {tb.programs.minuteUnit}
+                          </div>
+                          <Button variant="outline" size="sm">
+                            {tb.content.videos.watchButton}
+                          </Button>
                         </div>
-                        <Button variant="outline" size="sm">
-                          مشاهدة
-                        </Button>
                       </div>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">
-                        حقوق الجار في الإسلام
-                      </h4>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        شرح لحقوق الجار في الإسلام وكيفية حسن الجوار...
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-xs text-muted-foreground">
-                          مدة: 10 دقائق
-                        </div>
-                        <Button variant="outline" size="sm">
-                          مشاهدة
-                        </Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -1294,13 +1286,13 @@ const Tarbiwi = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل البرنامج</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات البرنامج</DialogDescription>
+            <DialogTitle>{tb.programs.editDialogTitle}</DialogTitle>
+            <DialogDescription>{tb.programs.editDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-title" className="text-right">
-                العنوان
+                {tb.programs.form.title}
               </Label>
               <Input
                 id="edit-program-title"
@@ -1313,7 +1305,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-description" className="text-right">
-                الوصف
+                {tb.programs.form.description}
               </Label>
               <Textarea
                 id="edit-program-description"
@@ -1327,7 +1319,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-day" className="text-right">
-                اليوم
+                {tb.programs.form.day}
               </Label>
               <Select
                 value={newProgram.dayOfWeek.toString()}
@@ -1336,22 +1328,22 @@ const Tarbiwi = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر اليوم" />
+                  <SelectValue placeholder={tb.programs.form.dayPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">الأحد</SelectItem>
-                  <SelectItem value="1">الإثنين</SelectItem>
-                  <SelectItem value="2">الثلاثاء</SelectItem>
-                  <SelectItem value="3">الأربعاء</SelectItem>
-                  <SelectItem value="4">الخميس</SelectItem>
-                  <SelectItem value="5">الجمعة</SelectItem>
-                  <SelectItem value="6">السبت</SelectItem>
+                  <SelectItem value="0">{tb.days.sunday}</SelectItem>
+                  <SelectItem value="1">{tb.days.monday}</SelectItem>
+                  <SelectItem value="2">{tb.days.tuesday}</SelectItem>
+                  <SelectItem value="3">{tb.days.wednesday}</SelectItem>
+                  <SelectItem value="4">{tb.days.thursday}</SelectItem>
+                  <SelectItem value="5">{tb.days.friday}</SelectItem>
+                  <SelectItem value="6">{tb.days.saturday}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-time" className="text-right">
-                الوقت
+                {tb.programs.form.time}
               </Label>
               <Input
                 id="edit-program-time"
@@ -1365,7 +1357,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-duration" className="text-right">
-                المدة (دقائق)
+                {tb.programs.form.durationMinutes}
               </Label>
               <Input
                 id="edit-program-duration"
@@ -1382,7 +1374,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-program-targetAge" className="text-right">
-                الفئة العمرية
+                {tb.programs.form.targetAge}
               </Label>
               <Input
                 id="edit-program-targetAge"
@@ -1399,9 +1391,9 @@ const Tarbiwi = () => {
               variant="outline"
               onClick={() => setIsEditProgramDialogOpen(false)}
             >
-              إلغاء
+              {tb.common.cancel}
             </Button>
-            <Button onClick={handleEditProgram}>حفظ التعديلات</Button>
+            <Button onClick={handleEditProgram}>{tb.programs.saveButton}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1413,10 +1405,9 @@ const Tarbiwi = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{tb.programs.deleteDialogTitle}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف البرنامج "{selectedProgram?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('tarbiwi.programs.deleteDialogDescription', { title: selectedProgram?.title ?? '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1424,10 +1415,10 @@ const Tarbiwi = () => {
               variant="outline"
               onClick={() => setIsDeleteProgramDialogOpen(false)}
             >
-              إلغاء
+              {tb.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteProgram}>
-              حذف
+              {tb.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1440,13 +1431,13 @@ const Tarbiwi = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل الواجب</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الواجب</DialogDescription>
+            <DialogTitle>{tb.assignments.editDialogTitle}</DialogTitle>
+            <DialogDescription>{tb.assignments.editDialogDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-assignment-title" className="text-right">
-                العنوان
+                {tb.assignments.form.title}
               </Label>
               <Input
                 id="edit-assignment-title"
@@ -1459,7 +1450,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-assignment-type" className="text-right">
-                النوع
+                {tb.assignments.form.type}
               </Label>
               <Select
                 value={newAssignment.type}
@@ -1468,11 +1459,11 @@ const Tarbiwi = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر النوع" />
+                  <SelectValue placeholder={tb.assignments.form.typePlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="عبادية">عبادية</SelectItem>
-                  <SelectItem value="سلوكية">سلوكية</SelectItem>
+                  <SelectItem value="عبادية">{tb.assignments.typeLabels.worship}</SelectItem>
+                  <SelectItem value="سلوكية">{tb.assignments.typeLabels.behavioral}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1481,7 +1472,7 @@ const Tarbiwi = () => {
                 htmlFor="edit-assignment-description"
                 className="text-right"
               >
-                الوصف
+                {tb.assignments.form.description}
               </Label>
               <Textarea
                 id="edit-assignment-description"
@@ -1498,7 +1489,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-assignment-dueDate" className="text-right">
-                تاريخ التسليم
+                {tb.assignments.form.dueDate}
               </Label>
               <Input
                 id="edit-assignment-dueDate"
@@ -1515,7 +1506,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-assignment-targetAge" className="text-right">
-                الفئة العمرية
+                {tb.assignments.form.targetAge}
               </Label>
               <Input
                 id="edit-assignment-targetAge"
@@ -1531,7 +1522,7 @@ const Tarbiwi = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-assignment-points" className="text-right">
-                النقاط
+                {tb.assignments.form.points}
               </Label>
               <Input
                 id="edit-assignment-points"
@@ -1552,9 +1543,9 @@ const Tarbiwi = () => {
               variant="outline"
               onClick={() => setIsEditAssignmentDialogOpen(false)}
             >
-              إلغاء
+              {tb.common.cancel}
             </Button>
-            <Button onClick={handleEditAssignment}>حفظ التعديلات</Button>
+            <Button onClick={handleEditAssignment}>{tb.assignments.saveButton}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1566,10 +1557,9 @@ const Tarbiwi = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{tb.assignments.deleteDialogTitle}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الواجب "{selectedAssignment?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('tarbiwi.assignments.deleteDialogDescription', { title: selectedAssignment?.title ?? '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1577,10 +1567,10 @@ const Tarbiwi = () => {
               variant="outline"
               onClick={() => setIsDeleteAssignmentDialogOpen(false)}
             >
-              إلغاء
+              {tb.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteAssignment}>
-              حذف
+              {tb.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

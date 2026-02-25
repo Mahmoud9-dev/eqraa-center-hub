@@ -460,7 +460,8 @@ describe("Attendance View - Supabase Integration", () => {
       vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
 
       const supabase = getSupabase();
-      const result = await supabase.from("attendance_records").insert({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await supabase.from("attendance_records").insert({} as any);
 
       expect(result.error).toEqual(mockError);
     });

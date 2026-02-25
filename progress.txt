@@ -1,0 +1,19 @@
+# Ralph Loop Progress
+
+## Current Task
+(none)
+
+## Completed Steps
+- (none yet)
+
+## Remaining Steps
+- (none yet)
+
+## Blockers / Notes
+- (none)
+
+## Verification Status
+- [ ] Lint passes
+- [ ] Type-check passes
+- [ ] Unit tests pass
+- [ ] i18n audit clean (if applicable)

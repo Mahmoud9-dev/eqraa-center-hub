@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 const Schedule = () => {
   const [isAddSessionDialogOpen, setIsAddSessionDialogOpen] = useState(false);
@@ -37,6 +39,38 @@ const Schedule = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
+
+  /** Map DB Arabic day names to translation keys */
+  const dayLabelMap: Record<string, string> = {
+    'الأحد': t.schedule.dayNames.sunday,
+    'الإثنين': t.schedule.dayNames.monday,
+    'الثلاثاء': t.schedule.dayNames.tuesday,
+    'الأربعاء': t.schedule.dayNames.wednesday,
+    'الخميس': t.schedule.dayNames.thursday,
+    'الجمعة': t.schedule.dayNames.friday,
+    'السبت': t.schedule.dayNames.saturday,
+  };
+
+  /** Map DB Arabic session type values to translation keys */
+  const sessionTypeLabelMap: Record<string, string> = {
+    'حلقة قرآن': t.schedule.sessionTypeLabels.quranCircle,
+    'تجويد': t.schedule.sessionTypeLabels.tajweed,
+    'مادة شرعية': t.schedule.sessionTypeLabels.shariaSubject,
+    'مراجعة': t.schedule.sessionTypeLabels.review,
+    'محاضرة': t.schedule.sessionTypeLabels.lecture,
+  };
+
+  /** Ordered day names for form select (index = dayOfWeek) */
+  const dayNamesByIndex = [
+    t.schedule.dayNames.sunday,
+    t.schedule.dayNames.monday,
+    t.schedule.dayNames.tuesday,
+    t.schedule.dayNames.wednesday,
+    t.schedule.dayNames.thursday,
+    t.schedule.dayNames.friday,
+    t.schedule.dayNames.saturday,
+  ];
 
   // Mock data - will be replaced with actual data from Supabase
   const [weeklySchedule, setWeeklySchedule] = useState([
@@ -243,19 +277,6 @@ const Schedule = () => {
     }
   };
 
-  const _getDayName = (dayOfWeek: number) => {
-    const days = [
-      "الأحد",
-      "الإثنين",
-      "الثلاثاء",
-      "الأربعاء",
-      "الخميس",
-      "الجمعة",
-      "السبت",
-    ];
-    return days[dayOfWeek];
-  };
-
   // CRUD functions
   const handleAddSession = () => {
     if (
@@ -265,8 +286,8 @@ const Schedule = () => {
       !newSession.teacherId
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.schedule.toast.error,
+        description: t.schedule.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -301,8 +322,8 @@ const Schedule = () => {
     });
     setIsAddSessionDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الجلسة بنجاح",
+      title: t.schedule.toast.addSuccess,
+      description: t.schedule.toast.addSuccessDescription,
     });
   };
 
@@ -315,8 +336,8 @@ const Schedule = () => {
       !newSession.teacherId
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.schedule.toast.error,
+        description: t.schedule.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -351,8 +372,8 @@ const Schedule = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل الجلسة بنجاح",
+      title: t.schedule.toast.editSuccess,
+      description: t.schedule.toast.editSuccessDescription,
     });
   };
 
@@ -375,8 +396,8 @@ const Schedule = () => {
     setIsDeleteDialogOpen(false);
     setSelectedSession(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الجلسة بنجاح",
+      title: t.schedule.toast.deleteSuccess,
+      description: t.schedule.toast.deleteSuccessDescription,
     });
   };
 
@@ -403,13 +424,13 @@ const Schedule = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الجدول الدراسي" showBack={true} />
+      <PageHeader title={t.schedule.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📅 الجدول الدراسي</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.schedule.heading}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة ومتابعة جداول الحلقات والمحاضرات اليومية والأسبوعية
+            {t.schedule.subtitle}
           </p>
 
           <div className="flex justify-end mb-6">
@@ -419,20 +440,20 @@ const Schedule = () => {
             >
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground">
-                  إضافة جلسة جديدة
+                  {t.schedule.form.addSession}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة جلسة جديدة</DialogTitle>
+                  <DialogTitle>{t.schedule.form.addSessionTitle}</DialogTitle>
                   <DialogDescription>
-                    أدخل بيانات الجلسة الجديدة
+                    {t.schedule.form.addSessionDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-title" className="text-right">
-                      العنوان
+                    <Label htmlFor="session-title" className="text-end">
+                      {t.schedule.form.title}
                     </Label>
                     <Input
                       id="session-title"
@@ -444,8 +465,8 @@ const Schedule = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-day" className="text-right">
-                      اليوم
+                    <Label htmlFor="session-day" className="text-end">
+                      {t.schedule.form.day}
                     </Label>
                     <Select
                       value={newSession.dayOfWeek.toString()}
@@ -457,22 +478,22 @@ const Schedule = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر اليوم" />
+                        <SelectValue placeholder={t.schedule.form.dayPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="0">الأحد</SelectItem>
-                        <SelectItem value="1">الإثنين</SelectItem>
-                        <SelectItem value="2">الثلاثاء</SelectItem>
-                        <SelectItem value="3">الأربعاء</SelectItem>
-                        <SelectItem value="4">الخميس</SelectItem>
-                        <SelectItem value="5">الجمعة</SelectItem>
-                        <SelectItem value="6">السبت</SelectItem>
+                        <SelectItem value="0">{dayNamesByIndex[0]}</SelectItem>
+                        <SelectItem value="1">{dayNamesByIndex[1]}</SelectItem>
+                        <SelectItem value="2">{dayNamesByIndex[2]}</SelectItem>
+                        <SelectItem value="3">{dayNamesByIndex[3]}</SelectItem>
+                        <SelectItem value="4">{dayNamesByIndex[4]}</SelectItem>
+                        <SelectItem value="5">{dayNamesByIndex[5]}</SelectItem>
+                        <SelectItem value="6">{dayNamesByIndex[6]}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-startTime" className="text-right">
-                      وقت البدء
+                    <Label htmlFor="session-startTime" className="text-end">
+                      {t.schedule.form.startTime}
                     </Label>
                     <Input
                       id="session-startTime"
@@ -488,8 +509,8 @@ const Schedule = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-endTime" className="text-right">
-                      وقت الانتهاء
+                    <Label htmlFor="session-endTime" className="text-end">
+                      {t.schedule.form.endTime}
                     </Label>
                     <Input
                       id="session-endTime"
@@ -505,8 +526,8 @@ const Schedule = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-teacher" className="text-right">
-                      المعلم
+                    <Label htmlFor="session-teacher" className="text-end">
+                      {t.schedule.form.teacher}
                     </Label>
                     <Select
                       value={newSession.teacherId}
@@ -515,7 +536,7 @@ const Schedule = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر المعلم" />
+                        <SelectValue placeholder={t.schedule.form.teacherPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="teacher1">
@@ -527,8 +548,8 @@ const Schedule = () => {
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-location" className="text-right">
-                      المكان
+                    <Label htmlFor="session-location" className="text-end">
+                      {t.schedule.form.location}
                     </Label>
                     <Input
                       id="session-location"
@@ -543,8 +564,8 @@ const Schedule = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="session-type" className="text-right">
-                      النوع
+                    <Label htmlFor="session-type" className="text-end">
+                      {t.schedule.form.type}
                     </Label>
                     <Select
                       value={newSession.type}
@@ -553,14 +574,14 @@ const Schedule = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر النوع" />
+                        <SelectValue placeholder={t.schedule.form.typePlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="حلقة قرآن">حلقة قرآن</SelectItem>
-                        <SelectItem value="تجويد">تجويد</SelectItem>
-                        <SelectItem value="مادة شرعية">مادة شرعية</SelectItem>
-                        <SelectItem value="مراجعة">مراجعة</SelectItem>
-                        <SelectItem value="محاضرة">محاضرة</SelectItem>
+                        <SelectItem value="حلقة قرآن">{t.schedule.sessionTypeLabels.quranCircle}</SelectItem>
+                        <SelectItem value="تجويد">{t.schedule.sessionTypeLabels.tajweed}</SelectItem>
+                        <SelectItem value="مادة شرعية">{t.schedule.sessionTypeLabels.shariaSubject}</SelectItem>
+                        <SelectItem value="مراجعة">{t.schedule.sessionTypeLabels.review}</SelectItem>
+                        <SelectItem value="محاضرة">{t.schedule.sessionTypeLabels.lecture}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -570,9 +591,9 @@ const Schedule = () => {
                     variant="outline"
                     onClick={() => setIsAddSessionDialogOpen(false)}
                   >
-                    إلغاء
+                    {t.schedule.form.cancel}
                   </Button>
-                  <Button onClick={handleAddSession}>إضافة جلسة</Button>
+                  <Button onClick={handleAddSession}>{t.schedule.form.submit}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -583,16 +604,16 @@ const Schedule = () => {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>الجدول الأسبوعي</CardTitle>
+                <CardTitle>{t.schedule.sections.weeklySchedule}</CardTitle>
                 <CardDescription>
-                  جميع الحلقات والمحاضرات الأسبوعية
+                  {t.schedule.sections.weeklyScheduleDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {weeklySchedule.map((day) => (
                     <div key={day.id} className="border rounded-lg p-4">
-                      <h3 className="font-bold text-lg mb-3">{day.day}</h3>
+                      <h3 className="font-bold text-lg mb-3">{dayLabelMap[day.day] ?? day.day}</h3>
                       {day.sessions.length > 0 ? (
                         <div className="space-y-2">
                           {day.sessions.map((session) => (
@@ -610,7 +631,7 @@ const Schedule = () => {
                                       session.type
                                     )}
                                   >
-                                    {session.type}
+                                    {sessionTypeLabelMap[session.type] ?? session.type}
                                   </Badge>
                                 </div>
                                 <div className="text-sm text-muted-foreground mt-1">
@@ -631,7 +652,7 @@ const Schedule = () => {
                                     openEditDialog(session, day.dayOfWeek)
                                   }
                                 >
-                                  تعديل
+                                  {t.schedule.actions.edit}
                                 </Button>
                                 <Button
                                   variant="destructive"
@@ -640,7 +661,7 @@ const Schedule = () => {
                                     openDeleteDialog(session, day.dayOfWeek)
                                   }
                                 >
-                                  حذف
+                                  {t.schedule.actions.delete}
                                 </Button>
                               </div>
                             </div>
@@ -648,7 +669,7 @@ const Schedule = () => {
                         </div>
                       ) : (
                         <p className="text-muted-foreground text-center py-4">
-                          لا توجد جلسات في هذا اليوم
+                          {t.schedule.empty.noSessions}
                         </p>
                       )}
                     </div>
@@ -661,9 +682,9 @@ const Schedule = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>الحلقات القادمة</CardTitle>
+                <CardTitle>{t.schedule.sections.upcomingSessions}</CardTitle>
                 <CardDescription>
-                  الحلقات والمحاضرات القادمة خلال 24 ساعة
+                  {t.schedule.sections.upcomingSessionsDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -672,7 +693,7 @@ const Schedule = () => {
                     <div key={session.id} className="p-3 border rounded-lg">
                       <h4 className="font-medium mb-2">{session.title}</h4>
                       <div className="text-sm text-muted-foreground">
-                        {session.date} • {session.time}
+                        {formatDate(session.date, language)} • {session.time}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {teachers[session.teacherId as keyof typeof teachers]}
@@ -691,13 +712,13 @@ const Schedule = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل الجلسة</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الجلسة</DialogDescription>
+            <DialogTitle>{t.schedule.editDialog.title}</DialogTitle>
+            <DialogDescription>{t.schedule.editDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-title" className="text-right">
-                العنوان
+              <Label htmlFor="edit-title" className="text-end">
+                {t.schedule.form.title}
               </Label>
               <Input
                 id="edit-title"
@@ -709,8 +730,8 @@ const Schedule = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-startTime" className="text-right">
-                وقت البدء
+              <Label htmlFor="edit-startTime" className="text-end">
+                {t.schedule.form.startTime}
               </Label>
               <Input
                 id="edit-startTime"
@@ -723,8 +744,8 @@ const Schedule = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-endTime" className="text-right">
-                وقت الانتهاء
+              <Label htmlFor="edit-endTime" className="text-end">
+                {t.schedule.form.endTime}
               </Label>
               <Input
                 id="edit-endTime"
@@ -737,8 +758,8 @@ const Schedule = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-location" className="text-right">
-                المكان
+              <Label htmlFor="edit-location" className="text-end">
+                {t.schedule.form.location}
               </Label>
               <Input
                 id="edit-location"
@@ -755,9 +776,9 @@ const Schedule = () => {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.schedule.editDialog.cancel}
             </Button>
-            <Button onClick={handleEditSession}>حفظ التعديلات</Button>
+            <Button onClick={handleEditSession}>{t.schedule.editDialog.save}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -766,10 +787,9 @@ const Schedule = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.schedule.deleteDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الجلسة "{selectedSession?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {t.schedule.deleteDialog.message.replace('{{title}}', selectedSession?.title ?? '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -777,10 +797,10 @@ const Schedule = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.schedule.deleteDialog.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteSession}>
-              حذف
+              {t.schedule.deleteDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

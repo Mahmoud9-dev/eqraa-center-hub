@@ -195,3 +195,69 @@ Create and present the `[Product Roadmap]` to the user using this strict Markdow
 **Version:** 1.0
 **Last Updated:** 2025-11-22
 **Protocol Status:** Active
+
+---
+
+## 8. Project-Specific Architecture Notes (Eqraa Center Hub)
+
+### Internationalization (i18n)
+
+This project uses a **custom i18n system** (no next-intl / i18next).
+
+**Key files:**
+- `src/lib/i18n/` — All translation data, split by domain (`common.ts`, `nav.ts`, `auth.ts`, `students.ts`, etc.)
+- `src/lib/i18n/index.ts` — Assembles all domains; canonical import path
+- `src/lib/i18n/formatters.ts` — Locale-aware `Intl` formatters
+- `src/contexts/LanguageContext.tsx` — Provider with `useLanguage()` hook
+- `docs/LOCALIZATION_STANDARD.md` — Full standard / key naming rules
+
+**Usage in components:**
+```tsx
+'use client';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const { t, tFunc, languageMeta, isRTL } = useLanguage();
+// structured access: t.common.save
+// dot-notation with interpolation: tFunc('students.table.name')
+```
+
+**Rules:**
+- Never add hardcoded Arabic strings in JSX — always use `t.*` or `tFunc()`
+- Use Tailwind **logical properties** (`ms-/me-`, `ps-/pe-`, `start-/end-`) not physical (`ml-/mr-`, `pl-/pr-`, `left-/right-`)
+- DB canonical values stay Arabic; only display labels are translated
+- Run `node scripts/check-i18n.js --strict` to audit for unextracted strings
+
+### Languages
+- `ar` (Arabic, RTL, locale `ar-SA`) — default
+- `en` (English, LTR, locale `en-US`)
+
+---
+
+## 9. Ralph Loop Operating Guidelines
+
+When operating inside a Ralph Loop (`/ralph-loop`), follow these additional rules:
+
+### Iteration Discipline
+1. **Read first:** Begin every iteration by reading `progress.txt` — this is your memory between iterations
+2. **One change per iteration:** Make exactly one logical change, verify it, commit it, then update `progress.txt`
+3. **Update last:** End every iteration by editing `progress.txt` with what you did and what remains
+
+### Verification Before Completion
+Before outputting a `<promise>` tag to signal task completion, ALL of these must pass:
+- `pnpm run lint --quiet`
+- `pnpm run type-check`
+- `pnpm run test:unit`
+- `node scripts/check-i18n.js --strict` (if the change touched i18n or JSX files)
+
+If any check fails, fix it before claiming done.
+
+### When Stuck
+If the same step fails 3 consecutive times:
+1. Try a fundamentally different approach (not just tweaking the same fix)
+2. Document the blocker in `progress.txt` under Blockers / Notes
+3. Move to the next step if possible; if nothing remains, output the promise with a blocker note
+
+### Context Files
+- `progress.txt` — iteration-to-iteration memory (read first, update last)
+- `AGENTS.md` — project reference card (quality gates, architecture, conventions)
+- `.github/prompts/ralph-task.prompt.md` — task template for structuring new Ralph tasks

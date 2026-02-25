@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { test as base, expect, Page, BrowserContext } from "@playwright/test";
 
 // Define custom fixtures for authentication

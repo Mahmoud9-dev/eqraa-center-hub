@@ -25,9 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const EducationalFamilyPrograms = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const sp = t.educational.subPages.familyPrograms;
 
   // State for programs management
   const [programs, setPrograms] = useState([
@@ -89,8 +93,8 @@ const EducationalFamilyPrograms = () => {
       !newProgram.verses
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: sp.toast.validationError,
+        description: sp.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -118,8 +122,8 @@ const EducationalFamilyPrograms = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة البرنامج بنجاح",
+      title: sp.toast.addSuccess,
+      description: sp.toast.addSuccessDescription,
     });
   };
 
@@ -132,8 +136,8 @@ const EducationalFamilyPrograms = () => {
     setIsDeleteDialogOpen(false);
     setSelectedProgram(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف البرنامج بنجاح",
+      title: sp.toast.deleteSuccess,
+      description: sp.toast.deleteSuccessDescription,
     });
   };
 
@@ -145,15 +149,14 @@ const EducationalFamilyPrograms = () => {
   const handleViewRecording = (program: any) => {
     if (program.recording === "available") {
       toast({
-        title: "فتح التسجيل",
-        description: "جاري فتح تسجيل البرنامج...",
+        title: sp.toast.openRecording,
+        description: sp.toast.openRecordingDescription,
       });
-      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
       window.open("#", "_blank");
     } else {
       toast({
-        title: "التسجيل غير متاح",
-        description: "هذا البرنامج قيد المعالجة وسيكون متاحاً قريباً",
+        title: sp.toast.recordingUnavailable,
+        description: sp.toast.recordingUnavailableDescription,
         variant: "destructive",
       });
     }
@@ -161,10 +164,9 @@ const EducationalFamilyPrograms = () => {
 
   const handleDownloadMaterial = (program: any) => {
     toast({
-      title: "تحميل المادة",
-      description: "جاري تحميل مادة البرنامج...",
+      title: sp.toast.downloadMaterial,
+      description: sp.toast.downloadMaterialDescription,
     });
-    // هنا يمكن إضافة رابط التحميل
     const link = document.createElement("a");
     link.href = "#";
     link.download = `${program.title}.pdf`;
@@ -173,37 +175,37 @@ const EducationalFamilyPrograms = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="برامج الأسرة" showBack={true} />
+      <PageHeader title={sp.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)] flex-1">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
-              برامج الأسرة
+              {sp.bannerTitle}
             </h2>
             <p className="text-sm sm:text-base md:text-lg opacity-90">
-              إشراك الأسرة في العملية التربوية وتعزيز العلاقات الأسرية
+              {sp.bannerSubtitle}
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground w-full sm:w-auto">
-                إضافة برنامج جديد
+                {sp.addButton}
               </Button>
             </DialogTrigger>
             <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-base">
-                  إضافة برنامج أسرة جديد
+                  {sp.dialog.title}
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-xs">
-                  أدخل بيانات البرنامج الجديد في النموذج أدناه
+                  {sp.dialog.description}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="title" className="text-right sm:text-sm">
-                    عنوان البرنامج
+                    {sp.dialog.itemTitle}
                   </Label>
                   <Input
                     id="title"
@@ -219,7 +221,7 @@ const EducationalFamilyPrograms = () => {
                     htmlFor="description"
                     className="text-right sm:text-sm sm:mt-2"
                   >
-                    الوصف
+                    {sp.dialog.itemDescription}
                   </Label>
                   <Textarea
                     id="description"
@@ -236,7 +238,7 @@ const EducationalFamilyPrograms = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="teacher" className="text-right sm:text-sm">
-                    المقدم
+                    {sp.dialog.teacher}
                   </Label>
                   <Input
                     id="teacher"
@@ -249,7 +251,7 @@ const EducationalFamilyPrograms = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="duration" className="text-right sm:text-sm">
-                    المدة
+                    {sp.dialog.duration}
                   </Label>
                   <Input
                     id="duration"
@@ -257,13 +259,13 @@ const EducationalFamilyPrograms = () => {
                     onChange={(e) =>
                       setNewProgram({ ...newProgram, duration: e.target.value })
                     }
-                    placeholder="مثال: ساعتان"
+                    placeholder={sp.dialog.durationPlaceholder}
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="verses" className="text-right sm:text-sm">
-                    الآيات
+                    {sp.dialog.verses}
                   </Label>
                   <Input
                     id="verses"
@@ -271,13 +273,13 @@ const EducationalFamilyPrograms = () => {
                     onChange={(e) =>
                       setNewProgram({ ...newProgram, verses: e.target.value })
                     }
-                    placeholder="مثال: الروم 21"
+                    placeholder={sp.dialog.versesPlaceholder}
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="recording" className="text-right sm:text-sm">
-                    التسجيل
+                    {sp.dialog.recording}
                   </Label>
                   <Select
                     value={newProgram.recording}
@@ -286,11 +288,11 @@ const EducationalFamilyPrograms = () => {
                     }
                   >
                     <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
-                      <SelectValue placeholder="اختر حالة التسجيل" />
+                      <SelectValue placeholder={sp.dialog.recordingPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="available">متاح</SelectItem>
-                      <SelectItem value="processing">قيد المعالجة</SelectItem>
+                      <SelectItem value="available">{sp.dialog.recordingAvailable}</SelectItem>
+                      <SelectItem value="processing">{sp.dialog.recordingProcessing}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -301,10 +303,10 @@ const EducationalFamilyPrograms = () => {
                   onClick={() => setIsAddDialogOpen(false)}
                   className="text-sm"
                 >
-                  إلغاء
+                  {sp.dialog.cancel}
                 </Button>
                 <Button onClick={handleAddProgram} className="text-sm">
-                  إضافة البرنامج
+                  {sp.dialog.submit}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -327,8 +329,8 @@ const EducationalFamilyPrograms = () => {
                     }
                   >
                     {program.recording === "available"
-                      ? "متاح التسجيل"
-                      : "قيد المعالجة"}
+                      ? sp.card.recordingAvailable
+                      : sp.card.recordingProcessing}
                   </Badge>
                 </div>
               </CardHeader>
@@ -339,19 +341,19 @@ const EducationalFamilyPrograms = () => {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المقدم:</span>
+                    <span className="font-medium">{sp.card.teacher}</span>
                     <span>{program.teacher}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">التاريخ:</span>
+                    <span className="font-medium">{sp.card.date}</span>
                     <span>{program.date}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المدة:</span>
+                    <span className="font-medium">{sp.card.duration}</span>
                     <span>{program.duration}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">الآيات:</span>
+                    <span className="font-medium">{sp.card.verses}</span>
                     <span className="text-primary">{program.verses}</span>
                   </div>
                 </div>
@@ -362,15 +364,15 @@ const EducationalFamilyPrograms = () => {
                     onClick={() => handleViewRecording(program)}
                   >
                     {program.recording === "available"
-                      ? "مشاهدة التسجيل"
-                      : "قريباً"}
+                      ? sp.card.watchRecording
+                      : sp.card.comingSoon}
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
                     onClick={() => handleDownloadMaterial(program)}
                   >
-                    تحميل المادة
+                    {sp.card.downloadMaterial}
                   </Button>
                   <Button
                     variant="destructive"
@@ -378,7 +380,7 @@ const EducationalFamilyPrograms = () => {
                     onClick={() => openDeleteDialog(program)}
                     className="text-sm"
                   >
-                    حذف
+                    {sp.card.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -392,11 +394,10 @@ const EducationalFamilyPrograms = () => {
         <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-base">
-              تأكيد الحذف
+              {sp.deleteDialog.title}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              هل أنت متأكد من حذف البرنامج "{selectedProgram?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {sp.deleteDialog.message.replace('{{title}}', selectedProgram?.title ?? '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -405,14 +406,14 @@ const EducationalFamilyPrograms = () => {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="text-sm"
             >
-              إلغاء
+              {sp.deleteDialog.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteProgram}
               className="text-sm"
             >
-              حذف
+              {sp.deleteDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

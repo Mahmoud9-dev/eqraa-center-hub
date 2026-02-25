@@ -25,9 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const EducationalGuidanceCounseling = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const sp = t.educational.subPages.guidanceCounseling;
 
   // State for sessions management
   const [sessions, setSessions] = useState([
@@ -90,8 +94,8 @@ const EducationalGuidanceCounseling = () => {
       !newSession.verses
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: sp.toast.validationError,
+        description: sp.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -119,8 +123,8 @@ const EducationalGuidanceCounseling = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الجلسة بنجاح",
+      title: sp.toast.addSuccess,
+      description: sp.toast.addSuccessDescription,
     });
   };
 
@@ -133,8 +137,8 @@ const EducationalGuidanceCounseling = () => {
     setIsDeleteDialogOpen(false);
     setSelectedSession(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الجلسة بنجاح",
+      title: sp.toast.deleteSuccess,
+      description: sp.toast.deleteSuccessDescription,
     });
   };
 
@@ -146,15 +150,14 @@ const EducationalGuidanceCounseling = () => {
   const handleViewRecording = (session: any) => {
     if (session.recording === "available") {
       toast({
-        title: "فتح التسجيل",
-        description: "جاري فتح تسجيل الجلسة...",
+        title: sp.toast.openRecording,
+        description: sp.toast.openRecordingDescription,
       });
-      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
       window.open("#", "_blank");
     } else {
       toast({
-        title: "التسجيل غير متاح",
-        description: "هذه الجلسة قيد المعالجة وستكون متاحة قريباً",
+        title: sp.toast.recordingUnavailable,
+        description: sp.toast.recordingUnavailableDescription,
         variant: "destructive",
       });
     }
@@ -162,10 +165,9 @@ const EducationalGuidanceCounseling = () => {
 
   const handleDownloadMaterial = (session: any) => {
     toast({
-      title: "تحميل المادة",
-      description: "جاري تحميل مادة الجلسة...",
+      title: sp.toast.downloadMaterial,
+      description: sp.toast.downloadMaterialDescription,
     });
-    // هنا يمكن إضافة رابط التحميل
     const link = document.createElement("a");
     link.href = "#";
     link.download = `${session.title}.pdf`;
@@ -174,37 +176,37 @@ const EducationalGuidanceCounseling = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الإرشاد والتوجيه" showBack={true} />
+      <PageHeader title={sp.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)] flex-1">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
-              الإرشاد والتوجيه
+              {sp.bannerTitle}
             </h2>
             <p className="text-sm sm:text-base md:text-lg opacity-90">
-              استشارات تربوية ونفسية للطلاب وأولياء الأمور
+              {sp.bannerSubtitle}
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground w-full sm:w-auto">
-                إضافة جلسة جديدة
+                {sp.addButton}
               </Button>
             </DialogTrigger>
             <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-base">
-                  إضافة جلسة إرشاد جديدة
+                  {sp.dialog.title}
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-xs">
-                  أدخل بيانات الجلسة الجديدة في النموذج أدناه
+                  {sp.dialog.description}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="title" className="text-right sm:text-sm">
-                    عنوان الجلسة
+                    {sp.dialog.itemTitle}
                   </Label>
                   <Input
                     id="title"
@@ -220,7 +222,7 @@ const EducationalGuidanceCounseling = () => {
                     htmlFor="description"
                     className="text-right sm:text-sm sm:mt-2"
                   >
-                    الوصف
+                    {sp.dialog.itemDescription}
                   </Label>
                   <Textarea
                     id="description"
@@ -237,7 +239,7 @@ const EducationalGuidanceCounseling = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="teacher" className="text-right sm:text-sm">
-                    المرشد
+                    {sp.dialog.teacher}
                   </Label>
                   <Input
                     id="teacher"
@@ -250,7 +252,7 @@ const EducationalGuidanceCounseling = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="duration" className="text-right sm:text-sm">
-                    المدة
+                    {sp.dialog.duration}
                   </Label>
                   <Input
                     id="duration"
@@ -258,13 +260,13 @@ const EducationalGuidanceCounseling = () => {
                     onChange={(e) =>
                       setNewSession({ ...newSession, duration: e.target.value })
                     }
-                    placeholder="مثال: 45 دقيقة"
+                    placeholder={sp.dialog.durationPlaceholder}
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="verses" className="text-right sm:text-sm">
-                    الآيات
+                    {sp.dialog.verses}
                   </Label>
                   <Input
                     id="verses"
@@ -272,13 +274,13 @@ const EducationalGuidanceCounseling = () => {
                     onChange={(e) =>
                       setNewSession({ ...newSession, verses: e.target.value })
                     }
-                    placeholder="مثال: فاطر 18"
+                    placeholder={sp.dialog.versesPlaceholder}
                     className="col-span-1 sm:col-span-3 text-base sm:text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                   <Label htmlFor="recording" className="text-right sm:text-sm">
-                    التسجيل
+                    {sp.dialog.recording}
                   </Label>
                   <Select
                     value={newSession.recording}
@@ -287,11 +289,11 @@ const EducationalGuidanceCounseling = () => {
                     }
                   >
                     <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
-                      <SelectValue placeholder="اختر حالة التسجيل" />
+                      <SelectValue placeholder={sp.dialog.recordingPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="available">متاح</SelectItem>
-                      <SelectItem value="processing">قيد المعالجة</SelectItem>
+                      <SelectItem value="available">{sp.dialog.recordingAvailable}</SelectItem>
+                      <SelectItem value="processing">{sp.dialog.recordingProcessing}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -302,10 +304,10 @@ const EducationalGuidanceCounseling = () => {
                   onClick={() => setIsAddDialogOpen(false)}
                   className="text-sm"
                 >
-                  إلغاء
+                  {sp.dialog.cancel}
                 </Button>
                 <Button onClick={handleAddSession} className="text-sm">
-                  إضافة الجلسة
+                  {sp.dialog.submit}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -328,8 +330,8 @@ const EducationalGuidanceCounseling = () => {
                     }
                   >
                     {session.recording === "available"
-                      ? "متاح التسجيل"
-                      : "قيد المعالجة"}
+                      ? sp.card.recordingAvailable
+                      : sp.card.recordingProcessing}
                   </Badge>
                 </div>
               </CardHeader>
@@ -340,19 +342,19 @@ const EducationalGuidanceCounseling = () => {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المرشد:</span>
+                    <span className="font-medium">{sp.card.teacher}</span>
                     <span>{session.teacher}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">التاريخ:</span>
+                    <span className="font-medium">{sp.card.date}</span>
                     <span>{session.date}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">المدة:</span>
+                    <span className="font-medium">{sp.card.duration}</span>
                     <span>{session.duration}</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">الآيات:</span>
+                    <span className="font-medium">{sp.card.verses}</span>
                     <span className="text-primary">{session.verses}</span>
                   </div>
                 </div>
@@ -363,15 +365,15 @@ const EducationalGuidanceCounseling = () => {
                     onClick={() => handleViewRecording(session)}
                   >
                     {session.recording === "available"
-                      ? "مشاهدة التسجيل"
-                      : "قريباً"}
+                      ? sp.card.watchRecording
+                      : sp.card.comingSoon}
                   </Button>
                   <Button
                     variant="outline"
                     className="text-sm"
                     onClick={() => handleDownloadMaterial(session)}
                   >
-                    تحميل المادة
+                    {sp.card.downloadMaterial}
                   </Button>
                   <Button
                     variant="destructive"
@@ -379,7 +381,7 @@ const EducationalGuidanceCounseling = () => {
                     onClick={() => openDeleteDialog(session)}
                     className="text-sm"
                   >
-                    حذف
+                    {sp.card.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -393,11 +395,10 @@ const EducationalGuidanceCounseling = () => {
         <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-base">
-              تأكيد الحذف
+              {sp.deleteDialog.title}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              هل أنت متأكد من حذف الجلسة "{selectedSession?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {sp.deleteDialog.message.replace('{{title}}', selectedSession?.title ?? '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -406,14 +407,14 @@ const EducationalGuidanceCounseling = () => {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="text-sm"
             >
-              إلغاء
+              {sp.deleteDialog.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteSession}
               className="text-sm"
             >
-              حذف
+              {sp.deleteDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

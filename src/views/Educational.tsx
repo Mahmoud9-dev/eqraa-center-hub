@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import IconButton from "@/components/IconButton";
 import { BookOpen, HandHeart, Target, Star, Users, Lightbulb } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 interface Teacher {
   id: string;
@@ -56,6 +58,10 @@ const Educational = () => {
   const [rating, setRating] = useState("5");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t, languageMeta } = useLanguage();
+
+  const ed = t.educational.main;
+  const icons = t.educational.iconLabels;
 
   const loadData = async () => {
     const { data: studentsData } = await getSupabase()
@@ -81,6 +87,7 @@ const Educational = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -102,9 +109,9 @@ const Educational = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
+      toast({ title: ed.toast.addStudentError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة الطالب بنجاح" });
+      toast({ title: ed.toast.addStudentSuccess });
       setName("");
       setAge("");
       setGrade("");
@@ -129,9 +136,9 @@ const Educational = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة الحلقة", variant: "destructive" });
+      toast({ title: ed.toast.addSessionError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة الحلقة بنجاح" });
+      toast({ title: ed.toast.addSessionSuccess });
       setSelectedStudent("");
       setSelectedTeacher("");
       setTopic("");
@@ -144,14 +151,14 @@ const Educational = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="التربوي" />
+      <PageHeader title={ed.pageTitle} />
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="mb-6 sm:mb-8 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-[var(--shadow-soft)]">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
-            البرامج التربوية والتعليمية
+            {ed.banner.title}
           </h2>
           <p className="text-sm sm:text-base md:text-lg opacity-90">
-            تطوير القيم الإسلامية والمهارات التربوية للطلاب
+            {ed.banner.subtitle}
           </p>
         </div>
 
@@ -160,14 +167,14 @@ const Educational = () => {
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary">
-                  تسجيل حلقة تربوية
+                  {ed.sessionForm.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddSession} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      الطالب
+                      {ed.sessionForm.student}
                     </label>
                     <select
                       value={selectedStudent}
@@ -175,7 +182,7 @@ const Educational = () => {
                       className="w-full p-2 border rounded-md bg-background text-base sm:text-sm"
                       required
                     >
-                      <option value="">اختر الطالب</option>
+                      <option value="">{ed.sessionForm.studentPlaceholder}</option>
                       {students.map((student) => (
                         <option key={student.id} value={student.id}>
                           {student.name}
@@ -185,7 +192,7 @@ const Educational = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      المعلم
+                      {ed.sessionForm.teacher}
                     </label>
                     <select
                       value={selectedTeacher}
@@ -193,7 +200,7 @@ const Educational = () => {
                       className="w-full p-2 border rounded-md bg-background text-base sm:text-sm"
                       required
                     >
-                      <option value="">اختر المعلم</option>
+                      <option value="">{ed.sessionForm.teacherPlaceholder}</option>
                       {teachers.map((teacher) => (
                         <option key={teacher.id} value={teacher.id}>
                           {teacher.name}
@@ -203,31 +210,31 @@ const Educational = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      الموضوع
+                      {ed.sessionForm.topic}
                     </label>
                     <Input
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
-                      placeholder="مثال: الأخلاق الإسلامية"
+                      placeholder={ed.sessionForm.topicPlaceholder}
                       className="text-base sm:text-sm"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      الوصف
+                      {ed.sessionForm.description}
                     </label>
                     <Textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="وصف الحلقة..."
+                      placeholder={ed.sessionForm.descriptionPlaceholder}
                       className="text-base sm:text-sm"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      التقييم (1-10): {rating}
+                      {ed.sessionForm.rating} {rating}
                     </label>
                     <input
                       type="range"
@@ -243,7 +250,7 @@ const Educational = () => {
                     disabled={isLoading}
                     className="w-full text-base sm:text-sm py-3 sm:py-2"
                   >
-                    {isLoading ? "جاري التسجيل..." : "تسجيل الحلقة"}
+                    {isLoading ? ed.sessionForm.submitting : ed.sessionForm.submit}
                   </Button>
                 </form>
               </CardContent>
@@ -252,32 +259,32 @@ const Educational = () => {
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary">
-                  تسجيل طالب في البرنامج التربوي
+                  {ed.studentForm.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      اسم الطالب
+                      {ed.studentForm.name}
                     </label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="أدخل اسم الطالب"
+                      placeholder={ed.studentForm.namePlaceholder}
                       className="text-base sm:text-sm"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      العمر
+                      {ed.studentForm.age}
                     </label>
                     <Input
                       type="number"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
-                      placeholder="أدخل العمر"
+                      placeholder={ed.studentForm.agePlaceholder}
                       min="5"
                       max="100"
                       className="text-base sm:text-sm"
@@ -286,12 +293,12 @@ const Educational = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      الصف الدراسي
+                      {ed.studentForm.grade}
                     </label>
                     <Input
                       value={grade}
                       onChange={(e) => setGrade(e.target.value)}
-                      placeholder="مثال: الصف الخامس"
+                      placeholder={ed.studentForm.gradePlaceholder}
                       className="text-base sm:text-sm"
                       required
                     />
@@ -301,7 +308,7 @@ const Educational = () => {
                     disabled={isLoading}
                     className="w-full text-base sm:text-sm py-3 sm:py-2"
                   >
-                    {isLoading ? "جاري التسجيل..." : "تسجيل الطالب"}
+                    {isLoading ? ed.studentForm.submitting : ed.studentForm.submit}
                   </Button>
                 </form>
               </CardContent>
@@ -309,12 +316,12 @@ const Educational = () => {
 
             <div className="space-y-4">
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
-                الطلاب المسجلون
+                {ed.registeredStudents.title}
               </h3>
               {students.length === 0 ? (
                 <Card>
                   <CardContent className="p-4 sm:p-6 md:p-8 text-center text-muted-foreground">
-                    لا يوجد طلاب مسجلين في البرنامج التربوي بعد
+                    {ed.registeredStudents.empty}
                   </CardContent>
                 </Card>
               ) : (
@@ -328,7 +335,7 @@ const Educational = () => {
                         {student.name}
                       </h4>
                       <p className="text-xs sm:text-sm text-muted-foreground">
-                        العمر: {student.age} سنة - {student.grade}
+                        {ed.registeredStudents.ageLabel} {student.age} {ed.registeredStudents.yearUnit} - {student.grade}
                       </p>
                     </CardContent>
                   </Card>
@@ -339,12 +346,12 @@ const Educational = () => {
 
           <div className="space-y-4">
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
-              الحلقات المسجلة
+              {ed.registeredSessions.title}
             </h3>
             {sessions.length === 0 ? (
               <Card>
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center text-muted-foreground">
-                  لا توجد حلقات مسجلة بعد
+                  {ed.registeredSessions.empty}
                 </CardContent>
               </Card>
             ) : (
@@ -357,10 +364,10 @@ const Educational = () => {
                           {session.topic}
                         </h4>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          الطالب: {session.students.name}
+                          {ed.registeredSessions.studentLabel} {session.students.name}
                         </p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          المعلم: {session.teachers.name}
+                          {ed.registeredSessions.teacherLabel} {session.teachers.name}
                         </p>
                       </div>
                       <span className="text-xs sm:text-sm bg-primary/10 px-3 py-1 rounded-full">
@@ -371,7 +378,7 @@ const Educational = () => {
                       {session.description}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                      {new Date(session.session_date).toLocaleDateString("ar")}
+                      {formatDate(new Date(session.session_date), languageMeta.code)}
                     </p>
                   </CardContent>
                 </Card>
@@ -386,8 +393,8 @@ const Educational = () => {
             icon={BookOpen}
             iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
             iconColor="text-emerald-500"
-            label="الدروس الشرعية"
-            aria-label="فتح صفحة الدروس الشرعية"
+            label={icons.islamicLessons}
+            aria-label={icons.islamicLessons}
           />
 
           <IconButton
@@ -395,8 +402,8 @@ const Educational = () => {
             icon={HandHeart}
             iconBgColor="bg-pink-50 dark:bg-pink-900/20"
             iconColor="text-pink-500"
-            label="الأخلاق والسلوك"
-            aria-label="فتح صفحة الأخلاق والسلوك"
+            label={icons.ethicsBehavior}
+            aria-label={icons.ethicsBehavior}
           />
 
           <IconButton
@@ -404,8 +411,8 @@ const Educational = () => {
             icon={Target}
             iconBgColor="bg-blue-50 dark:bg-blue-900/20"
             iconColor="text-blue-500"
-            label="المهارات الحياتية"
-            aria-label="فتح صفحة المهارات الحياتية"
+            label={icons.lifeSkills}
+            aria-label={icons.lifeSkills}
           />
 
           <IconButton
@@ -413,8 +420,8 @@ const Educational = () => {
             icon={Star}
             iconBgColor="bg-yellow-50 dark:bg-yellow-900/20"
             iconColor="text-yellow-500"
-            label="الأنشطة الطلابية"
-            aria-label="فتح صفحة الأنشطة الطلابية"
+            label={icons.studentActivities}
+            aria-label={icons.studentActivities}
           />
 
           <IconButton
@@ -422,8 +429,8 @@ const Educational = () => {
             icon={Users}
             iconBgColor="bg-purple-50 dark:bg-purple-900/20"
             iconColor="text-purple-500"
-            label="برامج الأسرة"
-            aria-label="فتح صفحة برامج الأسرة"
+            label={icons.familyPrograms}
+            aria-label={icons.familyPrograms}
           />
 
           <IconButton
@@ -431,8 +438,8 @@ const Educational = () => {
             icon={Lightbulb}
             iconBgColor="bg-amber-50 dark:bg-amber-900/20"
             iconColor="text-amber-500"
-            label="الإرشاد والتوجيه"
-            aria-label="فتح صفحة الإرشاد والتوجيه"
+            label={icons.guidanceCounseling}
+            aria-label={icons.guidanceCounseling}
           />
         </div>
       </main>

@@ -41,6 +41,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { ExamType, Exam, ExamResult } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 type TabType = ExamType | "results";
 
@@ -55,6 +57,7 @@ const Exams = () => {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [selectedResult, setSelectedResult] = useState<ExamResult | null>(null);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   // Mock data - will be replaced with actual data from Supabase
   const [exams, setExams] = useState<Exam[]>([
@@ -216,17 +219,41 @@ const Exams = () => {
   const getExamStatusText = (exam: Exam) => {
     const examDate = new Date(exam.date);
     const today = new Date();
-    if (examDate < today) return "منتهي";
-    if (examDate.toDateString() === today.toDateString()) return "اليوم";
-    return "قادم";
+    if (examDate < today) return t.exams.status.completed;
+    if (examDate.toDateString() === today.toDateString()) return t.exams.status.today;
+    return t.exams.status.upcoming;
   };
+
+  const getExamTypeLabel = (type: ExamType): string => {
+    const typeMap: Record<ExamType, string> = {
+      'قرآن': t.exams.examTypes.quran,
+      'تجويد': t.exams.examTypes.tajweed,
+      'تربوي': t.exams.examTypes.educational,
+    };
+    return typeMap[type] || type;
+  };
+
+  const getResultStatusLabel = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'ناجح': t.exams.status.passed,
+      'راسب': t.exams.status.failed,
+      'غائب': t.exams.status.absent,
+    };
+    return statusMap[status] || status;
+  };
+
+  const examStatusFilters = [
+    { key: "upcoming" as const, filter: (d: Date, now: Date) => d > now },
+    { key: "today" as const, filter: (d: Date, now: Date) => d.toDateString() === now.toDateString() },
+    { key: "completed" as const, filter: (d: Date, now: Date) => d < now },
+  ];
 
   // CRUD functions
   const handleAddExam = () => {
     if (!newExam.title || !newExam.description || !newExam.date) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.exams.toasts.error,
+        description: t.exams.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -259,8 +286,8 @@ const Exams = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الامتحان بنجاح",
+      title: t.exams.toasts.addSuccess,
+      description: t.exams.toasts.addSuccessDescription,
     });
   };
 
@@ -272,8 +299,8 @@ const Exams = () => {
       !newExam.date
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.exams.toasts.error,
+        description: t.exams.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -313,8 +340,8 @@ const Exams = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل الامتحان بنجاح",
+      title: t.exams.toasts.editSuccess,
+      description: t.exams.toasts.editSuccessDescription,
     });
   };
 
@@ -325,8 +352,8 @@ const Exams = () => {
     setIsDeleteDialogOpen(false);
     setSelectedExam(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الامتحان بنجاح",
+      title: t.exams.toasts.deleteSuccess,
+      description: t.exams.toasts.deleteSuccessDescription,
     });
   };
 
@@ -337,8 +364,8 @@ const Exams = () => {
       newResult.marks === undefined
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.exams.toasts.error,
+        description: t.exams.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -373,8 +400,8 @@ const Exams = () => {
     });
     setIsResultDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة النتيجة بنجاح",
+      title: t.exams.toasts.resultAddSuccess,
+      description: t.exams.toasts.resultAddSuccessDescription,
     });
   };
 
@@ -424,8 +451,8 @@ const Exams = () => {
   const handleEditResult = () => {
     if (!selectedResult || !newResult.marks) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.exams.toasts.error,
+        description: t.exams.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -462,8 +489,8 @@ const Exams = () => {
       notes: "",
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل النتيجة بنجاح",
+      title: t.exams.toasts.resultEditSuccess,
+      description: t.exams.toasts.resultEditSuccessDescription,
     });
   };
 
@@ -474,43 +501,43 @@ const Exams = () => {
     setIsDeleteResultDialogOpen(false);
     setSelectedResult(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف النتيجة بنجاح",
+      title: t.exams.toasts.resultDeleteSuccess,
+      description: t.exams.toasts.resultDeleteSuccessDescription,
     });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الامتحانات والتقييم" showBack={true} />
+      <PageHeader title={t.exams.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📝 الاختبارات والتقييم</h2>
+          <h2 className="text-2xl font-bold mb-4">📝 {t.exams.heading}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة وتتبع امتحانات القرآن والتجويد والجانب التربوي
+            {t.exams.headingDescription}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
             <div className="w-full sm:w-auto">
-              <Input placeholder="البحث عن امتحان..." className="w-full sm:w-64" />
+              <Input placeholder={t.exams.searchPlaceholder} className="w-full sm:w-64" />
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground">
-                  إنشاء امتحان جديد
+                  {t.exams.actions.createExam}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إنشاء امتحان جديد</DialogTitle>
+                  <DialogTitle>{t.exams.addDialog.title}</DialogTitle>
                   <DialogDescription>
-                    أدخل بيانات الامتحان الجديد
+                    {t.exams.addDialog.description}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="type" className="text-right">
-                      النوع
+                      {t.exams.form.typeLabel}
                     </Label>
                     <Select
                       value={newExam.type}
@@ -519,18 +546,18 @@ const Exams = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر النوع" />
+                        <SelectValue placeholder={t.exams.form.selectType} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="قرآن">قرآن</SelectItem>
-                        <SelectItem value="تجويد">تجويد</SelectItem>
-                        <SelectItem value="تربوي">تربوي</SelectItem>
+                        <SelectItem value="قرآن">{t.exams.examTypes.quran}</SelectItem>
+                        <SelectItem value="تجويد">{t.exams.examTypes.tajweed}</SelectItem>
+                        <SelectItem value="تربوي">{t.exams.examTypes.educational}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="title" className="text-right">
-                      العنوان
+                      {t.exams.form.titleLabel}
                     </Label>
                     <Input
                       id="title"
@@ -543,7 +570,7 @@ const Exams = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="description" className="text-right">
-                      الوصف
+                      {t.exams.form.descriptionLabel}
                     </Label>
                     <Textarea
                       id="description"
@@ -557,7 +584,7 @@ const Exams = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="date" className="text-right">
-                      التاريخ
+                      {t.exams.form.dateLabel}
                     </Label>
                     <Input
                       id="date"
@@ -574,7 +601,7 @@ const Exams = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="duration" className="text-right">
-                      المدة (دقائق)
+                      {t.exams.form.durationLabel}
                     </Label>
                     <Input
                       id="duration"
@@ -591,7 +618,7 @@ const Exams = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="totalMarks" className="text-right">
-                      الدرجة الكاملة
+                      {t.exams.form.totalMarksLabel}
                     </Label>
                     <Input
                       id="totalMarks"
@@ -608,7 +635,7 @@ const Exams = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="passingMarks" className="text-right">
-                      درجة النجاح
+                      {t.exams.form.passingMarksLabel}
                     </Label>
                     <Input
                       id="passingMarks"
@@ -629,9 +656,9 @@ const Exams = () => {
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
                   >
-                    إلغاء
+                    {t.common.cancel}
                   </Button>
-                  <Button onClick={handleAddExam}>إنشاء امتحان</Button>
+                  <Button onClick={handleAddExam}>{t.exams.actions.createExam}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -645,16 +672,16 @@ const Exams = () => {
           <div className="overflow-x-auto -mx-4 px-4 pb-2">
             <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-4 gap-1 p-1">
               <TabsTrigger value="قرآن" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
-                امتحانات القرآن
+                {t.exams.tabs.quranExams}
               </TabsTrigger>
               <TabsTrigger value="تجويد" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
-                امتحانات التجويد
+                {t.exams.tabs.tajweedExams}
               </TabsTrigger>
               <TabsTrigger value="تربوي" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
-                امتحانات تربوية
+                {t.exams.tabs.educationalExams}
               </TabsTrigger>
               <TabsTrigger value="results" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4">
-                النتائج والإحصائيات
+                {t.exams.tabs.resultsAndStats}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -663,30 +690,23 @@ const Exams = () => {
             <div className="space-y-6">
               {/* عرض الامتحانات حسب الحالة */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {["قادم", "اليوم", "منتهي"].map((status) => {
-                  const statusExams = filteredExams.filter((exam) => {
-                    const examDate = new Date(exam.date);
-                    const today = new Date();
-
-                    if (status === "قادم") return examDate > today;
-                    if (status === "اليوم")
-                      return examDate.toDateString() === today.toDateString();
-                    if (status === "منتهي") return examDate < today;
-                    return false;
-                  });
+                {examStatusFilters.map(({ key, filter }) => {
+                  const statusExams = filteredExams.filter((exam) =>
+                    filter(new Date(exam.date), new Date())
+                  );
 
                   if (statusExams.length === 0) return null;
 
                   return (
                     <Card
-                      key={status}
+                      key={key}
                       className="border-r-4 border-r-primary/20"
                     >
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center justify-between">
-                          <span>الامتحانات {status}</span>
+                          <span>{t.exams.cards.examsStatus.replace('{{status}}', t.exams.status[key])}</span>
                           <Badge variant="outline">
-                            {statusExams.length} امتحان
+                            {t.exams.cards.examCount.replace('{{count}}', String(statusExams.length))}
                           </Badge>
                         </CardTitle>
                       </CardHeader>
@@ -709,10 +729,10 @@ const Exams = () => {
                             </div>
                             <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
                               <span>
-                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                                📅 {formatDate(exam.date, language)}
                               </span>
-                              <span>⏱️ {exam.duration} دقيقة</span>
-                              <span>📊 {exam.totalMarks} درجة</span>
+                              <span>⏱️ {exam.duration} {t.exams.cards.minute}</span>
+                              <span>📊 {exam.totalMarks} {t.exams.cards.mark}</span>
                             </div>
                             <div className="flex space-x-2 space-x-reverse">
                               <Button
@@ -721,7 +741,7 @@ const Exams = () => {
                                 onClick={() => openResultDialog(exam.id)}
                                 className="text-xs"
                               >
-                                نتيجة
+                                {t.exams.actions.result}
                               </Button>
                               <Button
                                 variant="outline"
@@ -729,7 +749,7 @@ const Exams = () => {
                                 onClick={() => openEditDialog(exam)}
                                 className="text-xs"
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -737,7 +757,7 @@ const Exams = () => {
                                 onClick={() => openDeleteDialog(exam)}
                                 className="text-xs"
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </div>
@@ -751,21 +771,21 @@ const Exams = () => {
               {/* عرض جميع الامتحانات في جدول */}
               <Card>
                 <CardHeader>
-                  <CardTitle>جميع امتحانات {activeTab}</CardTitle>
+                  <CardTitle>{t.exams.cards.allExamsOfType.replace('{{type}}', getExamTypeLabel(activeTab as ExamType))}</CardTitle>
                   <CardDescription>
-                    عرض جميع الامتحانات في جدول واحد
+                    {t.exams.cards.allExamsTable}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>عنوان الامتحان</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>المدة</TableHead>
-                        <TableHead>الدرجة الكاملة</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{t.exams.table.examTitle}</TableHead>
+                        <TableHead>{t.exams.table.date}</TableHead>
+                        <TableHead>{t.exams.table.duration}</TableHead>
+                        <TableHead>{t.exams.table.totalMarks}</TableHead>
+                        <TableHead>{t.exams.table.status}</TableHead>
+                        <TableHead>{t.exams.table.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -775,9 +795,9 @@ const Exams = () => {
                             {exam.title}
                           </TableCell>
                           <TableCell>
-                            {exam.date.toLocaleDateString("ar-SA")}
+                            {formatDate(exam.date, language)}
                           </TableCell>
-                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.duration} {t.exams.cards.minute}</TableCell>
                           <TableCell>{exam.totalMarks}</TableCell>
                           <TableCell>
                             <Badge className={getExamStatusColor(exam)}>
@@ -791,21 +811,21 @@ const Exams = () => {
                                 size="sm"
                                 onClick={() => openResultDialog(exam.id)}
                               >
-                                إضافة نتيجة
+                                {t.exams.actions.addResult}
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(exam)}
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => openDeleteDialog(exam)}
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -822,30 +842,23 @@ const Exams = () => {
             <div className="space-y-6">
               {/* عرض الامتحانات حسب الحالة */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {["قادم", "اليوم", "منتهي"].map((status) => {
-                  const statusExams = filteredExams.filter((exam) => {
-                    const examDate = new Date(exam.date);
-                    const today = new Date();
-
-                    if (status === "قادم") return examDate > today;
-                    if (status === "اليوم")
-                      return examDate.toDateString() === today.toDateString();
-                    if (status === "منتهي") return examDate < today;
-                    return false;
-                  });
+                {examStatusFilters.map(({ key, filter }) => {
+                  const statusExams = filteredExams.filter((exam) =>
+                    filter(new Date(exam.date), new Date())
+                  );
 
                   if (statusExams.length === 0) return null;
 
                   return (
                     <Card
-                      key={status}
+                      key={key}
                       className="border-r-4 border-r-primary/20"
                     >
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center justify-between">
-                          <span>الامتحانات {status}</span>
+                          <span>{t.exams.cards.examsStatus.replace('{{status}}', t.exams.status[key])}</span>
                           <Badge variant="outline">
-                            {statusExams.length} امتحان
+                            {t.exams.cards.examCount.replace('{{count}}', String(statusExams.length))}
                           </Badge>
                         </CardTitle>
                       </CardHeader>
@@ -868,10 +881,10 @@ const Exams = () => {
                             </div>
                             <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
                               <span>
-                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                                📅 {formatDate(exam.date, language)}
                               </span>
-                              <span>⏱️ {exam.duration} دقيقة</span>
-                              <span>📊 {exam.totalMarks} درجة</span>
+                              <span>⏱️ {exam.duration} {t.exams.cards.minute}</span>
+                              <span>📊 {exam.totalMarks} {t.exams.cards.mark}</span>
                             </div>
                             <div className="flex space-x-2 space-x-reverse">
                               <Button
@@ -880,7 +893,7 @@ const Exams = () => {
                                 onClick={() => openResultDialog(exam.id)}
                                 className="text-xs"
                               >
-                                نتيجة
+                                {t.exams.actions.result}
                               </Button>
                               <Button
                                 variant="outline"
@@ -888,7 +901,7 @@ const Exams = () => {
                                 onClick={() => openEditDialog(exam)}
                                 className="text-xs"
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -896,7 +909,7 @@ const Exams = () => {
                                 onClick={() => openDeleteDialog(exam)}
                                 className="text-xs"
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </div>
@@ -910,21 +923,21 @@ const Exams = () => {
               {/* عرض جميع الامتحانات في جدول */}
               <Card>
                 <CardHeader>
-                  <CardTitle>جميع امتحانات تجويد</CardTitle>
+                  <CardTitle>{t.exams.cards.allExamsOfType.replace('{{type}}', t.exams.examTypes.tajweed)}</CardTitle>
                   <CardDescription>
-                    عرض جميع الامتحانات في جدول واحد
+                    {t.exams.cards.allExamsTable}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>عنوان الامتحان</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>المدة</TableHead>
-                        <TableHead>الدرجة الكاملة</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{t.exams.table.examTitle}</TableHead>
+                        <TableHead>{t.exams.table.date}</TableHead>
+                        <TableHead>{t.exams.table.duration}</TableHead>
+                        <TableHead>{t.exams.table.totalMarks}</TableHead>
+                        <TableHead>{t.exams.table.status}</TableHead>
+                        <TableHead>{t.exams.table.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -934,9 +947,9 @@ const Exams = () => {
                             {exam.title}
                           </TableCell>
                           <TableCell>
-                            {exam.date.toLocaleDateString("ar-SA")}
+                            {formatDate(exam.date, language)}
                           </TableCell>
-                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.duration} {t.exams.cards.minute}</TableCell>
                           <TableCell>{exam.totalMarks}</TableCell>
                           <TableCell>
                             <Badge className={getExamStatusColor(exam)}>
@@ -950,21 +963,21 @@ const Exams = () => {
                                 size="sm"
                                 onClick={() => openResultDialog(exam.id)}
                               >
-                                إضافة نتيجة
+                                {t.exams.actions.addResult}
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(exam)}
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => openDeleteDialog(exam)}
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -981,30 +994,23 @@ const Exams = () => {
             <div className="space-y-6">
               {/* عرض الامتحانات حسب الحالة */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {["قادم", "اليوم", "منتهي"].map((status) => {
-                  const statusExams = filteredExams.filter((exam) => {
-                    const examDate = new Date(exam.date);
-                    const today = new Date();
-
-                    if (status === "قادم") return examDate > today;
-                    if (status === "اليوم")
-                      return examDate.toDateString() === today.toDateString();
-                    if (status === "منتهي") return examDate < today;
-                    return false;
-                  });
+                {examStatusFilters.map(({ key, filter }) => {
+                  const statusExams = filteredExams.filter((exam) =>
+                    filter(new Date(exam.date), new Date())
+                  );
 
                   if (statusExams.length === 0) return null;
 
                   return (
                     <Card
-                      key={status}
+                      key={key}
                       className="border-r-4 border-r-primary/20"
                     >
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center justify-between">
-                          <span>الامتحانات {status}</span>
+                          <span>{t.exams.cards.examsStatus.replace('{{status}}', t.exams.status[key])}</span>
                           <Badge variant="outline">
-                            {statusExams.length} امتحان
+                            {t.exams.cards.examCount.replace('{{count}}', String(statusExams.length))}
                           </Badge>
                         </CardTitle>
                       </CardHeader>
@@ -1027,10 +1033,10 @@ const Exams = () => {
                             </div>
                             <div className="flex justify-between items-center text-xs text-muted-foreground mb-3">
                               <span>
-                                📅 {exam.date.toLocaleDateString("ar-SA")}
+                                📅 {formatDate(exam.date, language)}
                               </span>
-                              <span>⏱️ {exam.duration} دقيقة</span>
-                              <span>📊 {exam.totalMarks} درجة</span>
+                              <span>⏱️ {exam.duration} {t.exams.cards.minute}</span>
+                              <span>📊 {exam.totalMarks} {t.exams.cards.mark}</span>
                             </div>
                             <div className="flex space-x-2 space-x-reverse">
                               <Button
@@ -1039,7 +1045,7 @@ const Exams = () => {
                                 onClick={() => openResultDialog(exam.id)}
                                 className="text-xs"
                               >
-                                نتيجة
+                                {t.exams.actions.result}
                               </Button>
                               <Button
                                 variant="outline"
@@ -1047,7 +1053,7 @@ const Exams = () => {
                                 onClick={() => openEditDialog(exam)}
                                 className="text-xs"
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -1055,7 +1061,7 @@ const Exams = () => {
                                 onClick={() => openDeleteDialog(exam)}
                                 className="text-xs"
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </div>
@@ -1069,21 +1075,21 @@ const Exams = () => {
               {/* عرض جميع الامتحانات في جدول */}
               <Card>
                 <CardHeader>
-                  <CardTitle>جميع امتحانات تربوية</CardTitle>
+                  <CardTitle>{t.exams.cards.allExamsOfType.replace('{{type}}', t.exams.examTypes.educational)}</CardTitle>
                   <CardDescription>
-                    عرض جميع الامتحانات في جدول واحد
+                    {t.exams.cards.allExamsTable}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>عنوان الامتحان</TableHead>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>المدة</TableHead>
-                        <TableHead>الدرجة الكاملة</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{t.exams.table.examTitle}</TableHead>
+                        <TableHead>{t.exams.table.date}</TableHead>
+                        <TableHead>{t.exams.table.duration}</TableHead>
+                        <TableHead>{t.exams.table.totalMarks}</TableHead>
+                        <TableHead>{t.exams.table.status}</TableHead>
+                        <TableHead>{t.exams.table.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1093,9 +1099,9 @@ const Exams = () => {
                             {exam.title}
                           </TableCell>
                           <TableCell>
-                            {exam.date.toLocaleDateString("ar-SA")}
+                            {formatDate(exam.date, language)}
                           </TableCell>
-                          <TableCell>{exam.duration} دقيقة</TableCell>
+                          <TableCell>{exam.duration} {t.exams.cards.minute}</TableCell>
                           <TableCell>{exam.totalMarks}</TableCell>
                           <TableCell>
                             <Badge className={getExamStatusColor(exam)}>
@@ -1109,21 +1115,21 @@ const Exams = () => {
                                 size="sm"
                                 onClick={() => openResultDialog(exam.id)}
                               >
-                                إضافة نتيجة
+                                {t.exams.actions.addResult}
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openEditDialog(exam)}
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => openDeleteDialog(exam)}
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -1140,9 +1146,9 @@ const Exams = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>نتائج الامتحانات</CardTitle>
+                  <CardTitle>{t.exams.results.title}</CardTitle>
                   <CardDescription>
-                    عرض نتائج الطلاب في جميع الامتحانات
+                    {t.exams.results.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1160,7 +1166,7 @@ const Exams = () => {
                               }
                             </h4>
                             <Badge className={getStatusColor(result.status)}>
-                              {result.status}
+                              {getResultStatusLabel(result.status)}
                             </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground mb-2">
@@ -1168,7 +1174,7 @@ const Exams = () => {
                           </div>
                           <div className="flex justify-between items-center">
                             <div className="text-sm">
-                              الدرجة: {result.marks}/{exam?.totalMarks}
+                              {t.exams.results.scoreLabel} {result.marks}/{exam?.totalMarks}
                             </div>
                             <div className="flex space-x-2 space-x-reverse">
                               <Button
@@ -1176,14 +1182,14 @@ const Exams = () => {
                                 size="sm"
                                 onClick={() => openEditResultDialog(result)}
                               >
-                                تعديل
+                                {t.exams.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => openDeleteResultDialog(result)}
                               >
-                                حذف
+                                {t.exams.actions.delete}
                               </Button>
                             </div>
                           </div>
@@ -1196,13 +1202,13 @@ const Exams = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>إحصائيات الأداء</CardTitle>
-                  <CardDescription>نظرة عامة على أداء الطلاب</CardDescription>
+                  <CardTitle>{t.exams.stats.title}</CardTitle>
+                  <CardDescription>{t.exams.stats.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">معدل النجاح</h4>
+                      <h4 className="font-medium mb-2">{t.exams.stats.passRate}</h4>
                       <div className="text-2xl font-bold text-green-600">
                         {filteredResults.length > 0
                           ? Math.round(
@@ -1216,7 +1222,7 @@ const Exams = () => {
                       </div>
                     </div>
                     <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">متوسط الدرجات</h4>
+                      <h4 className="font-medium mb-2">{t.exams.stats.averageScore}</h4>
                       <div className="text-2xl font-bold text-blue-600">
                         {filteredResults.length > 0
                           ? Math.round(
@@ -1230,7 +1236,7 @@ const Exams = () => {
                       </div>
                     </div>
                     <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">إجمالي الامتحانات</h4>
+                      <h4 className="font-medium mb-2">{t.exams.stats.totalExams}</h4>
                       <div className="text-2xl font-bold text-purple-600">
                         {exams.length}
                       </div>
@@ -1247,13 +1253,13 @@ const Exams = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل الامتحان</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الامتحان</DialogDescription>
+            <DialogTitle>{t.exams.editDialog.title}</DialogTitle>
+            <DialogDescription>{t.exams.editDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-type" className="text-right">
-                النوع
+                {t.exams.form.typeLabel}
               </Label>
               <Select
                 value={newExam.type}
@@ -1262,18 +1268,18 @@ const Exams = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر النوع" />
+                  <SelectValue placeholder={t.exams.form.selectType} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="قرآن">قرآن</SelectItem>
-                  <SelectItem value="تجويد">تجويد</SelectItem>
-                  <SelectItem value="تربوي">تربوي</SelectItem>
+                  <SelectItem value="قرآن">{t.exams.examTypes.quran}</SelectItem>
+                  <SelectItem value="تجويد">{t.exams.examTypes.tajweed}</SelectItem>
+                  <SelectItem value="تربوي">{t.exams.examTypes.educational}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-title" className="text-right">
-                العنوان
+                {t.exams.form.titleLabel}
               </Label>
               <Input
                 id="edit-title"
@@ -1286,7 +1292,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-description" className="text-right">
-                الوصف
+                {t.exams.form.descriptionLabel}
               </Label>
               <Textarea
                 id="edit-description"
@@ -1300,7 +1306,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-date" className="text-right">
-                التاريخ
+                {t.exams.form.dateLabel}
               </Label>
               <Input
                 id="edit-date"
@@ -1314,7 +1320,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-duration" className="text-right">
-                المدة (دقائق)
+                {t.exams.form.durationLabel}
               </Label>
               <Input
                 id="edit-duration"
@@ -1331,7 +1337,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-totalMarks" className="text-right">
-                الدرجة الكاملة
+                {t.exams.form.totalMarksLabel}
               </Label>
               <Input
                 id="edit-totalMarks"
@@ -1348,7 +1354,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-passingMarks" className="text-right">
-                درجة النجاح
+                {t.exams.form.passingMarksLabel}
               </Label>
               <Input
                 id="edit-passingMarks"
@@ -1369,9 +1375,9 @@ const Exams = () => {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleEditExam}>حفظ التعديلات</Button>
+            <Button onClick={handleEditExam}>{t.exams.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1380,10 +1386,9 @@ const Exams = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.exams.deleteDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الامتحان "{selectedExam?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {t.exams.deleteDialog.description.replace('{{title}}', selectedExam?.title || '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1391,10 +1396,10 @@ const Exams = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteExam}>
-              حذف
+              {t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1404,13 +1409,13 @@ const Exams = () => {
       <Dialog open={isResultDialogOpen} onOpenChange={setIsResultDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>إضافة نتيجة امتحان</DialogTitle>
-            <DialogDescription>أدخل نتيجة الطالب في الامتحان</DialogDescription>
+            <DialogTitle>{t.exams.resultDialog.title}</DialogTitle>
+            <DialogDescription>{t.exams.resultDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="student" className="text-right">
-                الطالب
+                {t.exams.table.student}
               </Label>
               <Select
                 value={newResult.studentId}
@@ -1419,7 +1424,7 @@ const Exams = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر الطالب" />
+                  <SelectValue placeholder={t.exams.form.selectStudent} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(students).map(([id, name]) => (
@@ -1432,7 +1437,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="marks" className="text-right">
-                الدرجة
+                {t.exams.form.marksLabel}
               </Label>
               <Input
                 id="marks"
@@ -1449,7 +1454,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="notes" className="text-right">
-                ملاحظات
+                {t.exams.form.notesLabel}
               </Label>
               <Textarea
                 id="notes"
@@ -1467,9 +1472,9 @@ const Exams = () => {
               variant="outline"
               onClick={() => setIsResultDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleAddResult}>إضافة نتيجة</Button>
+            <Button onClick={handleAddResult}>{t.exams.actions.addResult}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1478,13 +1483,13 @@ const Exams = () => {
       <Dialog open={isEditResultDialogOpen} onOpenChange={setIsEditResultDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل نتيجة الامتحان</DialogTitle>
-            <DialogDescription>قم بتعديل درجة الطالب</DialogDescription>
+            <DialogTitle>{t.exams.editResultDialog.title}</DialogTitle>
+            <DialogDescription>{t.exams.editResultDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-marks" className="text-right">
-                الدرجة
+                {t.exams.form.marksLabel}
               </Label>
               <Input
                 id="edit-marks"
@@ -1501,7 +1506,7 @@ const Exams = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-notes" className="text-right">
-                ملاحظات
+                {t.exams.form.notesLabel}
               </Label>
               <Textarea
                 id="edit-notes"
@@ -1519,9 +1524,9 @@ const Exams = () => {
               variant="outline"
               onClick={() => setIsEditResultDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleEditResult}>حفظ التعديلات</Button>
+            <Button onClick={handleEditResult}>{t.exams.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1530,9 +1535,9 @@ const Exams = () => {
       <Dialog open={isDeleteResultDialogOpen} onOpenChange={setIsDeleteResultDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد حذف النتيجة</DialogTitle>
+            <DialogTitle>{t.exams.deleteResultDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف هذه النتيجة؟ لا يمكن التراجع عن هذا الإجراء.
+              {t.exams.deleteResultDialog.description}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1540,10 +1545,10 @@ const Exams = () => {
               variant="outline"
               onClick={() => setIsDeleteResultDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteResult}>
-              حذف
+              {t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

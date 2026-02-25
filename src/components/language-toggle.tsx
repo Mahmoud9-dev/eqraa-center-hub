@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function LanguageToggle() {
-  const { language, toggleLanguage } = useLanguage();
+  const { language, toggleLanguage, t } = useLanguage();
 
   return (
     <Button
@@ -12,8 +12,8 @@ export function LanguageToggle() {
       size="icon"
       className="relative touch-target"
       onClick={toggleLanguage}
-      aria-label={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
-      title={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
+      aria-label={language === 'ar' ? t.common.switchToEnglish : t.common.switchToArabic}
+      title={language === 'ar' ? t.common.switchToEnglish : t.common.switchToArabic}
     >
       <span className="text-xs font-bold text-primary">
         {language === 'ar' ? 'EN' : 'AR'}

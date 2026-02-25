@@ -267,8 +267,9 @@ describe("Attendance Records CRUD Operations", () => {
         .from("attendance_records")
         .insert(teacherAttendance);
 
-      expect(result.data!.student_id).toBeNull();
-      expect(result.data!.teacher_id).toBe("teacher-1");
+      const insertedRecord = result.data as { student_id: string | null; teacher_id: string | null } | null;
+      expect(insertedRecord!.student_id).toBeNull();
+      expect(insertedRecord!.teacher_id).toBe("teacher-1");
     });
   });
 

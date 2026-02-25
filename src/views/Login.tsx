@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import { LoginLeftPanel } from '@/components/auth/LoginLeftPanel';
 import { PasswordInput } from '@/components/auth/PasswordInput';
+import { LanguageToggle } from '@/components/language-toggle';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -19,6 +21,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +33,9 @@ export default function Login() {
     });
 
     if (error) {
-      toast.error('خطأ في تسجيل الدخول: ' + error.message);
+      toast.error(`${t.auth.login.error}: ${error.message}`);
     } else {
-      toast.success('تم تسجيل الدخول بنجاح');
+      toast.success(t.auth.login.success);
       router.push('/');
     }
 
@@ -43,6 +46,11 @@ export default function Login() {
     <div className="min-h-screen flex flex-row-reverse">
       {/* Form panel - visually on the left in RTL */}
       <div className="flex-1 lg:w-1/2 flex flex-col bg-background">
+        {/* Language toggle - top end corner */}
+        <div className="flex justify-end p-4">
+          <LanguageToggle />
+        </div>
+
         {/* Mobile logo - visible only on small screens */}
         <div className="lg:hidden flex items-center justify-center gap-3 py-8">
           <div className="p-3 bg-primary/10 rounded-xl">
@@ -50,7 +58,7 @@ export default function Login() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              إقراء
+              {t.home.pageTitle}
             </h1>
           </div>
         </div>
@@ -61,34 +69,34 @@ export default function Login() {
             {/* Header */}
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-bold tracking-tight">
-                مرحباً بعودتك
+                {t.auth.login.welcome}
               </h2>
-              <p className="text-muted-foreground">أدخل بياناتك للوصول إلى حسابك</p>
+              <p className="text-muted-foreground">{t.auth.login.subtitle}</p>
             </div>
 
             {/* Form */}
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email field */}
               <div className="space-y-2">
-                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <Label htmlFor="email">{t.auth.login.emailLabel}</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="example@domain.com"
+                    placeholder={t.auth.login.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     dir="ltr"
-                    className="pl-10 text-left"
+                    className="ps-10 text-start"
                   />
                 </div>
               </div>
 
               {/* Password field */}
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                <Label htmlFor="password">{t.auth.login.passwordLabel}</Label>
                 <PasswordInput
                   id="password"
                   placeholder="••••••••"
@@ -110,7 +118,7 @@ export default function Login() {
                     htmlFor="remember"
                     className="text-sm font-normal cursor-pointer"
                   >
-                    تذكرني
+                    {t.auth.login.rememberMe}
                   </Label>
                 </div>
                 <Button
@@ -118,7 +126,7 @@ export default function Login() {
                   variant="link"
                   className="p-0 h-auto text-sm text-primary"
                 >
-                  نسيت كلمة المرور؟
+                  {t.auth.login.forgotPassword}
                 </Button>
               </div>
 
@@ -129,20 +137,20 @@ export default function Login() {
                 size="lg"
                 disabled={loading}
               >
-                {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+                {loading ? t.auth.login.submitting : t.auth.login.submitButton}
               </Button>
             </form>
 
             {/* Create account link */}
             <div className="text-center text-sm text-muted-foreground">
-              ليس لديك حساب؟{' '}
+              {t.auth.login.noAccount}{' '}
               <Button
                 type="button"
                 variant="link"
                 className="p-0 h-auto text-primary"
                 onClick={() => router.push('/signup')}
               >
-                إنشاء حساب جديد
+                {t.auth.login.signupLink}
               </Button>
             </div>
           </div>

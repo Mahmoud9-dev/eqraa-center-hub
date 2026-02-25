@@ -25,9 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const EducationalIslamicLessons = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
+
+  const sp = t.educational.subPages.islamicLessons;
 
   // State for lessons management
   const [lessons, setLessons] = useState([
@@ -88,8 +92,8 @@ const EducationalIslamicLessons = () => {
       !newLesson.verses
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: sp.toast.validationError,
+        description: sp.toast.validationErrorDescription,
         variant: "destructive",
       });
       return;
@@ -117,8 +121,8 @@ const EducationalIslamicLessons = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الدرس بنجاح",
+      title: sp.toast.addSuccess,
+      description: sp.toast.addSuccessDescription,
     });
   };
 
@@ -129,8 +133,8 @@ const EducationalIslamicLessons = () => {
     setIsDeleteDialogOpen(false);
     setSelectedLesson(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الدرس بنجاح",
+      title: sp.toast.deleteSuccess,
+      description: sp.toast.deleteSuccessDescription,
     });
   };
 
@@ -142,15 +146,14 @@ const EducationalIslamicLessons = () => {
   const handleViewRecording = (lesson: any) => {
     if (lesson.recording === "available") {
       toast({
-        title: "فتح التسجيل",
-        description: "جاري فتح تسجيل الدرس...",
+        title: sp.toast.openRecording,
+        description: sp.toast.openRecordingDescription,
       });
-      // هنا يمكن إضافة رابط الفيديو أو فتح نافذة جديدة
       window.open("#", "_blank");
     } else {
       toast({
-        title: "التسجيل غير متاح",
-        description: "هذا الدرس قيد المعالجة وسيكون متاحاً قريباً",
+        title: sp.toast.recordingUnavailable,
+        description: sp.toast.recordingUnavailableDescription,
         variant: "destructive",
       });
     }
@@ -158,10 +161,9 @@ const EducationalIslamicLessons = () => {
 
   const handleDownloadMaterial = (lesson: any) => {
     toast({
-      title: "تحميل المادة",
-      description: "جاري تحميل مادة الدرس...",
+      title: sp.toast.downloadMaterial,
+      description: sp.toast.downloadMaterialDescription,
     });
-    // هنا يمكن إضافة رابط التحميل
     const link = document.createElement("a");
     link.href = "#";
     link.download = `${lesson.title}.pdf`;
@@ -170,33 +172,33 @@ const EducationalIslamicLessons = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الدروس الشرعية" showBack={true} />
+      <PageHeader title={sp.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-12">
         <div className="mb-8 flex justify-between items-center">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-8 rounded-2xl shadow-[var(--shadow-soft)] flex-1">
-            <h2 className="text-3xl font-bold mb-3">الدروس الشرعية</h2>
+            <h2 className="text-3xl font-bold mb-3">{sp.bannerTitle}</h2>
             <p className="text-lg opacity-90">
-              دروس متخصصة في العقيدة والفقه والسيرة النبوية
+              {sp.bannerSubtitle}
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground mr-4">
-                إضافة درس جديد
+                {sp.addButton}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>إضافة درس شرعي جديد</DialogTitle>
+                <DialogTitle>{sp.dialog.title}</DialogTitle>
                 <DialogDescription>
-                  أدخل بيانات الدرس الجديد في النموذج أدناه
+                  {sp.dialog.description}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="title" className="text-right">
-                    عنوان الدرس
+                    {sp.dialog.itemTitle}
                   </Label>
                   <Input
                     id="title"
@@ -209,7 +211,7 @@ const EducationalIslamicLessons = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="description" className="text-right">
-                    الوصف
+                    {sp.dialog.itemDescription}
                   </Label>
                   <Textarea
                     id="description"
@@ -226,7 +228,7 @@ const EducationalIslamicLessons = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="teacher" className="text-right">
-                    المعلم
+                    {sp.dialog.teacher}
                   </Label>
                   <Input
                     id="teacher"
@@ -239,7 +241,7 @@ const EducationalIslamicLessons = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="duration" className="text-right">
-                    المدة
+                    {sp.dialog.duration}
                   </Label>
                   <Input
                     id="duration"
@@ -247,13 +249,13 @@ const EducationalIslamicLessons = () => {
                     onChange={(e) =>
                       setNewLesson({ ...newLesson, duration: e.target.value })
                     }
-                    placeholder="مثال: 45 دقيقة"
+                    placeholder={sp.dialog.durationPlaceholder}
                     className="col-span-3"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="verses" className="text-right">
-                    الآيات
+                    {sp.dialog.verses}
                   </Label>
                   <Input
                     id="verses"
@@ -261,13 +263,13 @@ const EducationalIslamicLessons = () => {
                     onChange={(e) =>
                       setNewLesson({ ...newLesson, verses: e.target.value })
                     }
-                    placeholder="مثال: البقرة 255-285"
+                    placeholder={sp.dialog.versesPlaceholder}
                     className="col-span-3"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="recording" className="text-right">
-                    التسجيل
+                    {sp.dialog.recording}
                   </Label>
                   <Select
                     value={newLesson.recording}
@@ -276,11 +278,11 @@ const EducationalIslamicLessons = () => {
                     }
                   >
                     <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="اختر حالة التسجيل" />
+                      <SelectValue placeholder={sp.dialog.recordingPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="available">متاح</SelectItem>
-                      <SelectItem value="processing">قيد المعالجة</SelectItem>
+                      <SelectItem value="available">{sp.dialog.recordingAvailable}</SelectItem>
+                      <SelectItem value="processing">{sp.dialog.recordingProcessing}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -290,9 +292,9 @@ const EducationalIslamicLessons = () => {
                   variant="outline"
                   onClick={() => setIsAddDialogOpen(false)}
                 >
-                  إلغاء
+                  {sp.dialog.cancel}
                 </Button>
-                <Button onClick={handleAddLesson}>إضافة الدرس</Button>
+                <Button onClick={handleAddLesson}>{sp.dialog.submit}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -310,8 +312,8 @@ const EducationalIslamicLessons = () => {
                     }
                   >
                     {lesson.recording === "available"
-                      ? "متاح التسجيل"
-                      : "قيد المعالجة"}
+                      ? sp.card.recordingAvailable
+                      : sp.card.recordingProcessing}
                   </Badge>
                 </div>
               </CardHeader>
@@ -322,19 +324,19 @@ const EducationalIslamicLessons = () => {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">المعلم:</span>
+                    <span className="font-medium">{sp.card.teacher}</span>
                     <span>{lesson.teacher}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">التاريخ:</span>
+                    <span className="font-medium">{sp.card.date}</span>
                     <span>{lesson.date}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">المدة:</span>
+                    <span className="font-medium">{sp.card.duration}</span>
                     <span>{lesson.duration}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">الآيات:</span>
+                    <span className="font-medium">{sp.card.verses}</span>
                     <span className="text-primary">{lesson.verses}</span>
                   </div>
                 </div>
@@ -345,21 +347,21 @@ const EducationalIslamicLessons = () => {
                     onClick={() => handleViewRecording(lesson)}
                   >
                     {lesson.recording === "available"
-                      ? "مشاهدة التسجيل"
-                      : "قريباً"}
+                      ? sp.card.watchRecording
+                      : sp.card.comingSoon}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => handleDownloadMaterial(lesson)}
                   >
-                    تحميل المادة
+                    {sp.card.downloadMaterial}
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => openDeleteDialog(lesson)}
                   >
-                    حذف
+                    {sp.card.delete}
                   </Button>
                 </div>
               </CardContent>
@@ -372,10 +374,9 @@ const EducationalIslamicLessons = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{sp.deleteDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الدرس "{selectedLesson?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {sp.deleteDialog.message.replace('{{title}}', selectedLesson?.title ?? '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -383,10 +384,10 @@ const EducationalIslamicLessons = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {sp.deleteDialog.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteLesson}>
-              حذف
+              {sp.deleteDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

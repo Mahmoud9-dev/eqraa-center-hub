@@ -1,8 +1,11 @@
 'use client';
 
 import { Building2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function LoginLeftPanel() {
+  const { t } = useLanguage();
+
   return (
     <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
       {/* Background with Islamic pattern */}
@@ -19,21 +22,21 @@ export function LoginLeftPanel() {
             <Building2 className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-lg font-bold">إقراء</h1>
+            <h1 className="text-lg font-bold">{t.auth.branding.appName}</h1>
           </div>
         </div>
 
         {/* Marketing copy */}
         <div className="max-w-lg">
           <p className="text-2xl xl:text-3xl font-light leading-relaxed">
-            منصة متكاملة لإدارة حلقات تحفيظ القرآن الكريم ومتابعة تقدم الطلاب وتسهيل العملية التعليمية
+            {t.auth.branding.tagline}
           </p>
         </div>
 
         {/* Footer */}
         <div className="flex flex-col gap-1 text-sm text-white/60">
-          <span>© {new Date().getFullYear()} إقراء</span>
-          <span>جميع الحقوق محفوظة</span>
+          <span>{t.auth.branding.copyright.replace('{year}', String(new Date().getFullYear()))}</span>
+          <span>{t.auth.branding.allRightsReserved}</span>
         </div>
       </div>
     </div>

@@ -20,12 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -53,6 +47,8 @@ import {
   Lesson,
   Assignment,
 } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 const Subjects = () => {
   const [activeSubject, setActiveSubject] = useState<Subject>("عقيدة");
@@ -62,6 +58,34 @@ const Subjects = () => {
     useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
+
+  /** Label map for DB Arabic subject name values */
+  const subjectNameLabelMap: Record<string, string> = {
+    'عقيدة': t.subjects.subjectNameLabels.aqeedah,
+    'فقه': t.subjects.subjectNameLabels.fiqh,
+    'سيرة': t.subjects.subjectNameLabels.seerah,
+    'تفسير': t.subjects.subjectNameLabels.tafseer,
+    'حديث': t.subjects.subjectNameLabels.hadith,
+    'تربية': t.subjects.subjectNameLabels.tarbiyah,
+    'لغة عربية': t.subjects.subjectNameLabels.arabic,
+  };
+
+  /** Label map for DB Arabic resource type values */
+  const resourceTypeLabelMap: Record<string, string> = {
+    'فيديو': t.subjects.resourceTypeLabels.video,
+    'صوت': t.subjects.resourceTypeLabels.audio,
+    'PDF': t.subjects.resourceTypeLabels.pdf,
+    'رابط': t.subjects.resourceTypeLabels.link,
+  };
+
+  /** Category display name for lesson type groupings (e.g., "الدروس المرئية") */
+  const lessonCategoryMap: Record<string, string> = {
+    'فيديو': t.subjects.lessonCategories.video,
+    'صوت': t.subjects.lessonCategories.audio,
+    'PDF': t.subjects.lessonCategories.pdf,
+    'رابط': t.subjects.lessonCategories.link,
+  };
 
   // Mock data - will be replaced with actual data from Supabase
   const [subjects, setSubjects] = useState<SubjectData[]>([
@@ -172,15 +196,15 @@ const Subjects = () => {
   const getResourceIcon = (type: ResourceType) => {
     switch (type) {
       case "فيديو":
-        return "🎥";
+        return "\uD83C\uDFA5";
       case "صوت":
-        return "🎵";
+        return "\uD83C\uDFB5";
       case "PDF":
-        return "📄";
+        return "\uD83D\uDCC4";
       case "رابط":
-        return "🔗";
+        return "\uD83D\uDD17";
       default:
-        return "📄";
+        return "\uD83D\uDCC4";
     }
   };
 
@@ -201,13 +225,13 @@ const Subjects = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="المواد الدراسية الشرعية" showBack={true} />
+      <PageHeader title={t.subjects.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📚 المواد الدراسية</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.subjects.heading}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة ومتابعة جميع المواد الدراسية الشرعية والدروس المتاحة
+            {t.subjects.subtitle}
           </p>
 
           <div className="flex justify-between items-center mb-6">
@@ -217,20 +241,20 @@ const Subjects = () => {
             >
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground">
-                  إضافة مادة جديدة
+                  {t.subjects.subjectForm.addSubject}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة مادة جديدة</DialogTitle>
+                  <DialogTitle>{t.subjects.subjectForm.addSubjectTitle}</DialogTitle>
                   <DialogDescription>
-                    أدخل بيانات المادة الجديدة
+                    {t.subjects.subjectForm.addSubjectDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-name" className="text-right">
-                      اسم المادة
+                    <Label htmlFor="subject-name" className="text-end">
+                      {t.subjects.subjectForm.subjectName}
                     </Label>
                     <Select
                       value={newSubject.name}
@@ -239,22 +263,22 @@ const Subjects = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر المادة" />
+                        <SelectValue placeholder={t.subjects.subjectForm.subjectNamePlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="عقيدة">عقيدة</SelectItem>
-                        <SelectItem value="فقه">فقه</SelectItem>
-                        <SelectItem value="سيرة">سيرة</SelectItem>
-                        <SelectItem value="تفسير">تفسير</SelectItem>
-                        <SelectItem value="حديث">حديث</SelectItem>
-                        <SelectItem value="تربية">تربية</SelectItem>
-                        <SelectItem value="لغة عربية">لغة عربية</SelectItem>
+                        <SelectItem value="عقيدة">{subjectNameLabelMap['عقيدة']}</SelectItem>
+                        <SelectItem value="فقه">{subjectNameLabelMap['فقه']}</SelectItem>
+                        <SelectItem value="سيرة">{subjectNameLabelMap['سيرة']}</SelectItem>
+                        <SelectItem value="تفسير">{subjectNameLabelMap['تفسير']}</SelectItem>
+                        <SelectItem value="حديث">{subjectNameLabelMap['حديث']}</SelectItem>
+                        <SelectItem value="تربية">{subjectNameLabelMap['تربية']}</SelectItem>
+                        <SelectItem value="لغة عربية">{subjectNameLabelMap['لغة عربية']}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-description" className="text-right">
-                      الوصف
+                    <Label htmlFor="subject-description" className="text-end">
+                      {t.subjects.subjectForm.description}
                     </Label>
                     <Textarea
                       id="subject-description"
@@ -269,8 +293,8 @@ const Subjects = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-teacher" className="text-right">
-                      المعلم
+                    <Label htmlFor="subject-teacher" className="text-end">
+                      {t.subjects.subjectForm.teacher}
                     </Label>
                     <Select
                       value={newSubject.teacherId}
@@ -279,7 +303,7 @@ const Subjects = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر المعلم" />
+                        <SelectValue placeholder={t.subjects.subjectForm.teacherPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="teacher1">
@@ -296,7 +320,7 @@ const Subjects = () => {
                     variant="outline"
                     onClick={() => setIsAddSubjectDialogOpen(false)}
                   >
-                    إلغاء
+                    {t.subjects.subjectForm.cancel}
                   </Button>
                   <Button
                     onClick={() => {
@@ -318,13 +342,13 @@ const Subjects = () => {
                         });
                         setIsAddSubjectDialogOpen(false);
                         toast({
-                          title: "تم الإضافة",
-                          description: "تم إضافة المادة بنجاح",
+                          title: t.subjects.toast.addSubjectSuccess,
+                          description: t.subjects.toast.addSubjectSuccessDescription,
                         });
                       }
                     }}
                   >
-                    إضافة مادة
+                    {t.subjects.subjectForm.submit}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -337,13 +361,13 @@ const Subjects = () => {
           onValueChange={(value) => setActiveSubject(value as Subject)}
         >
           <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="عقيدة">عقيدة</TabsTrigger>
-            <TabsTrigger value="فقه">فقه</TabsTrigger>
-            <TabsTrigger value="سيرة">سيرة</TabsTrigger>
-            <TabsTrigger value="تفسير">تفسير</TabsTrigger>
-            <TabsTrigger value="حديث">حديث</TabsTrigger>
-            <TabsTrigger value="تربية">تربية</TabsTrigger>
-            <TabsTrigger value="لغة عربية">لغة عربية</TabsTrigger>
+            <TabsTrigger value="عقيدة">{subjectNameLabelMap['عقيدة']}</TabsTrigger>
+            <TabsTrigger value="فقه">{subjectNameLabelMap['فقه']}</TabsTrigger>
+            <TabsTrigger value="سيرة">{subjectNameLabelMap['سيرة']}</TabsTrigger>
+            <TabsTrigger value="تفسير">{subjectNameLabelMap['تفسير']}</TabsTrigger>
+            <TabsTrigger value="حديث">{subjectNameLabelMap['حديث']}</TabsTrigger>
+            <TabsTrigger value="تربية">{subjectNameLabelMap['تربية']}</TabsTrigger>
+            <TabsTrigger value="لغة عربية">{subjectNameLabelMap['لغة عربية']}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeSubject} className="mt-6">
@@ -352,7 +376,7 @@ const Subjects = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      {currentSubject.name}
+                      {subjectNameLabelMap[currentSubject.name] ?? currentSubject.name}
                       <Badge variant="outline">
                         {
                           teachers[
@@ -371,30 +395,30 @@ const Subjects = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        الدروس
+                        {t.subjects.sections.lessons}
                         <Dialog
                           open={isAddLessonDialogOpen}
                           onOpenChange={setIsAddLessonDialogOpen}
                         >
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              إضافة درس
+                              {t.subjects.lessonForm.addLesson}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
-                              <DialogTitle>إضافة درس جديد</DialogTitle>
+                              <DialogTitle>{t.subjects.lessonForm.addLessonTitle}</DialogTitle>
                               <DialogDescription>
-                                أدخل بيانات الدرس الجديد
+                                {t.subjects.lessonForm.addLessonDescription}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="lesson-title"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  عنوان الدرس
+                                  {t.subjects.lessonForm.lessonTitle}
                                 </Label>
                                 <Input
                                   id="lesson-title"
@@ -411,9 +435,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="lesson-description"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  الوصف
+                                  {t.subjects.lessonForm.description}
                                 </Label>
                                 <Textarea
                                   id="lesson-description"
@@ -430,9 +454,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="lesson-type"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  نوع المحتوى
+                                  {t.subjects.lessonForm.contentType}
                                 </Label>
                                 <Select
                                   value={newLesson.type}
@@ -444,22 +468,22 @@ const Subjects = () => {
                                   }
                                 >
                                   <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="اختر النوع" />
+                                    <SelectValue placeholder={t.subjects.lessonForm.contentTypePlaceholder} />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="فيديو">فيديو</SelectItem>
-                                    <SelectItem value="صوت">صوت</SelectItem>
-                                    <SelectItem value="PDF">PDF</SelectItem>
-                                    <SelectItem value="رابط">رابط</SelectItem>
+                                    <SelectItem value="فيديو">{resourceTypeLabelMap['فيديو']}</SelectItem>
+                                    <SelectItem value="صوت">{resourceTypeLabelMap['صوت']}</SelectItem>
+                                    <SelectItem value="PDF">{resourceTypeLabelMap['PDF']}</SelectItem>
+                                    <SelectItem value="رابط">{resourceTypeLabelMap['رابط']}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="lesson-url"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  رابط المحتوى
+                                  {t.subjects.lessonForm.contentUrl}
                                 </Label>
                                 <Input
                                   id="lesson-url"
@@ -476,9 +500,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="lesson-order"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  الترتيب
+                                  {t.subjects.lessonForm.order}
                                 </Label>
                                 <Input
                                   id="lesson-order"
@@ -499,7 +523,7 @@ const Subjects = () => {
                                 variant="outline"
                                 onClick={() => setIsAddLessonDialogOpen(false)}
                               >
-                                إلغاء
+                                {t.subjects.lessonForm.cancel}
                               </Button>
                               <Button
                                 onClick={() => {
@@ -526,24 +550,24 @@ const Subjects = () => {
                                     });
                                     setIsAddLessonDialogOpen(false);
                                     toast({
-                                      title: "تم الإضافة",
-                                      description: "تم إضافة الدرس بنجاح",
+                                      title: t.subjects.toast.addLessonSuccess,
+                                      description: t.subjects.toast.addLessonSuccessDescription,
                                     });
                                   }
                                 }}
                               >
-                                إضافة درس
+                                {t.subjects.lessonForm.submit}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       </CardTitle>
                       <CardDescription>
-                        جميع دروس المادة المتاحة
+                        {t.subjects.sections.lessonsDescription}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {/* تصنيف الدروس حسب النوع */}
+                      {/* Lessons grouped by type */}
                       <div className="space-y-6">
                         {["فيديو", "صوت", "PDF", "رابط"].map((type) => {
                           const filteredLessons = currentLessons.filter(
@@ -559,21 +583,15 @@ const Subjects = () => {
                                   {getResourceIcon(type as ResourceType)}
                                 </span>
                                 <h4 className="text-lg font-semibold">
-                                  الدروس{" "}
-                                  {type === "فيديو"
-                                    ? "المرئية"
-                                    : type === "صوت"
-                                    ? "الصوتية"
-                                    : type === "PDF"
-                                    ? "المكتوبة"
-                                    : "الروابط"}
+                                  {t.subjects.sections.lessons}{" "}
+                                  {lessonCategoryMap[type]}
                                 </h4>
                                 <Badge
                                   className={getResourceColor(
                                     type as ResourceType
                                   )}
                                 >
-                                  {filteredLessons.length} درس
+                                  {filteredLessons.length} {t.subjects.lessonCount}
                                 </Badge>
                               </div>
 
@@ -592,7 +610,7 @@ const Subjects = () => {
                                           variant="outline"
                                           className="text-xs"
                                         >
-                                          الترتيب: {lesson.order}
+                                          {t.subjects.table.order}: {lesson.order}
                                         </Badge>
                                       </div>
                                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
@@ -605,9 +623,9 @@ const Subjects = () => {
                                             size="sm"
                                             onClick={() => {
                                               toast({
-                                                title: "عرض الدرس",
+                                                title: t.subjects.toast.viewLesson,
                                                 description:
-                                                  "جاري فتح الدرس...",
+                                                  t.subjects.toast.viewLessonDescription,
                                               });
                                               window.open(
                                                 lesson.contentUrl,
@@ -615,30 +633,29 @@ const Subjects = () => {
                                               );
                                             }}
                                           >
-                                            عرض
+                                            {t.subjects.actions.view}
                                           </Button>
                                           <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => {
                                               toast({
-                                                title: "تعديل الدرس",
+                                                title: t.subjects.toast.editLesson,
                                                 description:
-                                                  "جاري فتح نافذة التعديل...",
+                                                  t.subjects.toast.editLessonDescription,
                                               });
-                                              // هنا يمكن إضافة منطق التعديل
                                             }}
                                           >
-                                            تعديل
+                                            {t.subjects.actions.edit}
                                           </Button>
                                           <Button
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => {
                                               toast({
-                                                title: "حذف الدرس",
+                                                title: t.subjects.toast.deleteLesson,
                                                 description:
-                                                  "جاري حذف الدرس...",
+                                                  t.subjects.toast.deleteLessonDescription,
                                               });
                                               setLessons(
                                                 lessons.filter(
@@ -646,13 +663,13 @@ const Subjects = () => {
                                                 )
                                               );
                                               toast({
-                                                title: "تم الحذف",
+                                                title: t.subjects.toast.deleteLessonSuccess,
                                                 description:
-                                                  "تم حذف الدرس بنجاح",
+                                                  t.subjects.toast.deleteLessonSuccessDescription,
                                               });
                                             }}
                                           >
-                                            حذف
+                                            {t.subjects.actions.delete}
                                           </Button>
                                         </div>
                                         <Badge
@@ -660,7 +677,7 @@ const Subjects = () => {
                                             lesson.type
                                           )}
                                         >
-                                          {lesson.type}
+                                          {resourceTypeLabelMap[lesson.type] ?? lesson.type}
                                         </Badge>
                                       </div>
                                     </CardContent>
@@ -674,7 +691,7 @@ const Subjects = () => {
                         {currentLessons.length === 0 && (
                           <div className="text-center py-8">
                             <p className="text-muted-foreground">
-                              لا توجد دروس متاحة لهذه المادة
+                              {t.subjects.empty.noLessons}
                             </p>
                           </div>
                         )}
@@ -685,30 +702,30 @@ const Subjects = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        الواجبات والاختبارات
+                        {t.subjects.sections.assignments}
                         <Dialog
                           open={isAddAssignmentDialogOpen}
                           onOpenChange={setIsAddAssignmentDialogOpen}
                         >
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              إضافة واجب
+                              {t.subjects.assignmentForm.addAssignment}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
-                              <DialogTitle>إضافة واجب جديد</DialogTitle>
+                              <DialogTitle>{t.subjects.assignmentForm.addAssignmentTitle}</DialogTitle>
                               <DialogDescription>
-                                أدخل بيانات الواجب الجديد
+                                {t.subjects.assignmentForm.addAssignmentDescription}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="assignment-title"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  عنوان الواجب
+                                  {t.subjects.assignmentForm.assignmentTitle}
                                 </Label>
                                 <Input
                                   id="assignment-title"
@@ -725,9 +742,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="assignment-description"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  الوصف
+                                  {t.subjects.assignmentForm.description}
                                 </Label>
                                 <Textarea
                                   id="assignment-description"
@@ -744,9 +761,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="assignment-dueDate"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  تاريخ التسليم
+                                  {t.subjects.assignmentForm.dueDate}
                                 </Label>
                                 <Input
                                   id="assignment-dueDate"
@@ -768,9 +785,9 @@ const Subjects = () => {
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label
                                   htmlFor="assignment-marks"
-                                  className="text-right"
+                                  className="text-end"
                                 >
-                                  الدرجة الكاملة
+                                  {t.subjects.assignmentForm.totalMarks}
                                 </Label>
                                 <Input
                                   id="assignment-marks"
@@ -794,7 +811,7 @@ const Subjects = () => {
                                   setIsAddAssignmentDialogOpen(false)
                                 }
                               >
-                                إلغاء
+                                {t.subjects.assignmentForm.cancel}
                               </Button>
                               <Button
                                 onClick={() => {
@@ -825,27 +842,27 @@ const Subjects = () => {
                                     });
                                     setIsAddAssignmentDialogOpen(false);
                                     toast({
-                                      title: "تم الإضافة",
-                                      description: "تم إضافة الواجب بنجاح",
+                                      title: t.subjects.toast.addAssignmentSuccess,
+                                      description: t.subjects.toast.addAssignmentSuccessDescription,
                                     });
                                   }
                                 }}
                               >
-                                إضافة واجب
+                                {t.subjects.assignmentForm.submit}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       </CardTitle>
-                      <CardDescription>واجبات واختبارات المادة</CardDescription>
+                      <CardDescription>{t.subjects.sections.assignmentsDescription}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>العنوان</TableHead>
-                            <TableHead>تاريخ التسليم</TableHead>
-                            <TableHead>الإجراءات</TableHead>
+                            <TableHead>{t.subjects.table.title}</TableHead>
+                            <TableHead>{t.subjects.table.dueDate}</TableHead>
+                            <TableHead>{t.subjects.table.actions}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -855,7 +872,7 @@ const Subjects = () => {
                                 {assignment.title}
                               </TableCell>
                               <TableCell>
-                                {assignment.dueDate.toLocaleDateString("ar-SA")}
+                                {formatDate(assignment.dueDate, language)}
                               </TableCell>
                               <TableCell>
                                 <div className="flex space-x-2 space-x-reverse">
@@ -864,35 +881,34 @@ const Subjects = () => {
                                     size="sm"
                                     onClick={() => {
                                       toast({
-                                        title: "عرض الواجب",
-                                        description: "جاري فتح الواجب...",
+                                        title: t.subjects.toast.viewAssignment,
+                                        description: t.subjects.toast.viewAssignmentDescription,
                                       });
-                                      // هنا يمكن إضافة منطق العرض
                                     }}
                                   >
-                                    عرض
+                                    {t.subjects.actions.view}
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
                                       toast({
-                                        title: "تعديل الواجب",
+                                        title: t.subjects.toast.editAssignment,
                                         description:
-                                          "جاري فتح نافذة التعديل...",
+                                          t.subjects.toast.editAssignmentDescription,
                                       });
-                                      // هنا يمكن إضافة منطق التعديل
                                     }}
                                   >
-                                    تعديل
+                                    {t.subjects.actions.edit}
                                   </Button>
                                   <Button
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => {
                                       toast({
-                                        title: "حذف الواجب",
-                                        description: "جاري حذف الواجب...",
+                                        title: t.subjects.toast.deleteAssignment,
+                                        description:
+                                          t.subjects.toast.deleteAssignmentDescription,
                                       });
                                       setAssignments(
                                         assignments.filter(
@@ -900,12 +916,13 @@ const Subjects = () => {
                                         )
                                       );
                                       toast({
-                                        title: "تم الحذف",
-                                        description: "تم حذف الواجب بنجاح",
+                                        title: t.subjects.toast.deleteAssignmentSuccess,
+                                        description:
+                                          t.subjects.toast.deleteAssignmentSuccessDescription,
                                       });
                                     }}
                                   >
-                                    حذف
+                                    {t.subjects.actions.delete}
                                   </Button>
                                 </div>
                               </TableCell>
@@ -919,27 +936,26 @@ const Subjects = () => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>أسئلة موجهة للشيخ</CardTitle>
+                    <CardTitle>{t.subjects.sections.questions}</CardTitle>
                     <CardDescription>
-                      طرح الأسئلة والمشاكل على المدرس
+                      {t.subjects.sections.questionsDescription}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-8">
                       <p className="text-muted-foreground mb-4">
-                        لا توجد أسئلة حالياً
+                        {t.subjects.empty.noQuestions}
                       </p>
                       <Button
                         variant="outline"
                         onClick={() => {
                           toast({
-                            title: "طرح سؤال",
-                            description: "جاري فتح نافذة طرح السؤال...",
+                            title: t.subjects.toast.askQuestion,
+                            description: t.subjects.toast.askQuestionDescription,
                           });
-                          // هنا يمكن إضافة منطق طرح السؤال
                         }}
                       >
-                        طرح سؤال جديد
+                        {t.subjects.actions.askNewQuestion}
                       </Button>
                     </div>
                   </CardContent>

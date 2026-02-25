@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Suggestion {
   id: string;
@@ -29,6 +30,7 @@ const Suggestions = () => {
   const [priority, setPriority] = useState<"عالي" | "متوسط" | "منخفض">("متوسط");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const loadSuggestions = async () => {
     const { data, error } = await getSupabase()
@@ -37,13 +39,14 @@ const Suggestions = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({ title: "خطأ في تحميل المقترحات", variant: "destructive" });
+      toast({ title: t.suggestions.toast.loadError, variant: "destructive" });
     } else {
       setSuggestions((data as Suggestion[]) || []);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSuggestions();
   }, []);
 
@@ -63,9 +66,9 @@ const Suggestions = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة المقترح", variant: "destructive" });
+      toast({ title: t.suggestions.toast.addError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة المقترح بنجاح" });
+      toast({ title: t.suggestions.toast.addSuccess });
       setTitle("");
       setDescription("");
       setSuggestedBy("");
@@ -82,67 +85,67 @@ const Suggestions = () => {
       .eq("id", id);
 
     if (error) {
-      toast({ title: "خطأ في تحديث الحالة", variant: "destructive" });
+      toast({ title: t.suggestions.toast.updateStatusError, variant: "destructive" });
     } else {
-      toast({ title: "تم تحديث الحالة بنجاح" });
+      toast({ title: t.suggestions.toast.updateStatusSuccess });
       loadSuggestions();
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="المقترحات والمشكلات" />
+      <PageHeader title={t.suggestions.pageTitle} />
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form Section */}
           <Card className="border-primary/20">
             <CardHeader>
-              <CardTitle className="text-2xl text-primary">إضافة مقترح جديد</CardTitle>
+              <CardTitle className="text-2xl text-primary">{t.suggestions.form.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">عنوان المقترح</label>
+                  <label className="block text-sm font-medium mb-2">{t.suggestions.form.suggestionTitle}</label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="أدخل عنوان المقترح"
+                    placeholder={t.suggestions.form.titlePlaceholder}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">التفاصيل</label>
+                  <label className="block text-sm font-medium mb-2">{t.suggestions.form.details}</label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="اشرح المقترح أو المشكلة بالتفصيل"
+                    placeholder={t.suggestions.form.detailsPlaceholder}
                     rows={4}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">مقدم المقترح (اختياري)</label>
+                  <label className="block text-sm font-medium mb-2">{t.suggestions.form.submitter}</label>
                   <Input
                     value={suggestedBy}
                     onChange={(e) => setSuggestedBy(e.target.value)}
-                    placeholder="اسم مقدم المقترح"
+                    placeholder={t.suggestions.form.submitterPlaceholder}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">الأولوية</label>
-                  <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
+                  <label className="block text-sm font-medium mb-2">{t.suggestions.form.priority}</label>
+                  <Select value={priority} onValueChange={(v) => setPriority(v as "عالي" | "متوسط" | "منخفض")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="عالي">عالي</SelectItem>
-                      <SelectItem value="متوسط">متوسط</SelectItem>
-                      <SelectItem value="منخفض">منخفض</SelectItem>
+                      <SelectItem value="عالي">{t.suggestions.priorityLabels['عالي']}</SelectItem>
+                      <SelectItem value="متوسط">{t.suggestions.priorityLabels['متوسط']}</SelectItem>
+                      <SelectItem value="منخفض">{t.suggestions.priorityLabels['منخفض']}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "جاري الإضافة..." : "إضافة المقترح"}
+                  {isLoading ? t.suggestions.form.submitting : t.suggestions.form.submit}
                 </Button>
               </form>
             </CardContent>
@@ -150,11 +153,11 @@ const Suggestions = () => {
 
           {/* List Section */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-primary mb-4">المقترحات المسجلة</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">{t.suggestions.list.title}</h3>
             {suggestions.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  لا توجد مقترحات بعد. ابدأ بإضافة أول مقترح!
+                  {t.suggestions.list.empty}
                 </CardContent>
               </Card>
             ) : (
@@ -164,13 +167,13 @@ const Suggestions = () => {
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="font-bold text-lg">{suggestion.title}</h4>
                       <Badge variant={suggestion.priority === "عالي" ? "destructive" : "secondary"}>
-                        {suggestion.priority}
+                        {suggestion.priority ? t.suggestions.priorityLabels[suggestion.priority] : ''}
                       </Badge>
                     </div>
                     <p className="text-muted-foreground mb-4">{suggestion.description}</p>
                     {suggestion.suggested_by && (
                       <p className="text-sm text-muted-foreground mb-2">
-                        مقدم من: {suggestion.suggested_by}
+                        {t.suggestions.list.submittedBy} {suggestion.suggested_by}
                       </p>
                     )}
                     <div className="flex gap-2 mt-4">
@@ -179,14 +182,14 @@ const Suggestions = () => {
                         variant={suggestion.status === "تم" ? "default" : "outline"}
                         onClick={() => updateStatus(suggestion.id, "تم")}
                       >
-                        تم
+                        {t.suggestions.statusLabels['تم']}
                       </Button>
                       <Button
                         size="sm"
                         variant={suggestion.status === "لم يتم" ? "default" : "outline"}
                         onClick={() => updateStatus(suggestion.id, "لم يتم")}
                       >
-                        لم يتم
+                        {t.suggestions.statusLabels['لم يتم']}
                       </Button>
                     </div>
                   </CardContent>

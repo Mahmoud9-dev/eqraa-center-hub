@@ -42,6 +42,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { Announcement, NotificationType, UserRole } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate, formatDateTime } from "@/lib/i18n";
 
 const Announcements = () => {
   const [activeTab, setActiveTab] = useState("announcements");
@@ -51,6 +53,24 @@ const Announcements = () => {
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<Announcement | null>(null);
   const { toast } = useToast();
+  const { t, tFunc, language } = useLanguage();
+
+  // Label map for DB notification type values
+  const notificationTypeLabels: Record<NotificationType, string> = {
+    "إعلان عام": t.announcements.typeLabels.generalAnnouncement,
+    "تنبيه": t.announcements.typeLabels.alert,
+    "موعد حلقة": t.announcements.typeLabels.circleSchedule,
+    "موعد اختبار": t.announcements.typeLabels.examSchedule,
+  };
+
+  // Label map for role names
+  const roleLabels: Record<UserRole, string> = {
+    admin: t.announcements.audience.admin,
+    teacher: t.announcements.audience.teacher,
+    student: t.announcements.audience.student,
+    parent: t.announcements.audience.parent,
+    viewer: t.announcements.audience.viewer,
+  };
 
   // Mock data - will be replaced with actual data from Supabase
   const [announcements, setAnnouncements] = useState<Announcement[]>([
@@ -129,20 +149,11 @@ const Announcements = () => {
   };
 
   const getRoleName = (role: UserRole) => {
-    switch (role) {
-      case "admin":
-        return "الإدارة";
-      case "teacher":
-        return "المدرسون";
-      case "student":
-        return "الطلاب";
-      case "parent":
-        return "أولياء الأمور";
-      case "viewer":
-        return "المشاهدون";
-      default:
-        return role;
-    }
+    return roleLabels[role] || role;
+  };
+
+  const getTypeLabel = (type: NotificationType) => {
+    return notificationTypeLabels[type] || type;
   };
 
   // CRUD functions
@@ -153,8 +164,8 @@ const Announcements = () => {
       !newAnnouncement.type
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.announcements.toast.error,
+        description: t.announcements.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -165,8 +176,8 @@ const Announcements = () => {
       newAnnouncement.targetAudience.length === 0
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى اختيار الجمهور المستهدف",
+        title: t.announcements.toast.error,
+        description: t.announcements.toast.selectAudience,
         variant: "destructive",
       });
       return;
@@ -195,8 +206,8 @@ const Announcements = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الإعلان بنجاح",
+      title: t.announcements.toast.added,
+      description: t.announcements.toast.addedDesc,
     });
   };
 
@@ -208,8 +219,8 @@ const Announcements = () => {
       !newAnnouncement.type
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.announcements.toast.error,
+        description: t.announcements.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -220,8 +231,8 @@ const Announcements = () => {
       newAnnouncement.targetAudience.length === 0
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى اختيار الجمهور المستهدف",
+        title: t.announcements.toast.error,
+        description: t.announcements.toast.selectAudience,
         variant: "destructive",
       });
       return;
@@ -261,8 +272,8 @@ const Announcements = () => {
       scheduledFor: undefined,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل الإعلان بنجاح",
+      title: t.announcements.toast.edited,
+      description: t.announcements.toast.editedDesc,
     });
   };
 
@@ -277,8 +288,8 @@ const Announcements = () => {
     setIsDeleteDialogOpen(false);
     setSelectedAnnouncement(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الإعلان بنجاح",
+      title: t.announcements.toast.deleted,
+      description: t.announcements.toast.deletedDesc,
     });
   };
 
@@ -317,48 +328,48 @@ const Announcements = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الإعلانات والتنبيهات" showBack={true} />
+      <PageHeader title={t.announcements.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📢 الإعلانات والتنبيهات</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.announcements.sectionTitle}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة الإعلانات العامة والتنبيهات والمواعيد الهامة
+            {t.announcements.sectionDescription}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-              <Input placeholder="البحث عن إعلان..." className="w-full sm:w-64" />
+              <Input placeholder={t.announcements.filter.searchPlaceholder} className="w-full sm:w-64" />
               <Select>
                 <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="جميع الأنواع" />
+                  <SelectValue placeholder={t.announcements.filter.allTypes} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الأنواع</SelectItem>
-                  <SelectItem value="إعلان عام">إعلان عام</SelectItem>
-                  <SelectItem value="تنبيه">تنبيه</SelectItem>
-                  <SelectItem value="موعد حلقة">موعد حلقة</SelectItem>
-                  <SelectItem value="موعد اختبار">موعد اختبار</SelectItem>
+                  <SelectItem value="all">{t.announcements.filter.allTypes}</SelectItem>
+                  <SelectItem value="إعلان عام">{t.announcements.typeLabels.generalAnnouncement}</SelectItem>
+                  <SelectItem value="تنبيه">{t.announcements.typeLabels.alert}</SelectItem>
+                  <SelectItem value="موعد حلقة">{t.announcements.typeLabels.circleSchedule}</SelectItem>
+                  <SelectItem value="موعد اختبار">{t.announcements.typeLabels.examSchedule}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground">
-                  إنشاء إعلان جديد
+                  {t.announcements.actions.createNew}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>إنشاء إعلان جديد</DialogTitle>
+                  <DialogTitle>{t.announcements.dialog.createTitle}</DialogTitle>
                   <DialogDescription>
-                    أدخل بيانات الإعلان الجديد
+                    {t.announcements.dialog.createDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">
-                      العنوان
+                    <Label htmlFor="title" className="text-end">
+                      {t.announcements.form.titleLabel}
                     </Label>
                     <Input
                       id="title"
@@ -373,8 +384,8 @@ const Announcements = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="type" className="text-right">
-                      النوع
+                    <Label htmlFor="type" className="text-end">
+                      {t.announcements.form.typeLabel}
                     </Label>
                     <Select
                       value={newAnnouncement.type}
@@ -386,19 +397,19 @@ const Announcements = () => {
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر النوع" />
+                        <SelectValue placeholder={t.announcements.form.selectType} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="إعلان عام">إعلان عام</SelectItem>
-                        <SelectItem value="تنبيه">تنبيه</SelectItem>
-                        <SelectItem value="موعد حلقة">موعد حلقة</SelectItem>
-                        <SelectItem value="موعد اختبار">موعد اختبار</SelectItem>
+                        <SelectItem value="إعلان عام">{t.announcements.typeLabels.generalAnnouncement}</SelectItem>
+                        <SelectItem value="تنبيه">{t.announcements.typeLabels.alert}</SelectItem>
+                        <SelectItem value="موعد حلقة">{t.announcements.typeLabels.circleSchedule}</SelectItem>
+                        <SelectItem value="موعد اختبار">{t.announcements.typeLabels.examSchedule}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="content" className="text-right">
-                      المحتوى
+                    <Label htmlFor="content" className="text-end">
+                      {t.announcements.form.contentLabel}
                     </Label>
                     <Textarea
                       id="content"
@@ -414,8 +425,8 @@ const Announcements = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="scheduledFor" className="text-right">
-                      موعد النشر
+                    <Label htmlFor="scheduledFor" className="text-end">
+                      {t.announcements.form.publishDate}
                     </Label>
                     <Input
                       id="scheduledFor"
@@ -435,7 +446,7 @@ const Announcements = () => {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">الجمهور المستهدف</Label>
+                    <Label className="text-end pt-2">{t.announcements.form.targetAudience}</Label>
                     <div className="col-span-3 space-y-2">
                       {(
                         [
@@ -471,8 +482,8 @@ const Announcements = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="isActive" className="text-right">
-                      الحالة
+                    <Label htmlFor="isActive" className="text-end">
+                      {t.announcements.form.statusLabel}
                     </Label>
                     <div className="col-span-3 flex items-center space-x-2 space-x-reverse">
                       <Checkbox
@@ -486,7 +497,7 @@ const Announcements = () => {
                         }
                       />
                       <Label htmlFor="isActive" className="text-sm">
-                        نشط
+                        {t.announcements.status.active}
                       </Label>
                     </div>
                   </div>
@@ -496,9 +507,9 @@ const Announcements = () => {
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
                   >
-                    إلغاء
+                    {t.common.cancel}
                   </Button>
-                  <Button onClick={handleAddAnnouncement}>إنشاء إعلان</Button>
+                  <Button onClick={handleAddAnnouncement}>{t.announcements.actions.create}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -507,17 +518,17 @@ const Announcements = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="announcements">الإعلانات</TabsTrigger>
-            <TabsTrigger value="notifications">التنبيهات</TabsTrigger>
-            <TabsTrigger value="scheduled">المجدولة</TabsTrigger>
+            <TabsTrigger value="announcements">{t.announcements.tabs.announcements}</TabsTrigger>
+            <TabsTrigger value="notifications">{t.announcements.tabs.notifications}</TabsTrigger>
+            <TabsTrigger value="scheduled">{t.announcements.tabs.scheduled}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="announcements" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>قائمة الإعلانات</CardTitle>
+                <CardTitle>{t.announcements.cards.announcementsList}</CardTitle>
                 <CardDescription>
-                  عرض وإدارة جميع الإعلانات والتنبيهات
+                  {t.announcements.cards.announcementsListDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -528,7 +539,7 @@ const Announcements = () => {
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="font-medium text-sm leading-tight">{announcement.title}</h4>
                         <Badge className={`${getTypeColor(announcement.type)} text-xs shrink-0`}>
-                          {announcement.type}
+                          {getTypeLabel(announcement.type)}
                         </Badge>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -539,7 +550,7 @@ const Announcements = () => {
                         ))}
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{announcement.createdAt.toLocaleDateString("ar-SA")}</span>
+                        <span>{formatDate(announcement.createdAt, language)}</span>
                         <Badge
                           className={
                             announcement.isActive
@@ -547,12 +558,12 @@ const Announcements = () => {
                               : "bg-red-100 text-red-800"
                           }
                         >
-                          {announcement.isActive ? "نشط" : "غير نشط"}
+                          {announcement.isActive ? t.announcements.status.active : t.announcements.status.inactive}
                         </Badge>
                       </div>
                       <div className="flex gap-2 pt-2 border-t">
                         <Button variant="outline" size="sm" className="flex-1 text-xs">
-                          عرض
+                          {t.common.view}
                         </Button>
                         <Button
                           variant="outline"
@@ -560,7 +571,7 @@ const Announcements = () => {
                           className="flex-1 text-xs"
                           onClick={() => openEditDialog(announcement)}
                         >
-                          تعديل
+                          {t.common.edit}
                         </Button>
                         <Button
                           variant="destructive"
@@ -568,7 +579,7 @@ const Announcements = () => {
                           className="flex-1 text-xs"
                           onClick={() => openDeleteDialog(announcement)}
                         >
-                          حذف
+                          {t.common.delete}
                         </Button>
                       </div>
                     </div>
@@ -580,12 +591,12 @@ const Announcements = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>العنوان</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead className="hidden lg:table-cell">الجمهور المستهدف</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead className="hidden lg:table-cell">تاريخ الإنشاء</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{t.announcements.table.title}</TableHead>
+                        <TableHead>{t.announcements.table.type}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t.announcements.table.targetAudience}</TableHead>
+                        <TableHead>{t.announcements.table.status}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t.announcements.table.createdAt}</TableHead>
+                        <TableHead>{t.announcements.table.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -596,7 +607,7 @@ const Announcements = () => {
                           </TableCell>
                           <TableCell>
                             <Badge className={getTypeColor(announcement.type)}>
-                              {announcement.type}
+                              {getTypeLabel(announcement.type)}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell">
@@ -620,16 +631,16 @@ const Announcements = () => {
                                   : "bg-red-100 text-red-800"
                               }
                             >
-                              {announcement.isActive ? "نشط" : "غير نشط"}
+                              {announcement.isActive ? t.announcements.status.active : t.announcements.status.inactive}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell">
-                            {announcement.createdAt.toLocaleDateString("ar-SA")}
+                            {formatDate(announcement.createdAt, language)}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               <Button variant="outline" size="sm" className="text-xs px-2">
-                                عرض
+                                {t.common.view}
                               </Button>
                               <Button
                                 variant="outline"
@@ -637,7 +648,7 @@ const Announcements = () => {
                                 className="text-xs px-2"
                                 onClick={() => openEditDialog(announcement)}
                               >
-                                تعديل
+                                {t.common.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -645,7 +656,7 @@ const Announcements = () => {
                                 className="text-xs px-2"
                                 onClick={() => openDeleteDialog(announcement)}
                               >
-                                حذف
+                                {t.common.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -662,51 +673,51 @@ const Announcements = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>التنبيهات الفورية</CardTitle>
+                  <CardTitle>{t.announcements.cards.instantNotifications}</CardTitle>
                   <CardDescription>
-                    إرسال تنبيهات فورية للمستخدمين
+                    {t.announcements.cards.instantNotificationsDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <Label className="block text-sm font-medium mb-2">
-                        نوع التنبيه
+                        {t.announcements.notificationForm.notificationType}
                       </Label>
                       <Select>
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر نوع التنبيه..." />
+                          <SelectValue placeholder={t.announcements.notificationForm.selectNotificationType} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="general">تنبيه عام</SelectItem>
-                          <SelectItem value="urgent">تنبيه عاجل</SelectItem>
-                          <SelectItem value="reminder">تذكير</SelectItem>
+                          <SelectItem value="general">{t.announcements.notificationForm.generalNotification}</SelectItem>
+                          <SelectItem value="urgent">{t.announcements.notificationForm.urgentNotification}</SelectItem>
+                          <SelectItem value="reminder">{t.announcements.notificationForm.reminder}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label className="block text-sm font-medium mb-2">
-                        الرسالة
+                        {t.announcements.notificationForm.message}
                       </Label>
-                      <Textarea placeholder="اكتب رسالة التنبيه..." rows={4} />
+                      <Textarea placeholder={t.announcements.notificationForm.messagePlaceholder} rows={4} />
                     </div>
                     <div>
                       <Label className="block text-sm font-medium mb-2">
-                        المستهدفون
+                        {t.announcements.notificationForm.recipients}
                       </Label>
                       <Select>
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر المستهدفين..." />
+                          <SelectValue placeholder={t.announcements.notificationForm.selectRecipients} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">الجميع</SelectItem>
-                          <SelectItem value="students">الطلاب فقط</SelectItem>
-                          <SelectItem value="teachers">المدرسون فقط</SelectItem>
+                          <SelectItem value="all">{t.announcements.notificationForm.allRecipients}</SelectItem>
+                          <SelectItem value="students">{t.announcements.notificationForm.studentsOnly}</SelectItem>
+                          <SelectItem value="teachers">{t.announcements.notificationForm.teachersOnly}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <Button className="w-full bg-primary text-primary-foreground">
-                      إرسال التنبيه
+                      {t.announcements.actions.sendNotification}
                     </Button>
                   </div>
                 </CardContent>
@@ -714,9 +725,9 @@ const Announcements = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>التنبيهات المجدولة</CardTitle>
+                  <CardTitle>{t.announcements.cards.scheduledNotifications}</CardTitle>
                   <CardDescription>
-                    التنبيهات المجدولة للإرسال المستقبلي
+                    {t.announcements.cards.scheduledNotificationsDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -735,15 +746,15 @@ const Announcements = () => {
                               {announcement.title}
                             </h4>
                             <Badge className={getTypeColor(announcement.type)}>
-                              {announcement.type}
+                              {getTypeLabel(announcement.type)}
                             </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground mb-2">
                             {announcement.content}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            موعد الإرسال:{" "}
-                            {announcement.scheduledFor?.toLocaleString("ar-SA")}
+                            {t.announcements.scheduled.sendDate}{" "}
+                            {announcement.scheduledFor && formatDateTime(announcement.scheduledFor, language)}
                           </div>
                         </div>
                       ))}
@@ -756,9 +767,9 @@ const Announcements = () => {
           <TabsContent value="scheduled" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>الإعلانات المجدولة</CardTitle>
+                <CardTitle>{t.announcements.cards.scheduledAnnouncements}</CardTitle>
                 <CardDescription>
-                  الإعلانات المجدولة للنشر المستقبلي
+                  {t.announcements.cards.scheduledAnnouncementsDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -775,7 +786,7 @@ const Announcements = () => {
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-medium">{announcement.title}</h4>
                           <Badge className={getTypeColor(announcement.type)}>
-                            {announcement.type}
+                            {getTypeLabel(announcement.type)}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground mb-2">
@@ -783,15 +794,15 @@ const Announcements = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-sm text-muted-foreground">
-                            موعد النشر:{" "}
-                            {announcement.scheduledFor?.toLocaleString("ar-SA")}
+                            {t.announcements.scheduled.publishDate}{" "}
+                            {announcement.scheduledFor && formatDateTime(announcement.scheduledFor, language)}
                           </div>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="outline" size="sm">
-                              تعديل
+                              {t.common.edit}
                             </Button>
                             <Button variant="destructive" size="sm">
-                              حذف
+                              {t.common.delete}
                             </Button>
                           </div>
                         </div>
@@ -808,13 +819,13 @@ const Announcements = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>تعديل الإعلان</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الإعلان</DialogDescription>
+            <DialogTitle>{t.announcements.dialog.editTitle}</DialogTitle>
+            <DialogDescription>{t.announcements.dialog.editDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-title" className="text-right">
-                العنوان
+              <Label htmlFor="edit-title" className="text-end">
+                {t.announcements.form.titleLabel}
               </Label>
               <Input
                 id="edit-title"
@@ -829,8 +840,8 @@ const Announcements = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-type" className="text-right">
-                النوع
+              <Label htmlFor="edit-type" className="text-end">
+                {t.announcements.form.typeLabel}
               </Label>
               <Select
                 value={newAnnouncement.type}
@@ -842,19 +853,19 @@ const Announcements = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر النوع" />
+                  <SelectValue placeholder={t.announcements.form.selectType} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="إعلان عام">إعلان عام</SelectItem>
-                  <SelectItem value="تنبيه">تنبيه</SelectItem>
-                  <SelectItem value="موعد حلقة">موعد حلقة</SelectItem>
-                  <SelectItem value="موعد اختبار">موعد اختبار</SelectItem>
+                  <SelectItem value="إعلان عام">{t.announcements.typeLabels.generalAnnouncement}</SelectItem>
+                  <SelectItem value="تنبيه">{t.announcements.typeLabels.alert}</SelectItem>
+                  <SelectItem value="موعد حلقة">{t.announcements.typeLabels.circleSchedule}</SelectItem>
+                  <SelectItem value="موعد اختبار">{t.announcements.typeLabels.examSchedule}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-content" className="text-right">
-                المحتوى
+              <Label htmlFor="edit-content" className="text-end">
+                {t.announcements.form.contentLabel}
               </Label>
               <Textarea
                 id="edit-content"
@@ -870,8 +881,8 @@ const Announcements = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-scheduledFor" className="text-right">
-                موعد النشر
+              <Label htmlFor="edit-scheduledFor" className="text-end">
+                {t.announcements.form.publishDate}
               </Label>
               <Input
                 id="edit-scheduledFor"
@@ -889,7 +900,7 @@ const Announcements = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">الجمهور المستهدف</Label>
+              <Label className="text-end pt-2">{t.announcements.form.targetAudience}</Label>
               <div className="col-span-3 space-y-2">
                 {(
                   [
@@ -921,8 +932,8 @@ const Announcements = () => {
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-isActive" className="text-right">
-                الحالة
+              <Label htmlFor="edit-isActive" className="text-end">
+                {t.announcements.form.statusLabel}
               </Label>
               <div className="col-span-3 flex items-center space-x-2 space-x-reverse">
                 <Checkbox
@@ -936,7 +947,7 @@ const Announcements = () => {
                   }
                 />
                 <Label htmlFor="edit-isActive" className="text-sm">
-                  نشط
+                  {t.announcements.status.active}
                 </Label>
               </div>
             </div>
@@ -946,9 +957,9 @@ const Announcements = () => {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleEditAnnouncement}>حفظ التعديلات</Button>
+            <Button onClick={handleEditAnnouncement}>{t.announcements.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -957,10 +968,9 @@ const Announcements = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.announcements.dialog.deleteTitle}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الإعلان "{selectedAnnouncement?.title}"؟ لا
-              يمكن التراجع عن هذا الإجراء.
+              {tFunc('announcements.dialog.deleteDescription', { title: selectedAnnouncement?.title || '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -968,10 +978,10 @@ const Announcements = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteAnnouncement}>
-              حذف
+              {t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

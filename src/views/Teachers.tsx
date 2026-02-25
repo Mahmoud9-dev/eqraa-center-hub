@@ -42,6 +42,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { Department, Teacher } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Teachers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +55,7 @@ const Teachers = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const { toast } = useToast();
+  const { t, tFunc } = useLanguage();
 
   // Mock data - will be replaced with actual data from Supabase
   const [teachers, setTeachers] = useState<Teacher[]>([
@@ -153,16 +155,12 @@ const Teachers = () => {
   });
 
   const getDepartmentName = (dept: Department) => {
-    switch (dept) {
-      case "quran":
-        return "قرآن";
-      case "tajweed":
-        return "تجويد";
-      case "tarbawi":
-        return "تربوي";
-      default:
-        return dept;
-    }
+    const deptMap: Record<Department, string> = {
+      quran: t.teachers.departments.quran,
+      tajweed: t.teachers.departments.tajweed,
+      tarbawi: t.teachers.departments.tarbawi,
+    };
+    return deptMap[dept] || dept;
   };
 
   const getExperienceColor = (years: number) => {
@@ -180,8 +178,8 @@ const Teachers = () => {
       !newTeacher.department
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.teachers.toast.error,
+        description: t.teachers.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -211,8 +209,8 @@ const Teachers = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة المدرس بنجاح",
+      title: t.teachers.toast.addSuccess,
+      description: t.teachers.toast.addSuccessDesc,
     });
   };
 
@@ -224,8 +222,8 @@ const Teachers = () => {
       !newTeacher.department
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.teachers.toast.error,
+        description: t.teachers.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -265,8 +263,8 @@ const Teachers = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل بيانات المدرس بنجاح",
+      title: t.teachers.toast.editSuccess,
+      description: t.teachers.toast.editSuccessDesc,
     });
   };
 
@@ -279,8 +277,8 @@ const Teachers = () => {
     setIsDeleteDialogOpen(false);
     setSelectedTeacher(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف المدرس بنجاح",
+      title: t.teachers.toast.deleteSuccess,
+      description: t.teachers.toast.deleteSuccessDesc,
     });
   };
 
@@ -305,21 +303,21 @@ const Teachers = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="المدرسون والمشايخ" showBack={true} />
+      <PageHeader title={t.teachers.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
-            🧑‍🏫 المدرسون والمشايخ
+            {t.teachers.sectionTitle}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
-            إدارة بيانات المدرسين والمشايخ والمواد التي يدرسونها
+            {t.teachers.sectionDescription}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4 space-x-0 sm:space-x-4 space-x-reverse">
               <Input
-                placeholder="البحث عن مدرس..."
+                placeholder={t.teachers.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64 text-base sm:text-sm"
@@ -331,35 +329,35 @@ const Teachers = () => {
                 }
               >
                 <SelectTrigger className="w-full sm:w-48 text-base sm:text-sm">
-                  <SelectValue placeholder="جميع الأقسام" />
+                  <SelectValue placeholder={t.teachers.departments.all} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الأقسام</SelectItem>
-                  <SelectItem value="quran">قرآن</SelectItem>
-                  <SelectItem value="tajweed">تجويد</SelectItem>
-                  <SelectItem value="tarbawi">تربوي</SelectItem>
+                  <SelectItem value="all">{t.teachers.departments.all}</SelectItem>
+                  <SelectItem value="quran">{t.teachers.departments.quran}</SelectItem>
+                  <SelectItem value="tajweed">{t.teachers.departments.tajweed}</SelectItem>
+                  <SelectItem value="tarbawi">{t.teachers.departments.tarbawi}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground w-full sm:w-auto text-sm">
-                  إضافة مدرس جديد
+                  {t.teachers.actions.addNewTeacher}
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="text-lg sm:text-base">
-                    إضافة مدرس جديد
+                    {t.teachers.dialog.addTitle}
                   </DialogTitle>
                   <DialogDescription className="text-sm sm:text-xs">
-                    أدخل بيانات المدرس الجديد
+                    {t.teachers.dialog.addDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="name" className="text-right sm:text-sm">
-                      الاسم
+                      {t.teachers.form.name}
                     </Label>
                     <Input
                       id="name"
@@ -375,7 +373,7 @@ const Teachers = () => {
                       htmlFor="specialization"
                       className="text-right sm:text-sm"
                     >
-                      التخصص
+                      {t.teachers.form.specialization}
                     </Label>
                     <Input
                       id="specialization"
@@ -394,7 +392,7 @@ const Teachers = () => {
                       htmlFor="department"
                       className="text-right sm:text-sm"
                     >
-                      القسم
+                      {t.teachers.form.department}
                     </Label>
                     <Select
                       value={newTeacher.department}
@@ -406,18 +404,18 @@ const Teachers = () => {
                       }
                     >
                       <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
-                        <SelectValue placeholder="اختر القسم" />
+                        <SelectValue placeholder={t.teachers.form.selectDepartment} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="quran">قرآن</SelectItem>
-                        <SelectItem value="tajweed">تجويد</SelectItem>
-                        <SelectItem value="tarbawi">تربوي</SelectItem>
+                        <SelectItem value="quran">{t.teachers.departments.quran}</SelectItem>
+                        <SelectItem value="tajweed">{t.teachers.departments.tajweed}</SelectItem>
+                        <SelectItem value="tarbawi">{t.teachers.departments.tarbawi}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="email" className="text-right sm:text-sm">
-                      البريد الإلكتروني
+                      {t.teachers.form.email}
                     </Label>
                     <Input
                       id="email"
@@ -431,7 +429,7 @@ const Teachers = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="phone" className="text-right sm:text-sm">
-                      رقم الهاتف
+                      {t.teachers.form.phone}
                     </Label>
                     <Input
                       id="phone"
@@ -447,7 +445,7 @@ const Teachers = () => {
                       htmlFor="experience"
                       className="text-right sm:text-sm"
                     >
-                      الخبرة (سنوات)
+                      {t.teachers.form.experienceYears}
                     </Label>
                     <Input
                       id="experience"
@@ -469,10 +467,10 @@ const Teachers = () => {
                     onClick={() => setIsAddDialogOpen(false)}
                     className="text-sm"
                   >
-                    إلغاء
+                    {t.teachers.actions.cancel}
                   </Button>
                   <Button onClick={handleAddTeacher} className="text-sm">
-                    إضافة مدرس
+                    {t.teachers.actions.addTeacher}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -482,17 +480,17 @@ const Teachers = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
-            <TabsTrigger value="all">جميع المدرسين</TabsTrigger>
-            <TabsTrigger value="profile">الملفات الشخصية</TabsTrigger>
-            <TabsTrigger value="contact">التواصل</TabsTrigger>
+            <TabsTrigger value="all">{t.teachers.tabs.allTeachers}</TabsTrigger>
+            <TabsTrigger value="profile">{t.teachers.tabs.profiles}</TabsTrigger>
+            <TabsTrigger value="contact">{t.teachers.tabs.contact}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>قائمة المدرسين</CardTitle>
+                <CardTitle>{t.teachers.card.teacherListTitle}</CardTitle>
                 <CardDescription>
-                  جميع المدرسين والمشايخ المسجلين في المركز
+                  {t.teachers.card.teacherListDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -501,25 +499,25 @@ const Teachers = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-xs sm:text-sm">
-                          المدرس
+                          {t.teachers.table.teacher}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden sm:table-cell">
-                          التخصص
+                          {t.teachers.table.specialization}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          القسم
+                          {t.teachers.table.department}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden md:table-cell">
-                          الخبرة
+                          {t.teachers.table.experience}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden lg:table-cell">
-                          الطلاب
+                          {t.teachers.table.students}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          الحالة
+                          {t.teachers.table.status}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          إجراءات
+                          {t.teachers.table.actions}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -559,7 +557,7 @@ const Teachers = () => {
                             <Badge
                               className={getExperienceColor(teacher.experience ?? 0)}
                             >
-                              {teacher.experience ?? 0} سنة
+                              {teacher.experience ?? 0} {t.teachers.profile.yearUnit}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm hidden lg:table-cell">
@@ -573,7 +571,7 @@ const Teachers = () => {
                                   : "bg-red-100 text-red-800 text-xs"
                               }
                             >
-                              {teacher.isActive ? "نشط" : "غير نشط"}
+                              {teacher.isActive ? t.teachers.status.active : t.teachers.status.inactive}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm">
@@ -583,7 +581,7 @@ const Teachers = () => {
                                 size="sm"
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                عرض
+                                {t.teachers.actions.view}
                               </Button>
                               <Button
                                 variant="outline"
@@ -591,7 +589,7 @@ const Teachers = () => {
                                 onClick={() => openEditDialog(teacher)}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                تعديل
+                                {t.teachers.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -599,7 +597,7 @@ const Teachers = () => {
                                 onClick={() => openDeleteDialog(teacher)}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                حذف
+                                {t.teachers.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -638,14 +636,14 @@ const Teachers = () => {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium mb-2">نبذة عن المدرس</h4>
+                        <h4 className="font-medium mb-2">{t.teachers.profile.aboutTeacher}</h4>
                         <p className="text-sm text-muted-foreground">
                           {teacher.bio}
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-medium mb-2">المواد التي يدرسها</h4>
+                        <h4 className="font-medium mb-2">{t.teachers.profile.subjectsTeaching}</h4>
                         <div className="flex flex-wrap gap-2">
                           {teacher.subjects.map((subject, index) => (
                             <Badge key={index} variant="outline">
@@ -657,15 +655,15 @@ const Teachers = () => {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h4 className="font-medium mb-1">الخبرة</h4>
+                          <h4 className="font-medium mb-1">{t.teachers.profile.experience}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {teacher.experience} سنة
+                            {teacher.experience} {t.teachers.profile.yearUnit}
                           </p>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-1">عدد الطلاب</h4>
+                          <h4 className="font-medium mb-1">{t.teachers.profile.studentCount}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {teacher.studentsCount} طالب
+                            {teacher.studentsCount} {t.teachers.profile.studentUnit}
                           </p>
                         </div>
                       </div>
@@ -673,14 +671,14 @@ const Teachers = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <h4 className="font-medium mb-1">
-                            البريد الإلكتروني
+                            {t.teachers.form.email}
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             {teacher.email}
                           </p>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-1">رقم الهاتف</h4>
+                          <h4 className="font-medium mb-1">{t.teachers.form.phone}</h4>
                           <p className="text-sm text-muted-foreground">
                             {teacher.phone}
                           </p>
@@ -689,10 +687,10 @@ const Teachers = () => {
 
                       <div className="flex space-x-2 space-x-reverse">
                         <Button variant="outline" size="sm">
-                          تعديل الملف الشخصي
+                          {t.teachers.actions.editProfile}
                         </Button>
                         <Button variant="outline" size="sm">
-                          عرض الجدول
+                          {t.teachers.actions.viewSchedule}
                         </Button>
                       </div>
                     </div>
@@ -705,20 +703,20 @@ const Teachers = () => {
           <TabsContent value="contact" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>إرسال سؤال للمدرسين</CardTitle>
+                <CardTitle>{t.teachers.contact.title}</CardTitle>
                 <CardDescription>
-                  اختر المدرس وأرسل سؤالك مباشرة
+                  {t.teachers.contact.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      اختر المدرس
+                      {t.teachers.contact.selectTeacher}
                     </label>
                     <Select>
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر المدرس..." />
+                        <SelectValue placeholder={t.teachers.contact.selectTeacherPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
                         {filteredTeachers.map((teacher) => (
@@ -732,35 +730,35 @@ const Teachers = () => {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      نوع السؤال
+                      {t.teachers.contact.questionType}
                     </label>
                     <Select>
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر نوع السؤال..." />
+                        <SelectValue placeholder={t.teachers.contact.questionTypePlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">سؤال عام</SelectItem>
-                        <SelectItem value="academic">سؤال أكاديمي</SelectItem>
+                        <SelectItem value="general">{t.teachers.contact.questionTypeGeneral}</SelectItem>
+                        <SelectItem value="academic">{t.teachers.contact.questionTypeAcademic}</SelectItem>
                         <SelectItem value="administrative">
-                          سؤال إداري
+                          {t.teachers.contact.questionTypeAdmin}
                         </SelectItem>
-                        <SelectItem value="private">سؤال خاص</SelectItem>
+                        <SelectItem value="private">{t.teachers.contact.questionTypePrivate}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      السؤال
+                      {t.teachers.contact.question}
                     </label>
-                    <Textarea placeholder="اكتب سؤالك هنا..." rows={4} />
+                    <Textarea placeholder={t.teachers.contact.questionPlaceholder} rows={4} />
                   </div>
 
                   <div className="flex space-x-2 space-x-reverse">
                     <Button className="bg-primary text-primary-foreground">
-                      إرسال السؤال
+                      {t.teachers.contact.sendQuestion}
                     </Button>
-                    <Button variant="outline">إرسال لجميع المدرسين</Button>
+                    <Button variant="outline">{t.teachers.contact.sendToAll}</Button>
                   </div>
                 </div>
               </CardContent>
@@ -773,13 +771,13 @@ const Teachers = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل بيانات المدرس</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات المدرس</DialogDescription>
+            <DialogTitle>{t.teachers.dialog.editTitle}</DialogTitle>
+            <DialogDescription>{t.teachers.dialog.editDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-name" className="text-right">
-                الاسم
+                {t.teachers.form.name}
               </Label>
               <Input
                 id="edit-name"
@@ -792,7 +790,7 @@ const Teachers = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-specialization" className="text-right">
-                التخصص
+                {t.teachers.form.specialization}
               </Label>
               <Input
                 id="edit-specialization"
@@ -808,7 +806,7 @@ const Teachers = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-department" className="text-right">
-                القسم
+                {t.teachers.form.department}
               </Label>
               <Select
                 value={newTeacher.department}
@@ -820,18 +818,18 @@ const Teachers = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر القسم" />
+                  <SelectValue placeholder={t.teachers.form.selectDepartment} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="quran">قرآن</SelectItem>
-                  <SelectItem value="tajweed">تجويد</SelectItem>
-                  <SelectItem value="tarbawi">تربوي</SelectItem>
+                  <SelectItem value="quran">{t.teachers.departments.quran}</SelectItem>
+                  <SelectItem value="tajweed">{t.teachers.departments.tajweed}</SelectItem>
+                  <SelectItem value="tarbawi">{t.teachers.departments.tarbawi}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-email" className="text-right">
-                البريد الإلكتروني
+                {t.teachers.form.email}
               </Label>
               <Input
                 id="edit-email"
@@ -845,7 +843,7 @@ const Teachers = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-phone" className="text-right">
-                رقم الهاتف
+                {t.teachers.form.phone}
               </Label>
               <Input
                 id="edit-phone"
@@ -858,7 +856,7 @@ const Teachers = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-experience" className="text-right">
-                الخبرة (سنوات)
+                {t.teachers.form.experienceYears}
               </Label>
               <Input
                 id="edit-experience"
@@ -879,9 +877,9 @@ const Teachers = () => {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.teachers.actions.cancel}
             </Button>
-            <Button onClick={handleEditTeacher}>حفظ التعديلات</Button>
+            <Button onClick={handleEditTeacher}>{t.teachers.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -890,10 +888,9 @@ const Teachers = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.teachers.confirmDelete}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف المدرس "{selectedTeacher?.name}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('teachers.deleteConfirmMessage', { name: selectedTeacher?.name || '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -901,10 +898,10 @@ const Teachers = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.teachers.actions.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteTeacher}>
-              حذف
+              {t.teachers.actions.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -42,6 +42,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { UserRole, UserSettings } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 interface SystemUser {
   id: string;
@@ -62,6 +64,7 @@ const Settings = () => {
     useState(false);
   const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   useTheme(); // Theme provider hook - used by child components
 
   // Mock data - will be replaced with actual data from Supabase
@@ -170,74 +173,26 @@ const Settings = () => {
   };
 
   const getRoleName = (role: UserRole) => {
-    switch (role) {
-      case "admin":
-        return "الإدارة";
-      case "teacher":
-        return "المدرس";
-      case "student":
-        return "الطالب";
-      case "parent":
-        return "ولي الأمر";
-      case "viewer":
-        return "المشاهد";
-      default:
-        return role;
-    }
+    const roleMap: Record<UserRole, string> = {
+      admin: t.settings.users.roles.admin,
+      teacher: t.settings.users.roles.teacher,
+      student: t.settings.users.roles.student,
+      parent: t.settings.users.roles.parent,
+      viewer: t.settings.users.roles.viewer,
+    };
+    return roleMap[role] || role;
   };
 
-  const getRolePermissions = (role: UserRole) => {
-    switch (role) {
-      case "admin":
-        return [
-          "التحكم الكامل في النظام",
-          "إدارة المستخدمين والصلاحيات",
-          "إدارة جميع البيانات",
-          "عرض التقارير والإحصائيات",
-          "إدارة الإعدادات العامة",
-        ];
-      case "teacher":
-        return [
-          "إدارة الطلاب المسؤولين",
-          "إضافة وتعديل الدروس والمحتوى",
-          "تقييم الطلاب",
-          "عرض التقارير الخاصة بالطلاب",
-          "إدارة الجداول الخاصة",
-        ];
-      case "student":
-        return [
-          "عرض بياناتي الشخصية",
-          "عرض الدروس والمحتوى",
-          "المشاركة في الاختبارات",
-          "عرض جدولي الدراسي",
-          "عرض تقاريري الشخصية",
-        ];
-      case "parent":
-        return [
-          "عرض بيانات الأبناء",
-          "عرض أداء الأبناء",
-          "متابعة الحضور والغياب",
-          "عرض التقارير الخاصة بالأبناء",
-          "التواصل مع المدرسين",
-        ];
-      case "viewer":
-        return [
-          "عرض البيانات العامة",
-          "عرض التقارير والإحصائيات",
-          "عرض المحتوى التعليمي",
-          "عرض الجداول العامة",
-        ];
-      default:
-        return [];
-    }
+  const getRolePermissions = (role: UserRole): string[] => {
+    return t.settings.permissions.roles[role] || [];
   };
 
   // CRUD functions
   const handleAddUser = () => {
     if (!newUser.name || !newUser.email || !newUser.password) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.settings.toasts.error,
+        description: t.settings.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -263,16 +218,16 @@ const Settings = () => {
     });
     setIsAddUserDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة المستخدم بنجاح",
+      title: t.settings.toasts.addSuccess,
+      description: t.settings.toasts.addSuccessDescription,
     });
   };
 
   const handleEditUser = () => {
     if (!selectedUser || !editUser.name || !editUser.email) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.settings.toasts.error,
+        description: t.settings.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -304,8 +259,8 @@ const Settings = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل المستخدم بنجاح",
+      title: t.settings.toasts.editSuccess,
+      description: t.settings.toasts.editSuccessDescription,
     });
   };
 
@@ -316,8 +271,8 @@ const Settings = () => {
     setIsDeleteUserDialogOpen(false);
     setSelectedUser(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف المستخدم بنجاح",
+      title: t.settings.toasts.deleteSuccess,
+      description: t.settings.toasts.deleteSuccessDescription,
     });
   };
 
@@ -328,8 +283,8 @@ const Settings = () => {
       !changePassword.confirmPassword
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.settings.toasts.error,
+        description: t.settings.toasts.requiredFields,
         variant: "destructive",
       });
       return;
@@ -337,8 +292,8 @@ const Settings = () => {
 
     if (changePassword.newPassword !== changePassword.confirmPassword) {
       toast({
-        title: "خطأ",
-        description: "كلمة المرور الجديدة وتأكيد الكلمة غير متطابقين",
+        title: t.settings.toasts.passwordMismatch,
+        description: t.settings.toasts.passwordMismatchDescription,
         variant: "destructive",
       });
       return;
@@ -352,8 +307,8 @@ const Settings = () => {
     });
     setIsChangePasswordDialogOpen(false);
     toast({
-      title: "تم التغيير",
-      description: "تم تغيير كلمة المرور بنجاح",
+      title: t.settings.toasts.passwordChanged,
+      description: t.settings.toasts.passwordChangedDescription,
     });
   };
 
@@ -364,20 +319,20 @@ const Settings = () => {
       updatedAt: new Date(),
     });
     toast({
-      title: "تم التحديث",
-      description: "تم تحديث الإعدادات بنجاح",
+      title: t.settings.toasts.settingsUpdated,
+      description: t.settings.toasts.settingsUpdatedDescription,
     });
   };
 
   const handleUpdateProfile = () => {
     // Here you would normally call an API to update profile
     toast({
-      title: "تم التحديث",
-      description: "تم تحديث الملف الشخصي بنجاح",
+      title: t.settings.toasts.profileUpdated,
+      description: t.settings.toasts.profileUpdatedDescription,
     });
   };
 
-  const openEditUserDialog = (user: any) => {
+  const openEditUserDialog = (user: SystemUser) => {
     setSelectedUser(user);
     setEditUser({
       name: user.name,
@@ -388,38 +343,38 @@ const Settings = () => {
     setIsEditUserDialogOpen(true);
   };
 
-  const openDeleteUserDialog = (user: any) => {
+  const openDeleteUserDialog = (user: SystemUser) => {
     setSelectedUser(user);
     setIsDeleteUserDialogOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الإعدادات والصلاحيات" showBack={true} />
+      <PageHeader title={t.settings.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">⚙️ الإعدادات والصلاحيات</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.settings.heading}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة الإعدادات الشخصية والصلاحيات والتحكم في النظام
+            {t.settings.headingDescription}
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
-            <TabsTrigger value="settings">الإعدادات</TabsTrigger>
-            <TabsTrigger value="users">المستخدمون</TabsTrigger>
-            <TabsTrigger value="permissions">الصلاحيات</TabsTrigger>
-            <TabsTrigger value="system">النظام</TabsTrigger>
+            <TabsTrigger value="profile">{t.settings.tabs.profile}</TabsTrigger>
+            <TabsTrigger value="settings">{t.settings.tabs.settings}</TabsTrigger>
+            <TabsTrigger value="users">{t.settings.tabs.users}</TabsTrigger>
+            <TabsTrigger value="permissions">{t.settings.tabs.permissions}</TabsTrigger>
+            <TabsTrigger value="system">{t.settings.tabs.system}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-1">
                 <CardHeader>
-                  <CardTitle>الصورة الشخصية</CardTitle>
-                  <CardDescription>تحديث صورتك الشخصية</CardDescription>
+                  <CardTitle>{t.settings.profile.avatarTitle}</CardTitle>
+                  <CardDescription>{t.settings.profile.avatarDescription}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center space-y-4">
                   <Avatar className="w-24 h-24">
@@ -435,19 +390,19 @@ const Settings = () => {
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <Button variant="outline">تغيير الصورة</Button>
+                  <Button variant="outline">{t.settings.profile.changeAvatar}</Button>
                 </CardContent>
               </Card>
 
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>المعلومات الشخصية</CardTitle>
-                  <CardDescription>تحديث معلوماتك الشخصية</CardDescription>
+                  <CardTitle>{t.settings.profile.infoTitle}</CardTitle>
+                  <CardDescription>{t.settings.profile.infoDescription}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name">الاسم الكامل</Label>
+                      <Label htmlFor="name">{t.settings.profile.fullName}</Label>
                       <Input
                         id="name"
                         value={currentUser.name}
@@ -460,7 +415,7 @@ const Settings = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">البريد الإلكتروني</Label>
+                      <Label htmlFor="email">{t.settings.profile.email}</Label>
                       <Input
                         id="email"
                         type="email"
@@ -475,7 +430,7 @@ const Settings = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="phone">رقم الهاتف</Label>
+                    <Label htmlFor="phone">{t.settings.profile.phone}</Label>
                     <Input
                       id="phone"
                       value={currentUser.phone}
@@ -488,22 +443,22 @@ const Settings = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="role">الدور</Label>
+                    <Label htmlFor="role">{t.settings.profile.role}</Label>
                     <Select value={currentUser.role} disabled>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">الإدارة</SelectItem>
-                        <SelectItem value="teacher">المدرس</SelectItem>
-                        <SelectItem value="student">الطالب</SelectItem>
-                        <SelectItem value="parent">ولي الأمر</SelectItem>
-                        <SelectItem value="viewer">المشاهد</SelectItem>
+                        <SelectItem value="admin">{t.settings.users.roles.admin}</SelectItem>
+                        <SelectItem value="teacher">{t.settings.users.roles.teacher}</SelectItem>
+                        <SelectItem value="student">{t.settings.users.roles.student}</SelectItem>
+                        <SelectItem value="parent">{t.settings.users.roles.parent}</SelectItem>
+                        <SelectItem value="viewer">{t.settings.users.roles.viewer}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex justify-end">
-                    <Button onClick={handleUpdateProfile}>حفظ التغييرات</Button>
+                    <Button onClick={handleUpdateProfile}>{t.settings.profile.saveChanges}</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -511,15 +466,15 @@ const Settings = () => {
 
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>تغيير كلمة المرور</CardTitle>
+                <CardTitle>{t.settings.profile.changePassword}</CardTitle>
                 <CardDescription>
-                  تغيير كلمة المرور الخاصة بحسابك
+                  {t.settings.profile.changePasswordDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="currentPassword">كلمة المرور الحالية</Label>
+                    <Label htmlFor="currentPassword">{t.settings.profile.currentPassword}</Label>
                     <Input
                       id="currentPassword"
                       type="password"
@@ -533,7 +488,7 @@ const Settings = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+                    <Label htmlFor="newPassword">{t.settings.profile.newPassword}</Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -547,7 +502,7 @@ const Settings = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
+                    <Label htmlFor="confirmPassword">{t.settings.profile.confirmPassword}</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -562,7 +517,7 @@ const Settings = () => {
                   </div>
                   <div className="flex justify-end">
                     <Button onClick={() => setIsChangePasswordDialogOpen(true)}>
-                      تغيير كلمة المرور
+                      {t.settings.profile.changePasswordButton}
                     </Button>
                   </div>
                 </div>
@@ -573,13 +528,13 @@ const Settings = () => {
           <TabsContent value="settings" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>الإعدادات العامة</CardTitle>
-                <CardDescription>تخصيص إعدادات التطبيق</CardDescription>
+                <CardTitle>{t.settings.generalSettings.title}</CardTitle>
+                <CardDescription>{t.settings.generalSettings.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="theme">المظهر</Label>
+                    <Label htmlFor="theme">{t.settings.theme.label}</Label>
                     <Select
                       value={userSettings.theme}
                       onValueChange={(value) =>
@@ -593,13 +548,13 @@ const Settings = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="فاتح">فاتح</SelectItem>
-                        <SelectItem value="داكن">داكن</SelectItem>
+                        <SelectItem value="فاتح">{t.settings.theme.light}</SelectItem>
+                        <SelectItem value="داكن">{t.settings.theme.dark}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="language">اللغة</Label>
+                    <Label htmlFor="language">{t.settings.language.label}</Label>
                     <Select
                       value={userSettings.language}
                       onValueChange={(value) =>
@@ -613,15 +568,15 @@ const Settings = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ar">العربية</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="ar">{t.settings.language.arabic}</SelectItem>
+                        <SelectItem value="en">{t.settings.language.english}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="flex justify-end mt-6">
-                  <Button onClick={handleUpdateSettings}>حفظ الإعدادات</Button>
+                  <Button onClick={handleUpdateSettings}>{t.settings.generalSettings.saveSettings}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -629,27 +584,27 @@ const Settings = () => {
 
           <TabsContent value="users" className="mt-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium">إدارة المستخدمين</h3>
+              <h3 className="text-lg font-medium">{t.settings.users.title}</h3>
               <Dialog
                 open={isAddUserDialogOpen}
                 onOpenChange={setIsAddUserDialogOpen}
               >
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground">
-                    إضافة مستخدم جديد
+                    {t.settings.users.actions.addNewUser}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+                    <DialogTitle>{t.settings.addUserDialog.title}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات المستخدم الجديد
+                      {t.settings.addUserDialog.description}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="user-name" className="text-right">
-                        الاسم
+                        {t.settings.addUserDialog.nameLabel}
                       </Label>
                       <Input
                         id="user-name"
@@ -662,7 +617,7 @@ const Settings = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="user-email" className="text-right">
-                        البريد الإلكتروني
+                        {t.settings.addUserDialog.emailLabel}
                       </Label>
                       <Input
                         id="user-email"
@@ -676,7 +631,7 @@ const Settings = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="user-password" className="text-right">
-                        كلمة المرور
+                        {t.settings.addUserDialog.passwordLabel}
                       </Label>
                       <Input
                         id="user-password"
@@ -690,7 +645,7 @@ const Settings = () => {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="user-role" className="text-right">
-                        الدور
+                        {t.settings.addUserDialog.roleLabel}
                       </Label>
                       <Select
                         value={newUser.role}
@@ -699,14 +654,14 @@ const Settings = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الدور" />
+                          <SelectValue placeholder={t.settings.users.selectRole} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">الإدارة</SelectItem>
-                          <SelectItem value="teacher">المدرس</SelectItem>
-                          <SelectItem value="student">الطالب</SelectItem>
-                          <SelectItem value="parent">ولي الأمر</SelectItem>
-                          <SelectItem value="viewer">المشاهد</SelectItem>
+                          <SelectItem value="admin">{t.settings.users.roles.admin}</SelectItem>
+                          <SelectItem value="teacher">{t.settings.users.roles.teacher}</SelectItem>
+                          <SelectItem value="student">{t.settings.users.roles.student}</SelectItem>
+                          <SelectItem value="parent">{t.settings.users.roles.parent}</SelectItem>
+                          <SelectItem value="viewer">{t.settings.users.roles.viewer}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -716,9 +671,9 @@ const Settings = () => {
                       variant="outline"
                       onClick={() => setIsAddUserDialogOpen(false)}
                     >
-                      إلغاء
+                      {t.common.cancel}
                     </Button>
-                    <Button onClick={handleAddUser}>إضافة مستخدم</Button>
+                    <Button onClick={handleAddUser}>{t.settings.addUserDialog.submitButton}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -726,22 +681,22 @@ const Settings = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>قائمة المستخدمين</CardTitle>
+                <CardTitle>{t.settings.users.listTitle}</CardTitle>
                 <CardDescription>
-                  عرض وإدارة جميع مستخدمي النظام
+                  {t.settings.users.listDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>البريد الإلكتروني</TableHead>
-                      <TableHead>الدور</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>تاريخ الإنشاء</TableHead>
-                      <TableHead>آخر تسجيل</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead>{t.settings.users.table.name}</TableHead>
+                      <TableHead>{t.settings.users.table.email}</TableHead>
+                      <TableHead>{t.settings.users.table.role}</TableHead>
+                      <TableHead>{t.settings.users.table.status}</TableHead>
+                      <TableHead>{t.settings.users.table.createdAt}</TableHead>
+                      <TableHead>{t.settings.users.table.lastLogin}</TableHead>
+                      <TableHead>{t.settings.users.table.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -764,35 +719,35 @@ const Settings = () => {
                                 : "bg-red-100 text-red-800"
                             }
                           >
-                            {user.isActive ? "نشط" : "غير نشط"}
+                            {user.isActive ? t.settings.users.status.active : t.settings.users.status.inactive}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {user.createdAt.toLocaleDateString("ar-SA")}
+                          {formatDate(user.createdAt, language)}
                         </TableCell>
                         <TableCell>
                           {user.lastLogin
-                            ? user.lastLogin.toLocaleDateString("ar-SA")
-                            : "لم يسجل بعد"}
+                            ? formatDate(user.lastLogin, language)
+                            : t.settings.users.neverLoggedIn}
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2 space-x-reverse">
                             <Button variant="outline" size="sm">
-                              عرض
+                              {t.settings.users.actions.view}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => openEditUserDialog(user)}
                             >
-                              تعديل
+                              {t.common.edit}
                             </Button>
                             <Button
                               variant="destructive"
                               size="sm"
                               onClick={() => openDeleteUserDialog(user)}
                             >
-                              حذف
+                              {t.common.delete}
                             </Button>
                           </div>
                         </TableCell>
@@ -824,7 +779,7 @@ const Settings = () => {
                       </Badge>
                     </div>
                     <CardDescription>
-                      الصلاحيات المتاحة لدور {getRoleName(role)}
+                      {t.settings.permissions.availableFor.replace('{{role}}', getRoleName(role))}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -834,7 +789,7 @@ const Settings = () => {
                           key={index}
                           className="flex items-center space-x-2 space-x-reverse"
                         >
-                          <span className="text-green-500">✓</span>
+                          <span className="text-green-500">&#10003;</span>
                           <span className="text-sm">{permission}</span>
                         </li>
                       ))}
@@ -849,27 +804,27 @@ const Settings = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>معلومات النظام</CardTitle>
-                  <CardDescription>معلومات حول النظام والإصدار</CardDescription>
+                  <CardTitle>{t.settings.system.info.title}</CardTitle>
+                  <CardDescription>{t.settings.system.info.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">إصدار النظام:</span>
+                    <span className="text-muted-foreground">{t.settings.system.info.version}</span>
                     <span>1.0.0</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      تاريخ الإصدار:
+                      {t.settings.system.info.releaseDate}
                     </span>
                     <span>2025-11-05</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">البيئة:</span>
-                    <span>تطوير</span>
+                    <span className="text-muted-foreground">{t.settings.system.info.environment}</span>
+                    <span>{t.settings.system.info.environmentValue}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      قاعدة البيانات:
+                      {t.settings.system.info.database}
                     </span>
                     <span>Supabase</span>
                   </div>
@@ -878,84 +833,84 @@ const Settings = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>النسخ الاحتياطية</CardTitle>
+                  <CardTitle>{t.settings.system.backup.title}</CardTitle>
                   <CardDescription>
-                    إدارة النسخ الاحتياطية للبيانات
+                    {t.settings.system.backup.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      آخر نسخة احتياطية:
+                      {t.settings.system.backup.lastBackup}
                     </span>
                     <span>2025-11-04 23:00</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">حجم النسخة:</span>
+                    <span className="text-muted-foreground">{t.settings.system.backup.backupSize}</span>
                     <span>125 MB</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      النسخ التلقائية:
+                      {t.settings.system.backup.autoBackup}
                     </span>
-                    <span>مفعل</span>
+                    <span>{t.settings.system.backup.autoBackupEnabled}</span>
                   </div>
                   <div className="flex space-x-2 space-x-reverse">
-                    <Button variant="outline">إنشاء نسخة الآن</Button>
-                    <Button variant="outline">استعادة نسخة</Button>
+                    <Button variant="outline">{t.settings.system.backup.createNow}</Button>
+                    <Button variant="outline">{t.settings.system.backup.restore}</Button>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>السجلات</CardTitle>
-                  <CardDescription>عرض سجلات النظام والأنشطة</CardDescription>
+                  <CardTitle>{t.settings.system.logs.title}</CardTitle>
+                  <CardDescription>{t.settings.system.logs.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      عدد المستخدمين:
+                      {t.settings.system.logs.totalUsers}
                     </span>
                     <span>156</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">عدد الطلاب:</span>
+                    <span className="text-muted-foreground">{t.settings.system.logs.totalStudents}</span>
                     <span>120</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">عدد المدرسين:</span>
+                    <span className="text-muted-foreground">{t.settings.system.logs.totalTeachers}</span>
                     <span>25</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      عدد الجلسات اليوم:
+                      {t.settings.system.logs.sessionsToday}
                     </span>
                     <span>89</span>
                   </div>
                   <Button variant="outline" className="w-full">
-                    عرض السجلات الكاملة
+                    {t.settings.system.logs.viewAll}
                   </Button>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>الصيانة</CardTitle>
-                  <CardDescription>أدوات الصيانة والتحسين</CardDescription>
+                  <CardTitle>{t.settings.system.maintenance.title}</CardTitle>
+                  <CardDescription>{t.settings.system.maintenance.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button variant="outline" className="w-full">
-                    تنظيف ذاكرة التخزين المؤقت
+                    {t.settings.system.maintenance.clearCache}
                   </Button>
                   <Button variant="outline" className="w-full">
-                    إعادة بناء الفهارس
+                    {t.settings.system.maintenance.rebuildIndexes}
                   </Button>
                   <Button variant="outline" className="w-full">
-                    تحسين قاعدة البيانات
+                    {t.settings.system.maintenance.optimizeDb}
                   </Button>
                   <Button variant="outline" className="w-full">
-                    فحص سلامة النظام
+                    {t.settings.system.maintenance.healthCheck}
                   </Button>
                 </CardContent>
               </Card>
@@ -971,13 +926,13 @@ const Settings = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل المستخدم</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات المستخدم</DialogDescription>
+            <DialogTitle>{t.settings.editUserDialog.title}</DialogTitle>
+            <DialogDescription>{t.settings.editUserDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-user-name" className="text-right">
-                الاسم
+                {t.settings.editUserDialog.nameLabel}
               </Label>
               <Input
                 id="edit-user-name"
@@ -990,7 +945,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-user-email" className="text-right">
-                البريد الإلكتروني
+                {t.settings.editUserDialog.emailLabel}
               </Label>
               <Input
                 id="edit-user-email"
@@ -1004,7 +959,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-user-role" className="text-right">
-                الدور
+                {t.settings.editUserDialog.roleLabel}
               </Label>
               <Select
                 value={editUser.role}
@@ -1013,14 +968,14 @@ const Settings = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر الدور" />
+                  <SelectValue placeholder={t.settings.users.selectRole} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">الإدارة</SelectItem>
-                  <SelectItem value="teacher">المدرس</SelectItem>
-                  <SelectItem value="student">الطالب</SelectItem>
-                  <SelectItem value="parent">ولي الأمر</SelectItem>
-                  <SelectItem value="viewer">المشاهد</SelectItem>
+                  <SelectItem value="admin">{t.settings.users.roles.admin}</SelectItem>
+                  <SelectItem value="teacher">{t.settings.users.roles.teacher}</SelectItem>
+                  <SelectItem value="student">{t.settings.users.roles.student}</SelectItem>
+                  <SelectItem value="parent">{t.settings.users.roles.parent}</SelectItem>
+                  <SelectItem value="viewer">{t.settings.users.roles.viewer}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1030,9 +985,9 @@ const Settings = () => {
               variant="outline"
               onClick={() => setIsEditUserDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleEditUser}>حفظ التعديلات</Button>
+            <Button onClick={handleEditUser}>{t.settings.editUserDialog.saveButton}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1044,10 +999,9 @@ const Settings = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.settings.deleteDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف المستخدم "{selectedUser?.name}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {t.settings.deleteDialog.description.replace('{{name}}', selectedUser?.name || '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1055,10 +1009,10 @@ const Settings = () => {
               variant="outline"
               onClick={() => setIsDeleteUserDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
-              حذف
+              {t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1071,13 +1025,13 @@ const Settings = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تغيير كلمة المرور</DialogTitle>
-            <DialogDescription>أدخل بيانات تغيير كلمة المرور</DialogDescription>
+            <DialogTitle>{t.settings.changePasswordDialog.title}</DialogTitle>
+            <DialogDescription>{t.settings.changePasswordDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="current-password" className="text-right">
-                كلمة المرور الحالية
+                {t.settings.changePasswordDialog.currentLabel}
               </Label>
               <Input
                 id="current-password"
@@ -1094,7 +1048,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="new-password" className="text-right">
-                كلمة المرور الجديدة
+                {t.settings.changePasswordDialog.newLabel}
               </Label>
               <Input
                 id="new-password"
@@ -1111,7 +1065,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="confirm-password" className="text-right">
-                تأكيد كلمة المرور
+                {t.settings.changePasswordDialog.confirmLabel}
               </Label>
               <Input
                 id="confirm-password"
@@ -1132,9 +1086,9 @@ const Settings = () => {
               variant="outline"
               onClick={() => setIsChangePasswordDialogOpen(false)}
             >
-              إلغاء
+              {t.common.cancel}
             </Button>
-            <Button onClick={handleChangePassword}>تغيير كلمة المرور</Button>
+            <Button onClick={handleChangePassword}>{t.settings.changePasswordDialog.submitButton}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

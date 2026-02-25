@@ -24,6 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateTime } from "@/lib/i18n";
 
 interface Meeting {
   id: string;
@@ -48,6 +50,20 @@ const Meetings = () => {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const { toast } = useToast();
+  const { t, tFunc, languageMeta } = useLanguage();
+
+  // Label maps: DB Arabic values -> translated display labels
+  const statusLabelMap: Record<string, string> = {
+    "مجدولة": t.meetings.statusLabels.scheduled,
+    "مكتملة": t.meetings.statusLabels.completed,
+    "ملغاة": t.meetings.statusLabels.cancelled,
+  };
+
+  const typeLabelMap: Record<string, string> = {
+    "المعلمين": t.meetings.typeLabels.teachers,
+    "أولياء الأمور": t.meetings.typeLabels.parents,
+    "إدارية": t.meetings.typeLabels.admin,
+  };
 
   const loadMeetings = async () => {
     const { data, error } = await getSupabase()
@@ -61,6 +77,7 @@ const Meetings = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadMeetings();
   }, []);
 
@@ -80,9 +97,9 @@ const Meetings = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة الاجتماع", variant: "destructive" });
+      toast({ title: t.meetings.toast.addError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة الاجتماع بنجاح" });
+      toast({ title: t.meetings.toast.addSuccess });
       setTitle("");
       setDescription("");
       setMeetingDate("");
@@ -102,7 +119,7 @@ const Meetings = () => {
       .eq("id", id);
 
     if (!error) {
-      toast({ title: "تم تحديث الحالة" });
+      toast({ title: t.meetings.toast.statusUpdated });
       loadMeetings();
     }
   };
@@ -116,9 +133,9 @@ const Meetings = () => {
       .eq("id", selectedMeeting.id);
 
     if (error) {
-      toast({ title: "خطأ في حذف الاجتماع", variant: "destructive" });
+      toast({ title: t.meetings.toast.deleteError, variant: "destructive" });
     } else {
-      toast({ title: "تم حذف الاجتماع بنجاح" });
+      toast({ title: t.meetings.toast.deleteSuccess });
       loadMeetings();
     }
     setIsDeleteDialogOpen(false);
@@ -138,32 +155,32 @@ const Meetings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الاجتماعات" />
+      <PageHeader title={t.meetings.pageTitle} />
       <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
           <Card className="border-primary/20">
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl text-primary">
-                جدولة اجتماع جديد
+                {t.meetings.form.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    عنوان الاجتماع
+                    {t.meetings.form.meetingTitle}
                   </label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="مثال: اجتماع المعلمين الأسبوعي"
+                    placeholder={t.meetings.form.meetingTitlePlaceholder}
                     className="text-base sm:text-sm"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    نوع الاجتماع
+                    {t.meetings.form.meetingType}
                   </label>
                   <Select
                     value={meetingType}
@@ -172,27 +189,29 @@ const Meetings = () => {
                     ) => setMeetingType(value)}
                   >
                     <SelectTrigger className="text-base sm:text-sm">
-                      <SelectValue placeholder="اختر نوع الاجتماع" />
+                      <SelectValue placeholder={t.meetings.form.meetingTypePlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="المعلمين">
-                        اجتماعات المعلمين
+                        {t.meetings.form.typeOptions.teachers}
                       </SelectItem>
                       <SelectItem value="أولياء الأمور">
-                        اجتماعات أولياء الأمور
+                        {t.meetings.form.typeOptions.parents}
                       </SelectItem>
-                      <SelectItem value="إدارية">اجتماعات إدارية</SelectItem>
+                      <SelectItem value="إدارية">
+                        {t.meetings.form.typeOptions.admin}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    التفاصيل
+                    {t.meetings.form.details}
                   </label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="اشرح جدول الأعمال والموضوعات"
+                    placeholder={t.meetings.form.detailsPlaceholder}
                     rows={3}
                     className="text-base sm:text-sm"
                     required
@@ -200,7 +219,7 @@ const Meetings = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    تاريخ ووقت الاجتماع
+                    {t.meetings.form.dateTime}
                   </label>
                   <Input
                     type="datetime-local"
@@ -215,7 +234,7 @@ const Meetings = () => {
                   disabled={isLoading}
                   className="w-full text-base sm:text-sm py-3 sm:py-2"
                 >
-                  {isLoading ? "جاري الإضافة..." : "جدولة الاجتماع"}
+                  {isLoading ? t.meetings.form.submitting : t.meetings.form.submit}
                 </Button>
               </form>
             </CardContent>
@@ -225,7 +244,7 @@ const Meetings = () => {
             <div className="flex items-center gap-3 mb-4">
               <div className="text-3xl sm:text-4xl">🤝</div>
               <h3 className="text-lg sm:text-xl font-semibold text-primary">
-                أنواع الاجتماعات
+                {t.meetings.sections.meetingTypes}
               </h3>
             </div>
             <div className="space-y-3">
@@ -242,10 +261,10 @@ const Meetings = () => {
                 <div className="text-xl sm:text-2xl">👨‍🏫</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
-                    اجتماعات المعلمين
+                    {t.meetings.typeCards.teachers.name}
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    تنسيق وتخطيط الحلقات
+                    {t.meetings.typeCards.teachers.description}
                   </p>
                 </div>
               </div>
@@ -264,10 +283,10 @@ const Meetings = () => {
                 <div className="text-xl sm:text-2xl">👥</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
-                    اجتماعات أولياء الأمور
+                    {t.meetings.typeCards.parents.name}
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    متابعة تقدم الأبناء
+                    {t.meetings.typeCards.parents.description}
                   </p>
                 </div>
               </div>
@@ -284,10 +303,10 @@ const Meetings = () => {
                 <div className="text-xl sm:text-2xl">⚙️</div>
                 <div>
                   <h4 className="font-semibold text-sm sm:text-base">
-                    اجتماعات إدارية
+                    {t.meetings.typeCards.admin.name}
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    قرارات وتطوير المركز
+                    {t.meetings.typeCards.admin.description}
                   </p>
                 </div>
               </div>
@@ -298,7 +317,7 @@ const Meetings = () => {
         <div>
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-xl sm:text-2xl font-bold text-primary">
-              الاجتماعات المجدولة
+              {t.meetings.sections.scheduledMeetings}
             </h3>
             {filterType !== "all" && (
               <Button
@@ -307,7 +326,7 @@ const Meetings = () => {
                 onClick={() => setFilterType("all")}
                 className="text-xs sm:text-sm"
               >
-                عرض جميع الاجتماعات
+                {t.meetings.sections.viewAll}
               </Button>
             )}
           </div>
@@ -315,8 +334,8 @@ const Meetings = () => {
             <Card>
               <CardContent className="p-6 sm:p-8 text-center text-muted-foreground">
                 {filterType === "all"
-                  ? "لا توجد اجتماعات مجدولة"
-                  : `لا توجد اجتماعات من نوع "${filterType}" مجدولة`}
+                  ? t.meetings.empty.all
+                  : tFunc('meetings.empty.filtered', { type: typeLabelMap[filterType] || filterType })}
               </CardContent>
             </Card>
           ) : (
@@ -334,7 +353,7 @@ const Meetings = () => {
                             variant="outline"
                             className="text-xs mb-2 sm:mb-0"
                           >
-                            {meeting.type}
+                            {typeLabelMap[meeting.type] || meeting.type}
                           </Badge>
                         )}
                       </div>
@@ -347,14 +366,14 @@ const Meetings = () => {
                             : "secondary"
                         }
                       >
-                        {meeting.status}
+                        {statusLabelMap[meeting.status] || meeting.status}
                       </Badge>
                     </div>
                     <p className="text-muted-foreground mb-2 text-sm sm:text-base">
                       {meeting.description}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                      {new Date(meeting.meeting_date).toLocaleString("ar")}
+                      {formatDateTime(meeting.meeting_date, languageMeta.code)}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -363,7 +382,7 @@ const Meetings = () => {
                         onClick={() => updateStatus(meeting.id, "مجدولة")}
                         className="text-xs sm:text-sm"
                       >
-                        مجدولة
+                        {t.meetings.statusLabels.scheduled}
                       </Button>
                       <Button
                         size="sm"
@@ -371,7 +390,7 @@ const Meetings = () => {
                         onClick={() => updateStatus(meeting.id, "مكتملة")}
                         className="text-xs sm:text-sm"
                       >
-                        مكتملة
+                        {t.meetings.statusLabels.completed}
                       </Button>
                       <Button
                         size="sm"
@@ -379,7 +398,7 @@ const Meetings = () => {
                         onClick={() => updateStatus(meeting.id, "ملغاة")}
                         className="text-xs sm:text-sm"
                       >
-                        ملغاة
+                        {t.meetings.statusLabels.cancelled}
                       </Button>
                       <Button
                         size="sm"
@@ -387,7 +406,7 @@ const Meetings = () => {
                         onClick={() => openDeleteDialog(meeting)}
                         className="text-xs sm:text-sm"
                       >
-                        حذف
+                        {t.meetings.actions.delete}
                       </Button>
                     </div>
                   </CardContent>
@@ -403,11 +422,10 @@ const Meetings = () => {
         <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-base">
-              تأكيد الحذف
+              {t.meetings.deleteDialog.title}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              هل أنت متأكد من حذف الاجتماع "{selectedMeeting?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('meetings.deleteDialog.message', { title: selectedMeeting?.title || '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -416,14 +434,14 @@ const Meetings = () => {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="text-sm"
             >
-              إلغاء
+              {t.meetings.deleteDialog.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={deleteMeeting}
               className="text-sm"
             >
-              حذف
+              {t.meetings.deleteDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

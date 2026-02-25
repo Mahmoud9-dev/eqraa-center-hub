@@ -5,24 +5,18 @@ import { Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
+  const { t } = useLanguage();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const getIcon = () => {
-    if (theme === "dark") {
-      return <Moon className="h-[1.2rem] w-[1.2rem]" />;
-    } else {
-      return <img src="/sun.svg" alt="" className="h-[1.2rem] w-[1.2rem]" />;
-    }
-  };
-
   const getLabel = () => {
-    return theme === "dark" ? "الوضع الداكن" : "الوضع الفاتح";
+    return theme === "dark" ? t.common.darkMode : t.common.lightMode;
   };
 
   return (
@@ -52,7 +46,7 @@ export function ThemeToggle() {
           }`}
         />
       </div>
-      <span className="sr-only">تبديل الوضع</span>
+      <span className="sr-only">{t.common.toggleTheme}</span>
     </Button>
   );
 }

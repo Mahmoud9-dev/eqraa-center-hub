@@ -53,7 +53,7 @@ Eqraa Center Hub delivers a modern, intuitive platform that:
 
 ### Key Highlights
 
-✅ **Full Arabic Support** - Complete right-to-left (RTL) layout with Noto Sans Arabic font
+✅ **Full Arabic & English Support** - Complete RTL/LTR switching with custom i18n layer; flicker-free and localStorage-persisted
 ✅ **16+ Functional Modules** - Comprehensive coverage of educational center operations
 ✅ **Modern Tech Stack** - Built with Next.js, React, TypeScript, and Supabase
 ✅ **Responsive Design** - Optimized for desktop, tablet, and mobile devices
@@ -277,6 +277,32 @@ Comprehensive application configuration and customization.
 - **Search & Filter** - Powerful search capabilities across all modules
 - **Data Export** - Export functionality for reports and records
 - **Secure Authentication** - Role-based access with Supabase Auth
+
+---
+
+### 🌐 Internationalization (AR / EN)
+
+Eqraa fully supports **Arabic (default)** and **English** with a zero-dependency custom i18n layer:
+
+| Feature | Details |
+|---------|---------|
+| Languages | Arabic (`ar-SA`) and English (`en-US`) |
+| Direction | RTL for Arabic, LTR for English — flicker-free via inline `<script>` in `<head>` |
+| Storage | `localStorage` key `eqraa-language`; survives navigation and logout |
+| Architecture | `LanguageProvider` at root; `useLanguage()` hook exposes `t`, `tFunc`, `languageMeta`, `isRTL` |
+| Translation files | Per-domain modules in `src/lib/i18n/` — `common`, `nav`, `auth`, `home`, `students`, `teachers`, `attendance`, `exams`, `announcements`, `settings`, `errors` |
+| Interpolation | `tFunc('key', { name: 'Ali' })` with `{{name}}` syntax |
+| Fallback | Missing keys fall back to English, then to the key path itself |
+| Formatters | `formatDate`, `formatNumber`, `formatPercent`, etc. via `Intl` APIs |
+| RTL class strategy | Tailwind logical properties (`ms-/me-`, `ps-/pe-`, `start-/end-`, `text-start/end`, `border-s/e`) |
+| CI guard | `node scripts/check-i18n.js --strict` scans for unextracted Arabic in JSX |
+
+**Adding a new string:**
+1. Add the key and both AR + EN values to the relevant `src/lib/i18n/<domain>.ts` file
+2. Use `t.<domain>.<key>` or `tFunc('<domain>.<key>')` in JSX
+3. Run `node scripts/check-i18n.js` to verify no hardcoded Arabic remains
+
+See [docs/LOCALIZATION_STANDARD.md](docs/LOCALIZATION_STANDARD.md) for the full standard.
 
 ---
 

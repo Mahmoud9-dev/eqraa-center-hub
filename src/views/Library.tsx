@@ -41,6 +41,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { LibraryResource, ResourceType } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 const Library = () => {
   const [activeTab, setActiveTab] = useState("books");
@@ -52,6 +54,27 @@ const Library = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { toast } = useToast();
+  const { t, tFunc, languageMeta } = useLanguage();
+
+  // Label maps for DB canonical values → translated display labels
+  const typeLabelMap: Record<string, string> = {
+    "PDF": t.library.typeLabels.pdf,
+    "صوت": t.library.typeLabels.audio,
+    "فيديو": t.library.typeLabels.video,
+    "رابط": t.library.typeLabels.link,
+  };
+
+  const categoryLabelMap: Record<string, string> = {
+    "تفسير": t.library.categoryLabels.tafsir,
+    "حديث": t.library.categoryLabels.hadith,
+    "فقه": t.library.categoryLabels.fiqh,
+    "عقيدة": t.library.categoryLabels.aqeedah,
+    "سيرة": t.library.categoryLabels.seerah,
+    "تجويد": t.library.categoryLabels.tajweed,
+    "أصول الفقه": t.library.categoryLabels.usulFiqh,
+    "أخلاق": t.library.categoryLabels.akhlaq,
+    "تاريخ الإسلام": t.library.categoryLabels.islamicHistory,
+  };
 
   // Mock data - will be replaced with actual data from Supabase
   const [resources, setResources] = useState<LibraryResource[]>([
@@ -199,12 +222,27 @@ const Library = () => {
     }
   };
 
+  const getTypeActionLabel = (type: ResourceType) => {
+    switch (type) {
+      case "PDF":
+        return t.library.actions.download;
+      case "صوت":
+        return t.library.actions.listen;
+      case "فيديو":
+        return t.library.actions.watch;
+      case "رابط":
+        return t.library.actions.visit;
+      default:
+        return t.library.actions.view;
+    }
+  };
+
   // CRUD functions
   const handleAddResource = () => {
     if (!newResource.title || !newResource.type || !newResource.category) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.library.toast.errorTitle,
+        description: t.library.toast.requiredFields,
         variant: "destructive",
       });
       return;
@@ -234,8 +272,8 @@ const Library = () => {
     });
     setIsAddDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة المورد بنجاح",
+      title: t.library.toast.addedTitle,
+      description: t.library.toast.addedDescription,
     });
   };
 
@@ -247,8 +285,8 @@ const Library = () => {
       !newResource.category
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.library.toast.errorTitle,
+        description: t.library.toast.requiredFields,
         variant: "destructive",
       });
       return;
@@ -286,8 +324,8 @@ const Library = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل المورد بنجاح",
+      title: t.library.toast.editedTitle,
+      description: t.library.toast.editedDescription,
     });
   };
 
@@ -300,8 +338,8 @@ const Library = () => {
     setIsDeleteDialogOpen(false);
     setSelectedResource(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف المورد بنجاح",
+      title: t.library.toast.deletedTitle,
+      description: t.library.toast.deletedDescription,
     });
   };
 
@@ -338,21 +376,192 @@ const Library = () => {
     return filteredResources.filter((resource) => resource.type === type);
   };
 
+  // Shared resource card renderer to avoid repetition across tabs
+  const renderResourceCard = (resource: LibraryResource) => (
+    <Card
+      key={resource.id}
+      className="hover:shadow-md transition-shadow"
+    >
+      <CardHeader>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-2xl shrink-0">{getTypeIcon(resource.type)}</span>
+            <CardTitle className="text-base truncate">
+              {resource.title}
+            </CardTitle>
+          </div>
+          <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
+            {typeLabelMap[resource.type] || resource.type}
+          </Badge>
+        </div>
+        <CardDescription>
+          {resource.author && <span className="block">{t.library.card.authorLabel} {resource.author}</span>}
+          <span className="block">{t.library.card.categoryLabel} {categoryLabelMap[resource.category] || resource.category}</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+          {resource.description}
+        </p>
+        <div className="text-xs text-muted-foreground mb-3">
+          {t.library.card.addedLabel} {formatDate(resource.createdAt, languageMeta.code)}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
+            {getTypeActionLabel(resource.type)}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 min-w-[70px] text-xs"
+            onClick={() => openEditDialog(resource)}
+          >
+            {t.library.actions.edit}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="flex-1 min-w-[70px] text-xs"
+            onClick={() => openDeleteDialog(resource)}
+          >
+            {t.library.actions.delete}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Shared form fields renderer for add/edit dialogs
+  const renderFormFields = (idPrefix: string) => (
+    <div className="grid gap-4 py-4">
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-title`} className="text-right">
+          {t.library.form.titleLabel}
+        </Label>
+        <Input
+          id={`${idPrefix}-title`}
+          value={newResource.title}
+          onChange={(e) =>
+            setNewResource({
+              ...newResource,
+              title: e.target.value,
+            })
+          }
+          className="col-span-3"
+        />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-author`} className="text-right">
+          {t.library.form.authorLabel}
+        </Label>
+        <Input
+          id={`${idPrefix}-author`}
+          value={newResource.author}
+          onChange={(e) =>
+            setNewResource({
+              ...newResource,
+              author: e.target.value,
+            })
+          }
+          className="col-span-3"
+        />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-type`} className="text-right">
+          {t.library.form.typeLabel}
+        </Label>
+        <Select
+          value={newResource.type}
+          onValueChange={(value) =>
+            setNewResource({
+              ...newResource,
+              type: value as ResourceType,
+            })
+          }
+        >
+          <SelectTrigger className="col-span-3">
+            <SelectValue placeholder={t.library.form.typePlaceholder} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="PDF">{typeLabelMap["PDF"]}</SelectItem>
+            <SelectItem value="صوت">{typeLabelMap["صوت"]}</SelectItem>
+            <SelectItem value="فيديو">{typeLabelMap["فيديو"]}</SelectItem>
+            <SelectItem value="رابط">{typeLabelMap["رابط"]}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-category`} className="text-right">
+          {t.library.form.categoryLabel}
+        </Label>
+        <Select
+          value={newResource.category}
+          onValueChange={(value) =>
+            setNewResource({ ...newResource, category: value })
+          }
+        >
+          <SelectTrigger className="col-span-3">
+            <SelectValue placeholder={t.library.form.categoryPlaceholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {categories
+              .filter((c) => c !== "all")
+              .map((category) => (
+                <SelectItem key={category} value={category}>
+                  {categoryLabelMap[category] || category}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-description`} className="text-right">
+          {t.library.form.descriptionLabel}
+        </Label>
+        <Textarea
+          id={`${idPrefix}-description`}
+          value={newResource.description}
+          onChange={(e) =>
+            setNewResource({
+              ...newResource,
+              description: e.target.value,
+            })
+          }
+          className="col-span-3"
+          rows={3}
+        />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor={`${idPrefix}-url`} className="text-right">
+          {t.library.form.urlLabel}
+        </Label>
+        <Input
+          id={`${idPrefix}-url`}
+          value={newResource.url}
+          onChange={(e) =>
+            setNewResource({ ...newResource, url: e.target.value })
+          }
+          className="col-span-3"
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="المكتبة العلمية" showBack={true} />
+      <PageHeader title={t.library.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">🧭 المكتبة العلمية</h2>
+          <h2 className="text-2xl font-bold mb-4">{t.library.pageTitle}</h2>
           <p className="text-muted-foreground mb-6">
-            كتب PDF، مقاطع صوتية للعلماء، روابط موثوقة للمراجع الشرعية
+            {t.library.subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Input
-                placeholder="البحث في المكتبة..."
+                placeholder={t.library.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64"
@@ -362,12 +571,12 @@ const Library = () => {
                 onValueChange={setSelectedCategory}
               >
                 <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="جميع الفئات" />
+                  <SelectValue placeholder={t.library.allCategories} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      {category === "all" ? "جميع الفئات" : category}
+                      {category === "all" ? t.library.allCategories : (categoryLabelMap[category] || category)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -376,136 +585,25 @@ const Library = () => {
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground">
-                  إضافة مورد جديد
+                  {t.library.actions.addResource}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>إضافة مورد جديد</DialogTitle>
+                  <DialogTitle>{t.library.form.addTitle}</DialogTitle>
                   <DialogDescription>
-                    أدخل بيانات المورد الجديد للمكتبة
+                    {t.library.form.addDescription}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">
-                      العنوان
-                    </Label>
-                    <Input
-                      id="title"
-                      value={newResource.title}
-                      onChange={(e) =>
-                        setNewResource({
-                          ...newResource,
-                          title: e.target.value,
-                        })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="author" className="text-right">
-                      المؤلف
-                    </Label>
-                    <Input
-                      id="author"
-                      value={newResource.author}
-                      onChange={(e) =>
-                        setNewResource({
-                          ...newResource,
-                          author: e.target.value,
-                        })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="type" className="text-right">
-                      النوع
-                    </Label>
-                    <Select
-                      value={newResource.type}
-                      onValueChange={(value) =>
-                        setNewResource({
-                          ...newResource,
-                          type: value as ResourceType,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر النوع" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PDF">PDF</SelectItem>
-                        <SelectItem value="صوت">صوت</SelectItem>
-                        <SelectItem value="فيديو">فيديو</SelectItem>
-                        <SelectItem value="رابط">رابط</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="category" className="text-right">
-                      الفئة
-                    </Label>
-                    <Select
-                      value={newResource.category}
-                      onValueChange={(value) =>
-                        setNewResource({ ...newResource, category: value })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="اختر الفئة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories
-                          .filter((c) => c !== "all")
-                          .map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">
-                      الوصف
-                    </Label>
-                    <Textarea
-                      id="description"
-                      value={newResource.description}
-                      onChange={(e) =>
-                        setNewResource({
-                          ...newResource,
-                          description: e.target.value,
-                        })
-                      }
-                      className="col-span-3"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="url" className="text-right">
-                      الرابط
-                    </Label>
-                    <Input
-                      id="url"
-                      value={newResource.url}
-                      onChange={(e) =>
-                        setNewResource({ ...newResource, url: e.target.value })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
+                {renderFormFields("add")}
                 <DialogFooter>
                   <Button
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
                   >
-                    إلغاء
+                    {t.library.actions.cancel}
                   </Button>
-                  <Button onClick={handleAddResource}>إضافة مورد</Button>
+                  <Button onClick={handleAddResource}>{t.library.actions.addResource}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -515,252 +613,44 @@ const Library = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="overflow-x-auto -mx-4 px-4 pb-2">
             <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1">
-              <TabsTrigger value="books" className="text-xs sm:text-sm whitespace-nowrap">الكتب PDF</TabsTrigger>
-              <TabsTrigger value="audio" className="text-xs sm:text-sm whitespace-nowrap">المقاطع الصوتية</TabsTrigger>
-              <TabsTrigger value="video" className="text-xs sm:text-sm whitespace-nowrap">الفيديوهات</TabsTrigger>
-              <TabsTrigger value="links" className="text-xs sm:text-sm whitespace-nowrap">الروابط الموثوقة</TabsTrigger>
-              <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap">جميع الموارد</TabsTrigger>
+              <TabsTrigger value="books" className="text-xs sm:text-sm whitespace-nowrap">{t.library.tabs.books}</TabsTrigger>
+              <TabsTrigger value="audio" className="text-xs sm:text-sm whitespace-nowrap">{t.library.tabs.audio}</TabsTrigger>
+              <TabsTrigger value="video" className="text-xs sm:text-sm whitespace-nowrap">{t.library.tabs.video}</TabsTrigger>
+              <TabsTrigger value="links" className="text-xs sm:text-sm whitespace-nowrap">{t.library.tabs.links}</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap">{t.library.tabs.all}</TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="books" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getResourcesByType("PDF").map((resource) => (
-                <Card
-                  key={resource.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-2xl shrink-0">📄</span>
-                        <CardTitle className="text-base truncate">
-                          {resource.title}
-                        </CardTitle>
-                      </div>
-                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
-                        {resource.type}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      {resource.author && <div>المؤلف: {resource.author}</div>}
-                      <div>الفئة: {resource.category}</div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {resource.description}
-                    </p>
-                    <div className="text-xs text-muted-foreground mb-3">
-                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
-                        تحميل
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openEditDialog(resource)}
-                      >
-                        تعديل
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openDeleteDialog(resource)}
-                      >
-                        حذف
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {getResourcesByType("PDF").map(renderResourceCard)}
             </div>
           </TabsContent>
 
           <TabsContent value="audio" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getResourcesByType("صوت").map((resource) => (
-                <Card
-                  key={resource.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-2xl shrink-0">🎵</span>
-                        <CardTitle className="text-base truncate">
-                          {resource.title}
-                        </CardTitle>
-                      </div>
-                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
-                        {resource.type}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      {resource.author && <div>المؤلف: {resource.author}</div>}
-                      <div>الفئة: {resource.category}</div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {resource.description}
-                    </p>
-                    <div className="text-xs text-muted-foreground mb-3">
-                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
-                        استماع
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openEditDialog(resource)}
-                      >
-                        تعديل
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openDeleteDialog(resource)}
-                      >
-                        حذف
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {getResourcesByType("صوت").map(renderResourceCard)}
             </div>
           </TabsContent>
 
           <TabsContent value="video" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getResourcesByType("فيديو").map((resource) => (
-                <Card
-                  key={resource.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-2xl shrink-0">🎥</span>
-                        <CardTitle className="text-base truncate">
-                          {resource.title}
-                        </CardTitle>
-                      </div>
-                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
-                        {resource.type}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      {resource.author && <div>المؤلف: {resource.author}</div>}
-                      <div>الفئة: {resource.category}</div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {resource.description}
-                    </p>
-                    <div className="text-xs text-muted-foreground mb-3">
-                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
-                        مشاهدة
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openEditDialog(resource)}
-                      >
-                        تعديل
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openDeleteDialog(resource)}
-                      >
-                        حذف
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {getResourcesByType("فيديو").map(renderResourceCard)}
             </div>
           </TabsContent>
 
           <TabsContent value="links" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getResourcesByType("رابط").map((resource) => (
-                <Card
-                  key={resource.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-2xl shrink-0">🔗</span>
-                        <CardTitle className="text-base truncate">
-                          {resource.title}
-                        </CardTitle>
-                      </div>
-                      <Badge className={`${getTypeColor(resource.type)} shrink-0 text-xs`}>
-                        {resource.type}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      {resource.author && <div>المؤلف: {resource.author}</div>}
-                      <div>الفئة: {resource.category}</div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {resource.description}
-                    </p>
-                    <div className="text-xs text-muted-foreground mb-3">
-                      إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 min-w-[70px] text-xs">
-                        زيارة
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openEditDialog(resource)}
-                      >
-                        تعديل
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 min-w-[70px] text-xs"
-                        onClick={() => openDeleteDialog(resource)}
-                      >
-                        حذف
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {getResourcesByType("رابط").map(renderResourceCard)}
             </div>
           </TabsContent>
 
           <TabsContent value="all" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>جميع موارد المكتبة</CardTitle>
+                <CardTitle>{t.library.card.allResourcesTitle}</CardTitle>
                 <CardDescription>
-                  عرض وإدارة جميع موارد المكتبة العلمية
+                  {t.library.card.allResourcesDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -774,17 +664,17 @@ const Library = () => {
                           <h4 className="font-medium text-sm truncate">{resource.title}</h4>
                         </div>
                         <Badge className={`${getTypeColor(resource.type)} text-xs shrink-0`}>
-                          {resource.type}
+                          {typeLabelMap[resource.type] || resource.type}
                         </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground space-y-1">
-                        {resource.author && <div>المؤلف: {resource.author}</div>}
-                        <div>الفئة: {resource.category}</div>
-                        <div>إضافة: {resource.createdAt.toLocaleDateString("ar-SA")}</div>
+                        {resource.author && <div>{t.library.card.authorLabel} {resource.author}</div>}
+                        <div>{t.library.card.categoryLabel} {categoryLabelMap[resource.category] || resource.category}</div>
+                        <div>{t.library.card.addedLabel} {formatDate(resource.createdAt, languageMeta.code)}</div>
                       </div>
                       <div className="flex gap-2 pt-2 border-t">
                         <Button variant="outline" size="sm" className="flex-1 text-xs">
-                          عرض
+                          {t.library.actions.view}
                         </Button>
                         <Button
                           variant="outline"
@@ -792,7 +682,7 @@ const Library = () => {
                           className="flex-1 text-xs"
                           onClick={() => openEditDialog(resource)}
                         >
-                          تعديل
+                          {t.library.actions.edit}
                         </Button>
                         <Button
                           variant="destructive"
@@ -800,7 +690,7 @@ const Library = () => {
                           className="flex-1 text-xs"
                           onClick={() => openDeleteDialog(resource)}
                         >
-                          حذف
+                          {t.library.actions.delete}
                         </Button>
                       </div>
                     </div>
@@ -812,12 +702,12 @@ const Library = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>العنوان</TableHead>
-                        <TableHead className="hidden lg:table-cell">المؤلف</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead className="hidden lg:table-cell">الفئة</TableHead>
-                        <TableHead className="hidden lg:table-cell">تاريخ الإضافة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{t.library.table.title}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t.library.table.author}</TableHead>
+                        <TableHead>{t.library.table.type}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t.library.table.category}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{t.library.table.addedDate}</TableHead>
+                        <TableHead>{t.library.table.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -832,17 +722,17 @@ const Library = () => {
                           <TableCell className="hidden lg:table-cell">{resource.author}</TableCell>
                           <TableCell>
                             <Badge className={getTypeColor(resource.type)}>
-                              {resource.type}
+                              {typeLabelMap[resource.type] || resource.type}
                             </Badge>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell">{resource.category}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{categoryLabelMap[resource.category] || resource.category}</TableCell>
                           <TableCell className="hidden lg:table-cell">
-                            {resource.createdAt.toLocaleDateString("ar-SA")}
+                            {formatDate(resource.createdAt, languageMeta.code)}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               <Button variant="outline" size="sm" className="text-xs px-2">
-                                عرض
+                                {t.library.actions.view}
                               </Button>
                               <Button
                                 variant="outline"
@@ -850,7 +740,7 @@ const Library = () => {
                                 className="text-xs px-2"
                                 onClick={() => openEditDialog(resource)}
                               >
-                                تعديل
+                                {t.library.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -858,7 +748,7 @@ const Library = () => {
                                 className="text-xs px-2"
                                 onClick={() => openDeleteDialog(resource)}
                               >
-                                حذف
+                                {t.library.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -877,123 +767,18 @@ const Library = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل المورد</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات المورد</DialogDescription>
+            <DialogTitle>{t.library.form.editTitle}</DialogTitle>
+            <DialogDescription>{t.library.form.editDescription}</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-title" className="text-right">
-                العنوان
-              </Label>
-              <Input
-                id="edit-title"
-                value={newResource.title}
-                onChange={(e) =>
-                  setNewResource({ ...newResource, title: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-author" className="text-right">
-                المؤلف
-              </Label>
-              <Input
-                id="edit-author"
-                value={newResource.author}
-                onChange={(e) =>
-                  setNewResource({ ...newResource, author: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-type" className="text-right">
-                النوع
-              </Label>
-              <Select
-                value={newResource.type}
-                onValueChange={(value) =>
-                  setNewResource({
-                    ...newResource,
-                    type: value as ResourceType,
-                  })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر النوع" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PDF">PDF</SelectItem>
-                  <SelectItem value="صوت">صوت</SelectItem>
-                  <SelectItem value="فيديو">فيديو</SelectItem>
-                  <SelectItem value="رابط">رابط</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-category" className="text-right">
-                الفئة
-              </Label>
-              <Select
-                value={newResource.category}
-                onValueChange={(value) =>
-                  setNewResource({ ...newResource, category: value })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر الفئة" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories
-                    .filter((c) => c !== "all")
-                    .map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">
-                الوصف
-              </Label>
-              <Textarea
-                id="edit-description"
-                value={newResource.description}
-                onChange={(e) =>
-                  setNewResource({
-                    ...newResource,
-                    description: e.target.value,
-                  })
-                }
-                className="col-span-3"
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-url" className="text-right">
-                الرابط
-              </Label>
-              <Input
-                id="edit-url"
-                value={newResource.url}
-                onChange={(e) =>
-                  setNewResource({ ...newResource, url: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-          </div>
+          {renderFormFields("edit")}
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.library.actions.cancel}
             </Button>
-            <Button onClick={handleEditResource}>حفظ التعديلات</Button>
+            <Button onClick={handleEditResource}>{t.library.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1002,10 +787,9 @@ const Library = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.library.deleteDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف المورد "{selectedResource?.title}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('library.deleteDialog.description', { title: selectedResource?.title || '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1013,10 +797,10 @@ const Library = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.library.actions.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteResource}>
-              حذف
+              {t.library.actions.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

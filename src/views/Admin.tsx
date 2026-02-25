@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { teacherSchema } from "@/lib/validations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Teacher {
   id: string;
@@ -46,6 +47,7 @@ const Admin = () => {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const loadData = async () => {
     const { data: teachersData } = await getSupabase()
@@ -63,6 +65,7 @@ const Admin = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -81,7 +84,7 @@ const Admin = () => {
     if (!validation.success) {
       const errors = validation.error.issues.map((e) => e.message).join(", ");
       toast({
-        title: "خطأ في البيانات",
+        title: t.admin.toast.validationError,
         description: errors,
         variant: "destructive",
       });
@@ -101,12 +104,12 @@ const Admin = () => {
 
     if (error) {
       toast({
-        title: "خطأ في إضافة المعلم",
+        title: t.admin.toast.addTeacherError,
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({ title: "تم إضافة المعلم بنجاح" });
+      toast({ title: t.admin.toast.addTeacherSuccess });
       setTeacherName("");
       setSpecialization("");
       setEmail("");
@@ -117,12 +120,7 @@ const Admin = () => {
   };
 
   const getDepartmentLabel = (dept: string) => {
-    const labels = {
-      quran: "القرآن",
-      tajweed: "التجويد",
-      tarbawi: "التربوي",
-    };
-    return labels[dept as keyof typeof labels] || dept;
+    return t.admin.departments[dept as keyof typeof t.admin.departments] || dept;
   };
 
   const totalStudents = students.length;
@@ -131,13 +129,13 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="الإدارة" />
+      <PageHeader title={t.admin.pageTitle} />
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-8">
           <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
             <CardContent className="p-3 md:p-6">
               <div className="text-2xl md:text-4xl mb-1 md:mb-2">👥</div>
-              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">إجمالي الطلاب</h3>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">{t.admin.stats.totalStudents}</h3>
               <p className="text-2xl md:text-4xl font-bold">{totalStudents}</p>
             </CardContent>
           </Card>
@@ -145,7 +143,7 @@ const Admin = () => {
           <Card className="bg-gradient-to-br from-secondary to-secondary/80 text-secondary-foreground">
             <CardContent className="p-3 md:p-6">
               <div className="text-2xl md:text-4xl mb-1 md:mb-2">👨‍🏫</div>
-              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">عدد المعلمين</h3>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">{t.admin.stats.totalTeachers}</h3>
               <p className="text-2xl md:text-4xl font-bold">{totalTeachers}</p>
             </CardContent>
           </Card>
@@ -153,7 +151,7 @@ const Admin = () => {
           <Card className="bg-gradient-to-br from-accent to-accent/80">
             <CardContent className="p-3 md:p-6">
               <div className="text-2xl md:text-4xl mb-1 md:mb-2">📖</div>
-              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">طلاب التحفيظ</h3>
+              <h3 className="text-sm md:text-lg font-semibold mb-0.5 md:mb-1">{t.admin.stats.quranStudents}</h3>
               <p className="text-2xl md:text-4xl font-bold">{quranStudents}</p>
             </CardContent>
           </Card>
@@ -161,8 +159,8 @@ const Admin = () => {
 
         <Tabs defaultValue="teachers" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="teachers">المعلمون</TabsTrigger>
-            <TabsTrigger value="students">الطلاب</TabsTrigger>
+            <TabsTrigger value="teachers">{t.admin.tabs.teachers}</TabsTrigger>
+            <TabsTrigger value="students">{t.admin.tabs.students}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="teachers">
@@ -170,36 +168,36 @@ const Admin = () => {
               <Card className="border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">
-                    إضافة معلم جديد
+                    {t.admin.teacherForm.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddTeacher} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        اسم المعلم
+                        {t.admin.teacherForm.name}
                       </label>
                       <Input
                         value={teacherName}
                         onChange={(e) => setTeacherName(e.target.value)}
-                        placeholder="أدخل اسم المعلم"
+                        placeholder={t.admin.teacherForm.namePlaceholder}
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        التخصص
+                        {t.admin.teacherForm.specialization}
                       </label>
                       <Input
                         value={specialization}
                         onChange={(e) => setSpecialization(e.target.value)}
-                        placeholder="مثال: تحفيظ القرآن"
+                        placeholder={t.admin.teacherForm.specializationPlaceholder}
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        القسم
+                        {t.admin.teacherForm.department}
                       </label>
                       <Select
                         value={department}
@@ -209,15 +207,15 @@ const Admin = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="quran">القرآن</SelectItem>
-                          <SelectItem value="tajweed">التجويد</SelectItem>
-                          <SelectItem value="tarbawi">التربوي</SelectItem>
+                          <SelectItem value="quran">{t.admin.departments.quran}</SelectItem>
+                          <SelectItem value="tajweed">{t.admin.departments.tajweed}</SelectItem>
+                          <SelectItem value="tarbawi">{t.admin.departments.tarbawi}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        البريد الإلكتروني (اختياري)
+                        {t.admin.teacherForm.emailOptional}
                       </label>
                       <Input
                         type="email"
@@ -228,7 +226,7 @@ const Admin = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        رقم الهاتف (اختياري)
+                        {t.admin.teacherForm.phoneOptional}
                       </label>
                       <Input
                         type="tel"
@@ -242,7 +240,7 @@ const Admin = () => {
                       disabled={isLoading}
                       className="w-full"
                     >
-                      {isLoading ? "جاري الإضافة..." : "إضافة المعلم"}
+                      {isLoading ? t.admin.teacherForm.submitting : t.admin.teacherForm.submit}
                     </Button>
                   </form>
                 </CardContent>
@@ -250,12 +248,12 @@ const Admin = () => {
 
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-primary">
-                  قائمة المعلمين
+                  {t.admin.teacherList.title}
                 </h3>
                 {teachers.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
-                      لا يوجد معلمون مسجلون بعد
+                      {t.admin.teacherList.empty}
                     </CardContent>
                   </Card>
                 ) : (
@@ -272,7 +270,7 @@ const Admin = () => {
                           {teacher.specialization}
                         </p>
                         <p className="text-sm text-primary font-medium mb-2">
-                          قسم {getDepartmentLabel(teacher.department)}
+                          {t.admin.teacherList.departmentPrefix} {getDepartmentLabel(teacher.department)}
                         </p>
                         {teacher.email && (
                           <p className="text-sm text-muted-foreground">
@@ -295,12 +293,12 @@ const Admin = () => {
           <TabsContent value="students">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-primary mb-4">
-                جميع الطلاب
+                {t.admin.studentList.title}
               </h3>
               {students.length === 0 ? (
                 <Card>
                   <CardContent className="p-8 text-center text-muted-foreground">
-                    لا يوجد طلاب مسجلون بعد
+                    {t.admin.studentList.empty}
                   </CardContent>
                 </Card>
               ) : (
@@ -315,14 +313,14 @@ const Admin = () => {
                           {student.name}
                         </h4>
                         <p className="text-sm text-muted-foreground mb-2">
-                          العمر: {student.age} سنة
+                          {t.admin.studentList.age.replace('{age}', String(student.age))}
                         </p>
                         <p className="text-sm text-primary font-medium mb-1">
                           {getDepartmentLabel(student.department)}
                         </p>
                         {student.department === "quran" && (
                           <p className="text-sm text-muted-foreground">
-                            محفوظ: {student.parts_memorized} جزء
+                            {t.admin.studentList.partsMemorized.replace('{parts}', String(student.parts_memorized))}
                           </p>
                         )}
                       </CardContent>

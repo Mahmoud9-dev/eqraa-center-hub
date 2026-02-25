@@ -184,8 +184,8 @@ describe("Students View - Supabase Integration", () => {
       };
 
       const updatedStudent = {
-        id: studentId,
         ...mockStudents[0],
+        id: studentId,
         ...updates,
       };
 
@@ -284,8 +284,8 @@ describe("Students View - Supabase Integration", () => {
       };
 
       const updatedNote = {
-        id: noteId,
         ...mockStudentNotes[0],
+        id: noteId,
         ...updates,
       };
 
@@ -416,7 +416,8 @@ describe("Students View - Supabase Integration", () => {
       vi.mocked(getSupabase).mockReturnValue({ from: mockFrom } as any);
 
       const supabase = getSupabase();
-      const result = await supabase.from("students").insert({}).select().single();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await supabase.from("students").insert({} as any).select().single();
 
       expect(result.error).toEqual(mockError);
       expect(result.data).toBeNull();

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import PageHeader from "@/components/PageHeader";
 import { Department, StudentGrade } from "@/types";
 import { getSupabase } from "@/integrations/supabase/client";
@@ -266,6 +267,7 @@ const Students = () => {
     },
   });
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
@@ -281,11 +283,11 @@ const Students = () => {
   const getDepartmentName = (dept: Department | string) => {
     switch (dept) {
       case "quran":
-        return "قرآن";
+        return t.students.departments.quran;
       case "tajweed":
-        return "تجويد";
+        return t.students.departments.tajweed;
       case "tarbawi":
-        return "تربوي";
+        return t.students.departments.tarbawi;
       default:
         return dept;
     }
@@ -314,8 +316,8 @@ const Students = () => {
   const handleAddStudent = async () => {
     if (!newStudent.name || !newStudent.grade || !newStudent.teacherId) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.students.toast.error,
+        description: t.students.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -345,8 +347,8 @@ const Students = () => {
       if (error) {
         console.error("Error adding student:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء إضافة الطالب",
+          title: t.students.toast.error,
+          description: t.students.toast.addError,
           variant: "destructive",
         });
         return;
@@ -380,14 +382,14 @@ const Students = () => {
       });
       setIsAddDialogOpen(false);
       toast({
-        title: "تم الإضافة",
-        description: "تم إضافة الطالب بنجاح",
+        title: t.students.toast.addSuccess,
+        description: t.students.toast.addSuccessDesc,
       });
     } catch (error) {
       console.error("Error adding student:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء إضافة الطالب",
+        title: t.students.toast.error,
+        description: t.students.toast.addError,
         variant: "destructive",
       });
     }
@@ -401,8 +403,8 @@ const Students = () => {
       !newStudent.teacherId
     ) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: t.students.toast.error,
+        description: t.students.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -431,8 +433,8 @@ const Students = () => {
       if (error) {
         console.error("Error updating student:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل الطالب",
+          title: t.students.toast.error,
+          description: t.students.toast.editError,
           variant: "destructive",
         });
         return;
@@ -467,14 +469,14 @@ const Students = () => {
         },
       });
       toast({
-        title: "تم التعديل",
-        description: "تم تعديل بيانات الطالب بنجاح",
+        title: t.students.toast.editSuccess,
+        description: t.students.toast.editSuccessDesc,
       });
     } catch (error) {
       console.error("Error updating student:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تعديل الطالب",
+        title: t.students.toast.error,
+        description: t.students.toast.editError,
         variant: "destructive",
       });
     }
@@ -492,8 +494,8 @@ const Students = () => {
       if (error) {
         console.error("Error deleting student:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء حذف الطالب",
+          title: t.students.toast.error,
+          description: t.students.toast.deleteError,
           variant: "destructive",
         });
         return;
@@ -505,14 +507,14 @@ const Students = () => {
       setIsDeleteDialogOpen(false);
       setSelectedStudent(null);
       toast({
-        title: "تم الحذف",
-        description: "تم حذف الطالب بنجاح",
+        title: t.students.toast.deleteSuccess,
+        description: t.students.toast.deleteSuccessDesc,
       });
     } catch (error) {
       console.error("Error deleting student:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء حذف الطالب",
+        title: t.students.toast.error,
+        description: t.students.toast.deleteError,
         variant: "destructive",
       });
     }
@@ -574,8 +576,8 @@ const Students = () => {
       if (error) {
         console.error("Error updating images:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل السور المحفوظة",
+          title: t.students.toast.error,
+          description: t.students.toast.imageEditError,
           variant: "destructive",
         });
         return;
@@ -587,14 +589,14 @@ const Students = () => {
       setIsEditImagesDialogOpen(false);
       setSelectedStudent(null);
       toast({
-        title: "تم التعديل",
-        description: "تم تعديل السور المحفوظة بنجاح",
+        title: t.students.toast.imageEditSuccess,
+        description: t.students.toast.imageEditSuccessDesc,
       });
     } catch (error) {
       console.error("Error updating images:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تعديل السور المحفوظة",
+        title: t.students.toast.error,
+        description: t.students.toast.imageEditError,
         variant: "destructive",
       });
     }
@@ -604,8 +606,8 @@ const Students = () => {
   const _handleAddNote = async () => {
     if (!selectedStudent || !newNote.content.trim()) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال محتوى الملاحظة",
+        title: t.students.toast.error,
+        description: t.students.toast.noteContentRequired,
         variant: "destructive",
       });
       return;
@@ -625,8 +627,8 @@ const Students = () => {
       if (error) {
         console.error("Error adding note:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء إضافة الملاحظة",
+          title: t.students.toast.error,
+          description: t.students.toast.noteAddError,
           variant: "destructive",
         });
         return;
@@ -644,14 +646,14 @@ const Students = () => {
 
       setIsAddNoteDialogOpen(false);
       toast({
-        title: "تم الإضافة",
-        description: "تم إضافة الملاحظة بنجاح",
+        title: t.students.toast.noteAddSuccess,
+        description: t.students.toast.noteAddSuccessDesc,
       });
     } catch (error) {
       console.error("Error adding note:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء إضافة الملاحظة",
+        title: t.students.toast.error,
+        description: t.students.toast.noteAddError,
         variant: "destructive",
       });
     }
@@ -660,8 +662,8 @@ const Students = () => {
   const _handleEditNote = async () => {
     if (!selectedStudent || !selectedNote || !newNote.content.trim()) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال محتوى الملاحظة",
+        title: t.students.toast.error,
+        description: t.students.toast.noteContentRequired,
         variant: "destructive",
       });
       return;
@@ -681,8 +683,8 @@ const Students = () => {
       if (error) {
         console.error("Error updating note:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء تعديل الملاحظة",
+          title: t.students.toast.error,
+          description: t.students.toast.noteEditError,
           variant: "destructive",
         });
         return;
@@ -701,14 +703,14 @@ const Students = () => {
       setIsEditNoteDialogOpen(false);
       setSelectedNote(null);
       toast({
-        title: "تم التعديل",
-        description: "تم تعديل الملاحظة بنجاح",
+        title: t.students.toast.noteEditSuccess,
+        description: t.students.toast.noteEditSuccessDesc,
       });
     } catch (error) {
       console.error("Error updating note:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تعديل الملاحظة",
+        title: t.students.toast.error,
+        description: t.students.toast.noteEditError,
         variant: "destructive",
       });
     }
@@ -724,8 +726,8 @@ const Students = () => {
       if (error) {
         console.error("Error deleting note:", error);
         toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء حذف الملاحظة",
+          title: t.students.toast.error,
+          description: t.students.toast.noteDeleteError,
           variant: "destructive",
         });
         return;
@@ -735,14 +737,14 @@ const Students = () => {
       await loadStudentNotes();
 
       toast({
-        title: "تم الحذف",
-        description: "تم حذف الملاحظة بنجاح",
+        title: t.students.toast.noteDeleteSuccess,
+        description: t.students.toast.noteDeleteSuccessDesc,
       });
     } catch (error) {
       console.error("Error deleting note:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء حذف الملاحظة",
+        title: t.students.toast.error,
+        description: t.students.toast.noteDeleteError,
         variant: "destructive",
       });
     }
@@ -774,12 +776,12 @@ const Students = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <PageHeader title="إدارة الطلاب" showBack={true} />
+        <PageHeader title={t.students.pageTitle} showBack={true} />
         <main className="container mx-auto px-4 py-6 sm:py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">جاري تحميل بيانات الطلاب...</p>
+              <p className="text-muted-foreground">{t.common.loading}</p>
             </div>
           </div>
         </main>
@@ -789,21 +791,21 @@ const Students = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="إدارة الطلاب" showBack={true} />
+      <PageHeader title={t.students.pageHeaderTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
-            👥 الطلاب
+            👥 {t.students.sectionTitle}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
-            إدارة بيانات الطلاب ومتابعة أدائهم وحضورهم
+            {t.students.sectionDescription}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4 space-x-0 sm:space-x-4 space-x-reverse">
               <Input
-                placeholder="البحث عن طالب..."
+                placeholder={t.students.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64 text-base sm:text-sm"
@@ -815,35 +817,35 @@ const Students = () => {
                 }
               >
                 <SelectTrigger className="w-full sm:w-48 text-base sm:text-sm">
-                  <SelectValue placeholder="جميع الأقسام" />
+                  <SelectValue placeholder={t.students.departments.all} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الأقسام</SelectItem>
-                  <SelectItem value="quran">قرآن</SelectItem>
-                  <SelectItem value="tajweed">تجويد</SelectItem>
-                  <SelectItem value="tarbawi">تربوي</SelectItem>
+                  <SelectItem value="all">{t.students.departments.all}</SelectItem>
+                  <SelectItem value="quran">{t.students.departments.quran}</SelectItem>
+                  <SelectItem value="tajweed">{t.students.departments.tajweed}</SelectItem>
+                  <SelectItem value="tarbawi">{t.students.departments.tarbawi}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary text-primary-foreground w-full sm:w-auto text-sm">
-                  إضافة طالب جديد
+                  {t.students.actions.addNewStudent}
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="text-lg sm:text-base">
-                    إضافة طالب جديد
+                    {t.students.dialog.addTitle}
                   </DialogTitle>
                   <DialogDescription className="text-sm sm:text-xs">
-                    أدخل بيانات الطالب الجديد
+                    {t.students.dialog.addDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="name" className="text-right sm:text-sm">
-                      الاسم
+                      {t.students.form.name}
                     </Label>
                     <Input
                       id="name"
@@ -856,7 +858,7 @@ const Students = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="age" className="text-right sm:text-sm">
-                      العمر
+                      {t.students.form.age}
                     </Label>
                     <Input
                       id="age"
@@ -873,7 +875,7 @@ const Students = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                     <Label htmlFor="grade" className="text-right sm:text-sm">
-                      المرحلة الدراسية
+                      {t.students.form.grade}
                     </Label>
                     <Input
                       id="grade"
@@ -889,7 +891,7 @@ const Students = () => {
                       htmlFor="department"
                       className="text-right sm:text-sm"
                     >
-                      القسم
+                      {t.students.form.department}
                     </Label>
                     <Select
                       value={newStudent.department}
@@ -901,12 +903,12 @@ const Students = () => {
                       }
                     >
                       <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
-                        <SelectValue placeholder="اختر القسم" />
+                        <SelectValue placeholder={t.students.form.selectDepartment} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="quran">قرآن</SelectItem>
-                        <SelectItem value="tajweed">تجويد</SelectItem>
-                        <SelectItem value="tarbawi">تربوي</SelectItem>
+                        <SelectItem value="quran">{t.students.departments.quran}</SelectItem>
+                        <SelectItem value="tajweed">{t.students.departments.tajweed}</SelectItem>
+                        <SelectItem value="tarbawi">{t.students.departments.tarbawi}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -915,7 +917,7 @@ const Students = () => {
                       htmlFor="teacherId"
                       className="text-right sm:text-sm"
                     >
-                      المعلم
+                      {t.students.form.teacher}
                     </Label>
                     <Select
                       value={newStudent.teacherId}
@@ -924,7 +926,7 @@ const Students = () => {
                       }
                     >
                       <SelectTrigger className="col-span-1 sm:col-span-3 text-base sm:text-sm">
-                        <SelectValue placeholder="اختر المعلم" />
+                        <SelectValue placeholder={t.students.form.selectTeacher} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="teacher1">
@@ -942,7 +944,7 @@ const Students = () => {
                       htmlFor="parentName"
                       className="text-right sm:text-sm"
                     >
-                      اسم ولي الأمر
+                      {t.students.form.parentName}
                     </Label>
                     <Input
                       id="parentName"
@@ -961,7 +963,7 @@ const Students = () => {
                       htmlFor="parentPhone"
                       className="text-right sm:text-sm"
                     >
-                      هاتف ولي الأمر
+                      {t.students.form.parentPhone}
                     </Label>
                     <Input
                       id="parentPhone"
@@ -979,11 +981,11 @@ const Students = () => {
                   {/* إضافة خانات الصور المتعددة */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right font-medium">
-                      السور الجديدة
+                      {t.students.images.newSurah}
                     </Label>
                     <div className="col-span-3 space-y-2">
                       <Input
-                        placeholder="سورة الجديدة"
+                        placeholder={t.students.images.newSurahPlaceholder}
                         value={newStudent.images?.new || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1000,11 +1002,11 @@ const Students = () => {
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right font-medium">
-                      الماضي القريب
+                      {t.students.images.recentPast}
                     </Label>
                     <div className="col-span-3 space-y-2">
                       <Input
-                        placeholder="الماضي القريب 1"
+                        placeholder={t.students.images.recentPastPlaceholder}
                         value={newStudent.images?.recent1 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1017,7 +1019,7 @@ const Students = () => {
                         }
                       />
                       <Input
-                        placeholder="الماضي القريب 2"
+                        placeholder={t.students.images.recentPastPlaceholder}
                         value={newStudent.images?.recent2 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1030,7 +1032,7 @@ const Students = () => {
                         }
                       />
                       <Input
-                        placeholder="الماضي القريب 3"
+                        placeholder={t.students.images.recentPastPlaceholder}
                         value={newStudent.images?.recent3 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1047,11 +1049,11 @@ const Students = () => {
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right font-medium">
-                      الماضي البعيد
+                      {t.students.images.distantPast}
                     </Label>
                     <div className="col-span-3 space-y-2">
                       <Input
-                        placeholder="الماضي البعيد 1"
+                        placeholder={t.students.images.distantPastPlaceholder}
                         value={newStudent.images?.distant1 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1064,7 +1066,7 @@ const Students = () => {
                         }
                       />
                       <Input
-                        placeholder="الماضي البعيد 2"
+                        placeholder={t.students.images.distantPastPlaceholder}
                         value={newStudent.images?.distant2 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1077,7 +1079,7 @@ const Students = () => {
                         }
                       />
                       <Input
-                        placeholder="الماضي البعيد 3"
+                        placeholder={t.students.images.distantPastPlaceholder}
                         value={newStudent.images?.distant3 || ""}
                         onChange={(e) =>
                           setNewStudent({
@@ -1098,10 +1100,10 @@ const Students = () => {
                     onClick={() => setIsAddDialogOpen(false)}
                     className="text-sm"
                   >
-                    إلغاء
+                    {t.students.actions.cancel}
                   </Button>
                   <Button onClick={handleAddStudent} className="text-sm">
-                    إضافة طالب
+                    {t.students.actions.addStudent}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -1111,19 +1113,19 @@ const Students = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
-            <TabsTrigger value="all">جميع الطلاب</TabsTrigger>
-            <TabsTrigger value="attendance">الحضور</TabsTrigger>
-            <TabsTrigger value="grades">الدرجات</TabsTrigger>
-            <TabsTrigger value="images">الصور</TabsTrigger>
-            <TabsTrigger value="notes">الملاحظات</TabsTrigger>
+            <TabsTrigger value="all">{t.students.tabs.allStudents}</TabsTrigger>
+            <TabsTrigger value="attendance">{t.students.tabs.attendance}</TabsTrigger>
+            <TabsTrigger value="grades">{t.students.tabs.grades}</TabsTrigger>
+            <TabsTrigger value="images">{t.students.tabs.images}</TabsTrigger>
+            <TabsTrigger value="notes">{t.students.tabs.notes}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>قائمة الطلاب</CardTitle>
+                <CardTitle>{t.students.card.studentListTitle}</CardTitle>
                 <CardDescription>
-                  جميع الطلاب المسجلين في المركز
+                  {t.students.card.studentListDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1132,28 +1134,28 @@ const Students = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-xs sm:text-sm">
-                          الطالب
+                          {t.students.table.student}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden sm:table-cell">
-                          العمر
+                          {t.students.table.age}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          القسم
+                          {t.students.table.department}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden md:table-cell">
-                          المعلم
+                          {t.students.table.teacher}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden lg:table-cell">
-                          الأجزاء
+                          {t.students.table.parts}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm hidden xl:table-cell">
-                          الحضور
+                          {t.students.table.attendance}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          الحالة
+                          {t.students.table.status}
                         </TableHead>
                         <TableHead className="text-xs sm:text-sm">
-                          إجراءات
+                          {t.students.table.actions}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1214,7 +1216,7 @@ const Students = () => {
                                   : "bg-red-100 text-red-800 text-xs"
                               }
                             >
-                              {student.isActive ? "نشط" : "غير نشط"}
+                              {student.isActive ? t.students.status.active : t.students.status.inactive}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm">
@@ -1224,14 +1226,14 @@ const Students = () => {
                                 size="sm"
                                 onClick={() => {
                                   toast({
-                                    title: "عرض تفاصيل الطالب",
-                                    description: `جاري عرض تفاصيل الطالب ${student.name}...`,
+                                    title: t.students.toast.viewDetails,
+                                    description: t.students.toast.viewDetailsDesc.replace('{{name}}', student.name),
                                   });
                                   setActiveTab("images");
                                 }}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                عرض
+                                {t.students.actions.view}
                               </Button>
                               <Button
                                 variant="outline"
@@ -1239,7 +1241,7 @@ const Students = () => {
                                 onClick={() => openEditDialog(student)}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                تعديل
+                                {t.students.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -1247,7 +1249,7 @@ const Students = () => {
                                 onClick={() => openDeleteDialog(student)}
                                 className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
                               >
-                                حذف
+                                {t.students.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -1263,9 +1265,9 @@ const Students = () => {
           <TabsContent value="attendance" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>الحضور والغياب</CardTitle>
+                <CardTitle>{t.students.attendanceTab.title}</CardTitle>
                 <CardDescription>
-                  متابعة حضور الطلاب ونسبة الغياب
+                  {t.students.attendanceTab.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1302,9 +1304,9 @@ const Students = () => {
           <TabsContent value="grades" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>درجات الاختبارات</CardTitle>
+                <CardTitle>{t.students.gradesTab.title}</CardTitle>
                 <CardDescription>
-                  عرض درجات الطلاب في جميع المواد
+                  {t.students.gradesTab.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1339,9 +1341,9 @@ const Students = () => {
           <TabsContent value="images" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>الصور المحفوظة للطلاب</CardTitle>
+                <CardTitle>{t.students.images.title}</CardTitle>
                 <CardDescription>
-                  عرض ومتابعة صور القرآن المحفوظة لكل طالب
+                  {t.students.images.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1361,7 +1363,7 @@ const Students = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <h4 className="text-sm font-semibold text-green-700 bg-green-50 p-2 rounded border border-green-200">
-                                📖 السورة الجديدة
+                                📖 {t.students.images.newSurah}
                               </h4>
                               <Button
                                 size="sm"
@@ -1371,13 +1373,13 @@ const Students = () => {
                                 }
                                 className="text-xs px-2 py-1 h-6"
                               >
-                                تعديل
+                                {t.students.actions.edit}
                               </Button>
                             </div>
                             <div className="p-3 bg-green-100 rounded border border-green-300 min-h-[60px]">
                               <p className="text-sm text-green-800">
                                 {student.images.new ||
-                                  "لم يتم تسجيل صورة جديدة"}
+                                  t.students.images.noNewImage}
                               </p>
                             </div>
                           </div>
@@ -1386,7 +1388,7 @@ const Students = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <h4 className="text-sm font-semibold text-blue-700 bg-blue-50 p-2 rounded border border-blue-200">
-                                📚 الماضي القريب
+                                📚 {t.students.images.recentPast}
                               </h4>
                               <Button
                                 size="sm"
@@ -1396,26 +1398,26 @@ const Students = () => {
                                 }
                                 className="text-xs px-2 py-1 h-6"
                               >
-                                تعديل
+                                {t.students.actions.edit}
                               </Button>
                             </div>
                             <div className="space-y-2">
                               <div className="p-2 bg-blue-100 rounded border border-blue-300">
                                 <p className="text-xs text-blue-600">1:</p>
                                 <p className="text-sm text-blue-800">
-                                  {student.images.recent1 || "لا يوجد"}
+                                  {student.images.recent1 || t.students.images.noData}
                                 </p>
                               </div>
                               <div className="p-2 bg-blue-100 rounded border border-blue-300">
                                 <p className="text-xs text-blue-600">2:</p>
                                 <p className="text-sm text-blue-800">
-                                  {student.images.recent2 || "لا يوجد"}
+                                  {student.images.recent2 || t.students.images.noData}
                                 </p>
                               </div>
                               <div className="p-2 bg-blue-100 rounded border border-blue-300">
                                 <p className="text-xs text-blue-600">3:</p>
                                 <p className="text-sm text-blue-800">
-                                  {student.images.recent3 || "لا يوجد"}
+                                  {student.images.recent3 || t.students.images.noData}
                                 </p>
                               </div>
                             </div>
@@ -1425,7 +1427,7 @@ const Students = () => {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <h4 className="text-sm font-semibold text-orange-700 bg-orange-50 p-2 rounded border border-orange-200">
-                                📜 الماضي البعيد
+                                📜 {t.students.images.distantPast}
                               </h4>
                               <Button
                                 size="sm"
@@ -1435,26 +1437,26 @@ const Students = () => {
                                 }
                                 className="text-xs px-2 py-1 h-6"
                               >
-                                تعديل
+                                {t.students.actions.edit}
                               </Button>
                             </div>
                             <div className="space-y-2">
                               <div className="p-2 bg-orange-100 rounded border border-orange-300">
                                 <p className="text-xs text-orange-600">1:</p>
                                 <p className="text-sm text-orange-800">
-                                  {student.images.distant1 || "لا يوجد"}
+                                  {student.images.distant1 || t.students.images.noData}
                                 </p>
                               </div>
                               <div className="p-2 bg-orange-100 rounded border border-orange-300">
                                 <p className="text-xs text-orange-600">2:</p>
                                 <p className="text-sm text-orange-800">
-                                  {student.images.distant2 || "لا يوجد"}
+                                  {student.images.distant2 || t.students.images.noData}
                                 </p>
                               </div>
                               <div className="p-2 bg-orange-100 rounded border border-orange-300">
                                 <p className="text-xs text-orange-600">3:</p>
                                 <p className="text-sm text-orange-800">
-                                  {student.images.distant3 || "لا يوجد"}
+                                  {student.images.distant3 || t.students.images.noData}
                                 </p>
                               </div>
                             </div>
@@ -1464,16 +1466,16 @@ const Students = () => {
 
                       {!student.images && (
                         <div className="text-center py-8 text-muted-foreground">
-                          <p>لا توجد صور مسجلة لهذا الطالب</p>
+                          <p>{t.students.images.noImagesForStudent}</p>
                         </div>
                       )}
 
                       <div className="mt-4 pt-4 border-t">
                         <div className="flex justify-between items-center text-sm text-muted-foreground">
                           <span>
-                            إجمالي الأجزاء المحفوظة: {student.partsMemorized}
+                            {t.students.images.totalPartsMemorized}: {student.partsMemorized}
                           </span>
-                          <span>التقدم الحالي: {student.currentProgress}</span>
+                          <span>{t.students.images.currentProgressLabel}: {student.currentProgress}</span>
                         </div>
                       </div>
                     </div>
@@ -1486,8 +1488,8 @@ const Students = () => {
           <TabsContent value="notes" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>ملاحظات المشرفين</CardTitle>
-                <CardDescription>ملاحظات سلوكية وأدائية للطلاب</CardDescription>
+                <CardTitle>{t.students.notes.supervisorNotes}</CardTitle>
+                <CardDescription>{t.students.notes.supervisorNotesDesc}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1506,7 +1508,7 @@ const Students = () => {
                                   <Badge
                                     className={getNoteTypeColor(note.type)}
                                   >
-                                    {note.type}
+                                    {note.type === "إيجابي" ? t.students.notes.positive : t.students.notes.negative}
                                   </Badge>
                                   <span className="text-sm text-muted-foreground">
                                     {note.note_date} • {note.teacher_name}
@@ -1522,7 +1524,7 @@ const Students = () => {
                                     openEditNoteDialog(student, note)
                                   }
                                 >
-                                  تعديل
+                                  {t.students.actions.edit}
                                 </Button>
                                 <Button
                                   variant="destructive"
@@ -1531,7 +1533,7 @@ const Students = () => {
                                     handleDeleteNote(student.id, note.id)
                                   }
                                 >
-                                  حذف
+                                  {t.students.actions.delete}
                                 </Button>
                               </div>
                             </div>
@@ -1539,7 +1541,7 @@ const Students = () => {
                         </div>
                       ) : (
                         <p className="text-muted-foreground text-center py-4">
-                          لا توجد ملاحظات لهذا الطالب
+                          {t.students.notes.noNotesForStudent}
                         </p>
                       )}
                       <Button
@@ -1547,7 +1549,7 @@ const Students = () => {
                         className="mt-3"
                         onClick={() => openAddNoteDialog(student)}
                       >
-                        إضافة ملاحظة جديدة
+                        {t.students.actions.addNewNote}
                       </Button>
                     </div>
                   ))}
@@ -1562,13 +1564,13 @@ const Students = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل بيانات الطالب</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الطالب</DialogDescription>
+            <DialogTitle>{t.students.dialog.editTitle}</DialogTitle>
+            <DialogDescription>{t.students.dialog.editDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-name" className="text-right">
-                الاسم
+                {t.students.form.name}
               </Label>
               <Input
                 id="edit-name"
@@ -1581,7 +1583,7 @@ const Students = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-age" className="text-right">
-                العمر
+                {t.students.form.age}
               </Label>
               <Input
                 id="edit-age"
@@ -1598,7 +1600,7 @@ const Students = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-grade" className="text-right">
-                المرحلة الدراسية
+                {t.students.form.grade}
               </Label>
               <Input
                 id="edit-grade"
@@ -1611,7 +1613,7 @@ const Students = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-department" className="text-right">
-                القسم
+                {t.students.form.department}
               </Label>
               <Select
                 value={newStudent.department}
@@ -1623,18 +1625,18 @@ const Students = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر القسم" />
+                  <SelectValue placeholder={t.students.form.selectDepartment} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="quran">قرآن</SelectItem>
-                  <SelectItem value="tajweed">تجويد</SelectItem>
-                  <SelectItem value="tarbawi">تربوي</SelectItem>
+                  <SelectItem value="quran">{t.students.departments.quran}</SelectItem>
+                  <SelectItem value="tajweed">{t.students.departments.tajweed}</SelectItem>
+                  <SelectItem value="tarbawi">{t.students.departments.tarbawi}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-teacherId" className="text-right">
-                المعلم
+                {t.students.form.teacher}
               </Label>
               <Select
                 value={newStudent.teacherId}
@@ -1643,7 +1645,7 @@ const Students = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر المعلم" />
+                  <SelectValue placeholder={t.students.form.selectTeacher} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="teacher1">الشيخ خالد أحمد</SelectItem>
@@ -1654,7 +1656,7 @@ const Students = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-parentName" className="text-right">
-                اسم ولي الأمر
+                {t.students.form.parentName}
               </Label>
               <Input
                 id="edit-parentName"
@@ -1667,7 +1669,7 @@ const Students = () => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-parentPhone" className="text-right">
-                هاتف ولي الأمر
+                {t.students.form.parentPhone}
               </Label>
               <Input
                 id="edit-parentPhone"
@@ -1681,7 +1683,7 @@ const Students = () => {
 
             {/* إضافة حقول الصور في نافذة التعديل */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">الأجزاء المحفوظة</Label>
+              <Label className="text-right font-medium">{t.students.form.partsMemorized}</Label>
               <Input
                 type="number"
                 value={newStudent.partsMemorized}
@@ -1696,7 +1698,7 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">التقدم الحالي</Label>
+              <Label className="text-right font-medium">{t.students.form.currentProgress}</Label>
               <Input
                 value={newStudent.currentProgress}
                 onChange={(e) =>
@@ -1710,7 +1712,7 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">التقدم السابق</Label>
+              <Label className="text-right font-medium">{t.students.form.previousProgress}</Label>
               <Input
                 value={newStudent.previousProgress}
                 onChange={(e) =>
@@ -1724,7 +1726,7 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">نسبة الحضور</Label>
+              <Label className="text-right font-medium">{t.students.form.attendanceRate}</Label>
               <Input
                 type="number"
                 value={newStudent.attendance}
@@ -1740,10 +1742,10 @@ const Students = () => {
 
             {/* إضافة خانات الصور المتعددة */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">السورة الجديدة</Label>
+              <Label className="text-right font-medium">{t.students.images.newSurah}</Label>
               <div className="col-span-3 space-y-2">
                 <Input
-                  placeholder="سورة الجديدة"
+                  placeholder={t.students.images.newSurahPlaceholder}
                   value={newStudent.images?.new || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1759,10 +1761,10 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">الماضي القريب</Label>
+              <Label className="text-right font-medium">{t.students.images.recentPast}</Label>
               <div className="col-span-3 space-y-2">
                 <Input
-                  placeholder="الماضي القريب 1"
+                  placeholder={t.students.images.recentPastPlaceholder}
                   value={newStudent.images?.recent1 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1775,7 +1777,7 @@ const Students = () => {
                   }
                 />
                 <Input
-                  placeholder="الماضي القريب 2"
+                  placeholder={t.students.images.recentPastPlaceholder}
                   value={newStudent.images?.recent2 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1788,7 +1790,7 @@ const Students = () => {
                   }
                 />
                 <Input
-                  placeholder="الماضي القريب 3"
+                  placeholder={t.students.images.recentPastPlaceholder}
                   value={newStudent.images?.recent3 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1804,10 +1806,10 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">الماضي البعيد</Label>
+              <Label className="text-right font-medium">{t.students.images.distantPast}</Label>
               <div className="col-span-3 space-y-2">
                 <Input
-                  placeholder="الماضي البعيد 1"
+                  placeholder={t.students.images.distantPastPlaceholder}
                   value={newStudent.images?.distant1 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1820,7 +1822,7 @@ const Students = () => {
                   }
                 />
                 <Input
-                  placeholder="الماضي البعيد 2"
+                  placeholder={t.students.images.distantPastPlaceholder}
                   value={newStudent.images?.distant2 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1833,7 +1835,7 @@ const Students = () => {
                   }
                 />
                 <Input
-                  placeholder="الماضي البعيد 3"
+                  placeholder={t.students.images.distantPastPlaceholder}
                   value={newStudent.images?.distant3 || ""}
                   onChange={(e) =>
                     setNewStudent({
@@ -1853,9 +1855,9 @@ const Students = () => {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
-              إلغاء
+              {t.students.actions.cancel}
             </Button>
-            <Button onClick={handleEditStudent}>حفظ التعديلات</Button>
+            <Button onClick={handleEditStudent}>{t.students.actions.saveChanges}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1864,10 +1866,9 @@ const Students = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{t.students.confirmDelete}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الطالب "{selectedStudent?.name}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {t.students.deleteConfirmMessage.replace('{{name}}', selectedStudent?.name ?? '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1875,10 +1876,10 @@ const Students = () => {
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              إلغاء
+              {t.students.actions.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteStudent}>
-              حذف
+              {t.students.actions.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1892,22 +1893,22 @@ const Students = () => {
         <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-base">
-              تعديل السور المحفوظة
+              {t.students.images.editTitle}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-xs">
-              تعديل سور {selectedStudent?.name} -{" "}
+              {t.students.images.editDescription.replace('{{name}}', selectedStudent?.name ?? '')}{" - "}
               {editingImageType === "new"
-                ? "السورة الجديدة"
+                ? t.students.images.newSurah
                 : editingImageType === "recent"
-                ? "الماضي القريب"
-                : "الماضي البعيد"}
+                ? t.students.images.recentPast
+                : t.students.images.distantPast}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
             {editingImageType === "new" && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-new" className="text-right">
-                  السورة الجديدة
+                  {t.students.images.newSurah}
                 </Label>
                 <Input
                   id="edit-new"
@@ -1930,7 +1931,7 @@ const Students = () => {
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-recent1" className="text-right">
-                    الماضي القريب 1
+                    {t.students.images.recentPast} 1
                   </Label>
                   <Input
                     id="edit-recent1"
@@ -1949,7 +1950,7 @@ const Students = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-recent2" className="text-right">
-                    الماضي القريب 2
+                    {t.students.images.recentPast} 2
                   </Label>
                   <Input
                     id="edit-recent2"
@@ -1968,7 +1969,7 @@ const Students = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-recent3" className="text-right">
-                    الماضي القريب 3
+                    {t.students.images.recentPast} 3
                   </Label>
                   <Input
                     id="edit-recent3"
@@ -1992,7 +1993,7 @@ const Students = () => {
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-distant1" className="text-right">
-                    الماضي البعيد 1
+                    {t.students.images.distantPast} 1
                   </Label>
                   <Input
                     id="edit-distant1"
@@ -2011,7 +2012,7 @@ const Students = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-distant2" className="text-right">
-                    الماضي البعيد 2
+                    {t.students.images.distantPast} 2
                   </Label>
                   <Input
                     id="edit-distant2"
@@ -2030,7 +2031,7 @@ const Students = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-distant3" className="text-right">
-                    الماضي البعيد 3
+                    {t.students.images.distantPast} 3
                   </Label>
                   <Input
                     id="edit-distant3"
@@ -2056,10 +2057,10 @@ const Students = () => {
               onClick={() => setIsEditImagesDialogOpen(false)}
               className="text-sm"
             >
-              إلغاء
+              {t.students.actions.cancel}
             </Button>
             <Button onClick={handleEditImages} className="text-sm">
-              حفظ التعديلات
+              {t.students.actions.saveChanges}
             </Button>
           </DialogFooter>
         </DialogContent>

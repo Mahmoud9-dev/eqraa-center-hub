@@ -40,10 +40,15 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 import PageHeader from "@/components/PageHeader";
 import { QuranCircle, CircleMember, MemorizationRecord } from "@/types";
 
 const QuranCircles = () => {
+  const { t, tFunc, language } = useLanguage();
+  const qc = t.quranCircles;
+
   const [activeTab, setActiveTab] = useState("circles");
   const [isAddCircleDialogOpen, setIsAddCircleDialogOpen] = useState(false);
   const [isEditCircleDialogOpen, setIsEditCircleDialogOpen] = useState(false);
@@ -58,6 +63,12 @@ const QuranCircles = () => {
     null
   );
   const { toast } = useToast();
+
+  // Label map for DB canonical memorization type values
+  const memorizationTypeLabel: Record<string, string> = {
+    "حفظ جديد": qc.memorizationType.newMemorization,
+    "مراجعة": qc.memorizationType.revision,
+  };
 
   // Mock data - will be replaced with actual data from Supabase
   const [circles, setCircles] = useState<QuranCircle[]>([
@@ -223,8 +234,8 @@ const QuranCircles = () => {
   const handleAddCircle = () => {
     if (!newCircle.name || !newCircle.supervisorId) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: qc.toast.error,
+        description: qc.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -254,16 +265,16 @@ const QuranCircles = () => {
     });
     setIsAddCircleDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الحلقة بنجاح",
+      title: qc.toast.addedTitle,
+      description: qc.toast.circleAdded,
     });
   };
 
   const handleEditCircle = () => {
     if (!selectedCircle || !newCircle.name || !newCircle.supervisorId) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: qc.toast.error,
+        description: qc.toast.fillRequired,
         variant: "destructive",
       });
       return;
@@ -303,8 +314,8 @@ const QuranCircles = () => {
       isActive: true,
     });
     toast({
-      title: "تم التعديل",
-      description: "تم تعديل الحلقة بنجاح",
+      title: qc.toast.editedTitle,
+      description: qc.toast.circleEdited,
     });
   };
 
@@ -315,16 +326,16 @@ const QuranCircles = () => {
     setIsDeleteCircleDialogOpen(false);
     setSelectedCircle(null);
     toast({
-      title: "تم الحذف",
-      description: "تم حذف الحلقة بنجاح",
+      title: qc.toast.deletedTitle,
+      description: qc.toast.circleDeleted,
     });
   };
 
   const handleAddMember = () => {
     if (!newMember.circleId || !newMember.studentId) {
       toast({
-        title: "خطأ",
-        description: "يرجى اختيار الحلقة والطالب",
+        title: qc.toast.error,
+        description: qc.toast.selectCircleAndStudent,
         variant: "destructive",
       });
       return;
@@ -346,16 +357,16 @@ const QuranCircles = () => {
     });
     setIsAddMemberDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة الطالب للحلقة بنجاح",
+      title: qc.toast.addedTitle,
+      description: qc.toast.memberAdded,
     });
   };
 
   const handleAddRecord = () => {
     if (!newRecord.studentId || !newRecord.circleId || !newRecord.surahName) {
       toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        title: qc.toast.error,
+        description: qc.toast.fillRecordRequired,
         variant: "destructive",
       });
       return;
@@ -390,8 +401,8 @@ const QuranCircles = () => {
     });
     setIsAddRecordDialogOpen(false);
     toast({
-      title: "تم الإضافة",
-      description: "تم إضافة سجل الحفظ بنجاح",
+      title: qc.toast.addedTitle,
+      description: qc.toast.recordAdded,
     });
   };
 
@@ -426,18 +437,18 @@ const QuranCircles = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="حلقات القرآن" showBack={true} />
+      <PageHeader title={qc.pageTitle} showBack={true} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📖 حلقات القرآن</h2>
+          <h2 className="text-2xl font-bold mb-4">{qc.heading}</h2>
           <p className="text-muted-foreground mb-6">
-            إدارة حلقات القرآن ومتابعة تقدم الطلاب في الحفظ والمراجعة
+            {qc.description}
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
             <div className="w-full sm:w-auto">
-              <Input placeholder="البحث عن حلقة..." className="w-full sm:w-64" />
+              <Input placeholder={qc.searchPlaceholder} className="w-full sm:w-64" />
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <Dialog
@@ -445,19 +456,19 @@ const QuranCircles = () => {
                 onOpenChange={setIsAddMemberDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline">إضافة طالب</Button>
+                  <Button variant="outline">{qc.addMemberDialog.trigger}</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إضافة طالب لحلقة</DialogTitle>
+                    <DialogTitle>{qc.addMemberDialog.title}</DialogTitle>
                     <DialogDescription>
-                      اختر الحلقة والطالب المراد إضافته
+                      {qc.addMemberDialog.description}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="circle" className="text-right">
-                        الحلقة
+                      <Label htmlFor="circle" className="text-end">
+                        {qc.addMemberDialog.circleLabel}
                       </Label>
                       <Select
                         value={newMember.circleId}
@@ -466,7 +477,7 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الحلقة" />
+                          <SelectValue placeholder={qc.addMemberDialog.circlePlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {circles.map((circle) => (
@@ -478,8 +489,8 @@ const QuranCircles = () => {
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="student" className="text-right">
-                        الطالب
+                      <Label htmlFor="student" className="text-end">
+                        {qc.addMemberDialog.studentLabel}
                       </Label>
                       <Select
                         value={newMember.studentId}
@@ -488,7 +499,7 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الطالب" />
+                          <SelectValue placeholder={qc.addMemberDialog.studentPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(students).map(([id, name]) => (
@@ -505,9 +516,9 @@ const QuranCircles = () => {
                       variant="outline"
                       onClick={() => setIsAddMemberDialogOpen(false)}
                     >
-                      إلغاء
+                      {qc.actions.cancel}
                     </Button>
-                    <Button onClick={handleAddMember}>إضافة طالب</Button>
+                    <Button onClick={handleAddMember}>{qc.addMemberDialog.submit}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -518,20 +529,20 @@ const QuranCircles = () => {
               >
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground">
-                    إنشاء حلقة جديدة
+                    {qc.addCircleDialog.trigger}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إنشاء حلقة جديدة</DialogTitle>
+                    <DialogTitle>{qc.addCircleDialog.title}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات الحلقة الجديدة
+                      {qc.addCircleDialog.description}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">
-                        اسم الحلقة
+                      <Label htmlFor="name" className="text-end">
+                        {qc.addCircleDialog.nameLabel}
                       </Label>
                       <Input
                         id="name"
@@ -543,8 +554,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="supervisor" className="text-right">
-                        المشرف
+                      <Label htmlFor="supervisor" className="text-end">
+                        {qc.addCircleDialog.supervisorLabel}
                       </Label>
                       <Select
                         value={newCircle.supervisorId}
@@ -553,7 +564,7 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر المشرف" />
+                          <SelectValue placeholder={qc.addCircleDialog.supervisorPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(teachers).map(([id, name]) => (
@@ -565,8 +576,8 @@ const QuranCircles = () => {
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="description" className="text-right">
-                        الوصف
+                      <Label htmlFor="description" className="text-end">
+                        {qc.addCircleDialog.descriptionLabel}
                       </Label>
                       <Textarea
                         id="description"
@@ -582,8 +593,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="dailyMemorization" className="text-right">
-                        ورد الحفظ اليومي
+                      <Label htmlFor="dailyMemorization" className="text-end">
+                        {qc.addCircleDialog.dailyMemorizationLabel}
                       </Label>
                       <Input
                         id="dailyMemorization"
@@ -598,8 +609,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="dailyRevision" className="text-right">
-                        ورد المراجعة اليومي
+                      <Label htmlFor="dailyRevision" className="text-end">
+                        {qc.addCircleDialog.dailyRevisionLabel}
                       </Label>
                       <Input
                         id="dailyRevision"
@@ -614,8 +625,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="weeklyEvaluation" className="text-right">
-                        التقييم الأسبوعي
+                      <Label htmlFor="weeklyEvaluation" className="text-end">
+                        {qc.addCircleDialog.weeklyEvaluationLabel}
                       </Label>
                       <Input
                         id="weeklyEvaluation"
@@ -635,9 +646,9 @@ const QuranCircles = () => {
                       variant="outline"
                       onClick={() => setIsAddCircleDialogOpen(false)}
                     >
-                      إلغاء
+                      {qc.actions.cancel}
                     </Button>
-                    <Button onClick={handleAddCircle}>إنشاء حلقة</Button>
+                    <Button onClick={handleAddCircle}>{qc.addCircleDialog.submit}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -647,16 +658,16 @@ const QuranCircles = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="circles">الحلقات</TabsTrigger>
-            <TabsTrigger value="members">الأعضاء</TabsTrigger>
-            <TabsTrigger value="records">سجلات الحفظ</TabsTrigger>
+            <TabsTrigger value="circles">{qc.tabs.circles}</TabsTrigger>
+            <TabsTrigger value="members">{qc.tabs.members}</TabsTrigger>
+            <TabsTrigger value="records">{qc.tabs.records}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="circles" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>قائمة الحلقات</CardTitle>
-                <CardDescription>عرض وإدارة جميع حلقات القرآن</CardDescription>
+                <CardTitle>{qc.circleList.title}</CardTitle>
+                <CardDescription>{qc.circleList.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Mobile Card View */}
@@ -672,28 +683,28 @@ const QuranCircles = () => {
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {circle.isActive ? "نشطة" : "غير نشطة"}
+                          {circle.isActive ? qc.status.active : qc.status.inactive}
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        المشرف: {teachers[circle.supervisorId as keyof typeof teachers]}
+                        {qc.circleCard.supervisor} {teachers[circle.supervisorId as keyof typeof teachers]}
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="p-2 bg-muted rounded">
-                          <span className="text-muted-foreground">ورد الحفظ:</span>
+                          <span className="text-muted-foreground">{qc.circleCard.dailyMemorization}</span>
                           <div className="font-medium">{circle.dailyMemorization}</div>
                         </div>
                         <div className="p-2 bg-muted rounded">
-                          <span className="text-muted-foreground">ورد المراجعة:</span>
+                          <span className="text-muted-foreground">{qc.circleCard.dailyRevision}</span>
                           <div className="font-medium">{circle.dailyRevision}</div>
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        عدد الأعضاء: {getCircleMembers(circle.id).length}
+                        {qc.circleCard.memberCount} {getCircleMembers(circle.id).length}
                       </div>
                       <div className="flex gap-2 pt-2 border-t">
                         <Button variant="outline" size="sm" className="flex-1 text-xs">
-                          عرض
+                          {qc.actions.view}
                         </Button>
                         <Button
                           variant="outline"
@@ -701,7 +712,7 @@ const QuranCircles = () => {
                           className="flex-1 text-xs"
                           onClick={() => openEditCircleDialog(circle)}
                         >
-                          تعديل
+                          {qc.actions.edit}
                         </Button>
                         <Button
                           variant="destructive"
@@ -709,7 +720,7 @@ const QuranCircles = () => {
                           className="flex-1 text-xs"
                           onClick={() => openDeleteCircleDialog(circle)}
                         >
-                          حذف
+                          {qc.actions.delete}
                         </Button>
                       </div>
                     </div>
@@ -721,13 +732,13 @@ const QuranCircles = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>اسم الحلقة</TableHead>
-                        <TableHead>المشرف</TableHead>
-                        <TableHead className="hidden lg:table-cell">ورد الحفظ</TableHead>
-                        <TableHead className="hidden lg:table-cell">ورد المراجعة</TableHead>
-                        <TableHead>عدد الأعضاء</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{qc.tableHeaders.circleName}</TableHead>
+                        <TableHead>{qc.tableHeaders.supervisor}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{qc.tableHeaders.dailyMemorization}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{qc.tableHeaders.dailyRevision}</TableHead>
+                        <TableHead>{qc.tableHeaders.memberCount}</TableHead>
+                        <TableHead>{qc.tableHeaders.status}</TableHead>
+                        <TableHead>{qc.tableHeaders.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -756,13 +767,13 @@ const QuranCircles = () => {
                                   : "bg-red-100 text-red-800"
                               }
                             >
-                              {circle.isActive ? "نشطة" : "غير نشطة"}
+                              {circle.isActive ? qc.status.active : qc.status.inactive}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               <Button variant="outline" size="sm" className="text-xs px-2">
-                                عرض
+                                {qc.actions.view}
                               </Button>
                               <Button
                                 variant="outline"
@@ -770,7 +781,7 @@ const QuranCircles = () => {
                                 className="text-xs px-2"
                                 onClick={() => openEditCircleDialog(circle)}
                               >
-                                تعديل
+                                {qc.actions.edit}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -778,7 +789,7 @@ const QuranCircles = () => {
                                 className="text-xs px-2"
                                 onClick={() => openDeleteCircleDialog(circle)}
                               >
-                                حذف
+                                {qc.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -821,7 +832,7 @@ const QuranCircles = () => {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium mb-2">أعضاء الحلقة</h4>
+                        <h4 className="font-medium mb-2">{qc.members.sectionTitle}</h4>
                         <div className="space-y-2">
                           {getCircleMembers(circle.id).map((member) => (
                             <div
@@ -849,19 +860,17 @@ const QuranCircles = () => {
                                     }
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    انضم:{" "}
-                                    {member.joinDate.toLocaleDateString(
-                                      "ar-SA"
-                                    )}
+                                    {qc.members.joinedPrefix}{" "}
+                                    {formatDate(member.joinDate, language)}
                                   </div>
                                 </div>
                               </div>
                               <div className="flex gap-2 sm:shrink-0">
                                 <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs">
-                                  تعديل
+                                  {qc.actions.edit}
                                 </Button>
                                 <Button variant="destructive" size="sm" className="flex-1 sm:flex-none text-xs">
-                                  حذف
+                                  {qc.actions.delete}
                                 </Button>
                               </div>
                             </div>
@@ -877,25 +886,25 @@ const QuranCircles = () => {
 
           <TabsContent value="records" className="mt-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h3 className="text-lg font-medium">سجلات الحفظ والمراجعة</h3>
+              <h3 className="text-lg font-medium">{qc.recordsList.heading}</h3>
               <Dialog
                 open={isAddRecordDialogOpen}
                 onOpenChange={setIsAddRecordDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button>إضافة سجل جديد</Button>
+                  <Button>{qc.addRecordDialog.trigger}</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>إضافة سجل حفظ جديد</DialogTitle>
+                    <DialogTitle>{qc.addRecordDialog.title}</DialogTitle>
                     <DialogDescription>
-                      أدخل بيانات سجل الحفظ الجديد
+                      {qc.addRecordDialog.description}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="record-circle" className="text-right">
-                        الحلقة
+                      <Label htmlFor="record-circle" className="text-end">
+                        {qc.addRecordDialog.circleLabel}
                       </Label>
                       <Select
                         value={newRecord.circleId}
@@ -904,7 +913,7 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الحلقة" />
+                          <SelectValue placeholder={qc.addRecordDialog.circlePlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {circles.map((circle) => (
@@ -916,8 +925,8 @@ const QuranCircles = () => {
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="record-student" className="text-right">
-                        الطالب
+                      <Label htmlFor="record-student" className="text-end">
+                        {qc.addRecordDialog.studentLabel}
                       </Label>
                       <Select
                         value={newRecord.studentId}
@@ -926,7 +935,7 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر الطالب" />
+                          <SelectValue placeholder={qc.addRecordDialog.studentPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.entries(students).map(([id, name]) => (
@@ -938,8 +947,8 @@ const QuranCircles = () => {
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="surah" className="text-right">
-                        السورة
+                      <Label htmlFor="surah" className="text-end">
+                        {qc.addRecordDialog.surahLabel}
                       </Label>
                       <Input
                         id="surah"
@@ -954,8 +963,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="from" className="text-right">
-                        من آية
+                      <Label htmlFor="from" className="text-end">
+                        {qc.addRecordDialog.fromVerseLabel}
                       </Label>
                       <Input
                         id="from"
@@ -971,8 +980,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="to" className="text-right">
-                        إلى آية
+                      <Label htmlFor="to" className="text-end">
+                        {qc.addRecordDialog.toVerseLabel}
                       </Label>
                       <Input
                         id="to"
@@ -988,8 +997,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="type" className="text-right">
-                        النوع
+                      <Label htmlFor="type" className="text-end">
+                        {qc.addRecordDialog.typeLabel}
                       </Label>
                       <Select
                         value={newRecord.memorizationType}
@@ -1001,17 +1010,17 @@ const QuranCircles = () => {
                         }
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="اختر النوع" />
+                          <SelectValue placeholder={qc.addRecordDialog.typePlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="حفظ جديد">حفظ جديد</SelectItem>
-                          <SelectItem value="مراجعة">مراجعة</SelectItem>
+                          <SelectItem value="حفظ جديد">{qc.memorizationType.newMemorization}</SelectItem>
+                          <SelectItem value="مراجعة">{qc.memorizationType.revision}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="evaluation" className="text-right">
-                        التقييم (من 10)
+                      <Label htmlFor="evaluation" className="text-end">
+                        {qc.addRecordDialog.evaluationLabel}
                       </Label>
                       <Input
                         id="evaluation"
@@ -1029,8 +1038,8 @@ const QuranCircles = () => {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="notes" className="text-right">
-                        ملاحظات
+                      <Label htmlFor="notes" className="text-end">
+                        {qc.addRecordDialog.notesLabel}
                       </Label>
                       <Textarea
                         id="notes"
@@ -1048,9 +1057,9 @@ const QuranCircles = () => {
                       variant="outline"
                       onClick={() => setIsAddRecordDialogOpen(false)}
                     >
-                      إلغاء
+                      {qc.actions.cancel}
                     </Button>
-                    <Button onClick={handleAddRecord}>إضافة سجل</Button>
+                    <Button onClick={handleAddRecord}>{qc.addRecordDialog.submit}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -1058,9 +1067,9 @@ const QuranCircles = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>سجلات الحفظ</CardTitle>
+                <CardTitle>{qc.recordsList.title}</CardTitle>
                 <CardDescription>
-                  عرض جميع سجلات الحفظ والمراجعة للطلاب
+                  {qc.recordsList.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1083,21 +1092,21 @@ const QuranCircles = () => {
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge className={`${getMemorizationTypeColor(record.memorizationType)} text-xs`}>
-                          {record.memorizationType}
+                          {memorizationTypeLabel[record.memorizationType] ?? record.memorizationType}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           {record.surahName} ({record.versesFrom} - {record.versesTo})
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {record.date.toLocaleDateString("ar-SA")}
+                        {formatDate(record.date, language)}
                       </div>
                       <div className="flex gap-2 pt-2 border-t">
                         <Button variant="outline" size="sm" className="flex-1 text-xs">
-                          تعديل
+                          {qc.actions.edit}
                         </Button>
                         <Button variant="destructive" size="sm" className="flex-1 text-xs">
-                          حذف
+                          {qc.actions.delete}
                         </Button>
                       </div>
                     </div>
@@ -1109,14 +1118,14 @@ const QuranCircles = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>الطالب</TableHead>
-                        <TableHead className="hidden lg:table-cell">الحلقة</TableHead>
-                        <TableHead>السورة</TableHead>
-                        <TableHead>الآيات</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead>التقييم</TableHead>
-                        <TableHead className="hidden lg:table-cell">التاريخ</TableHead>
-                        <TableHead>الإجراءات</TableHead>
+                        <TableHead>{qc.tableHeaders.student}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{qc.tableHeaders.circle}</TableHead>
+                        <TableHead>{qc.tableHeaders.surah}</TableHead>
+                        <TableHead>{qc.tableHeaders.verses}</TableHead>
+                        <TableHead>{qc.tableHeaders.type}</TableHead>
+                        <TableHead>{qc.tableHeaders.evaluation}</TableHead>
+                        <TableHead className="hidden lg:table-cell">{qc.tableHeaders.date}</TableHead>
+                        <TableHead>{qc.tableHeaders.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1138,7 +1147,7 @@ const QuranCircles = () => {
                                 record.memorizationType
                               )}
                             >
-                              {record.memorizationType}
+                              {memorizationTypeLabel[record.memorizationType] ?? record.memorizationType}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -1149,15 +1158,15 @@ const QuranCircles = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell">
-                            {record.date.toLocaleDateString("ar-SA")}
+                            {formatDate(record.date, language)}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               <Button variant="outline" size="sm" className="text-xs px-2">
-                                تعديل
+                                {qc.actions.edit}
                               </Button>
                               <Button variant="destructive" size="sm" className="text-xs px-2">
-                                حذف
+                                {qc.actions.delete}
                               </Button>
                             </div>
                           </TableCell>
@@ -1179,13 +1188,13 @@ const QuranCircles = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>تعديل الحلقة</DialogTitle>
-            <DialogDescription>قم بتعديل بيانات الحلقة</DialogDescription>
+            <DialogTitle>{qc.editCircleDialog.title}</DialogTitle>
+            <DialogDescription>{qc.editCircleDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">
-                اسم الحلقة
+              <Label htmlFor="edit-name" className="text-end">
+                {qc.editCircleDialog.nameLabel}
               </Label>
               <Input
                 id="edit-name"
@@ -1197,8 +1206,8 @@ const QuranCircles = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-supervisor" className="text-right">
-                المشرف
+              <Label htmlFor="edit-supervisor" className="text-end">
+                {qc.editCircleDialog.supervisorLabel}
               </Label>
               <Select
                 value={newCircle.supervisorId}
@@ -1207,7 +1216,7 @@ const QuranCircles = () => {
                 }
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="اختر المشرف" />
+                  <SelectValue placeholder={qc.editCircleDialog.supervisorPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(teachers).map(([id, name]) => (
@@ -1219,8 +1228,8 @@ const QuranCircles = () => {
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">
-                الوصف
+              <Label htmlFor="edit-description" className="text-end">
+                {qc.editCircleDialog.descriptionLabel}
               </Label>
               <Textarea
                 id="edit-description"
@@ -1233,8 +1242,8 @@ const QuranCircles = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-dailyMemorization" className="text-right">
-                ورد الحفظ اليومي
+              <Label htmlFor="edit-dailyMemorization" className="text-end">
+                {qc.editCircleDialog.dailyMemorizationLabel}
               </Label>
               <Input
                 id="edit-dailyMemorization"
@@ -1249,8 +1258,8 @@ const QuranCircles = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-dailyRevision" className="text-right">
-                ورد المراجعة اليومي
+              <Label htmlFor="edit-dailyRevision" className="text-end">
+                {qc.editCircleDialog.dailyRevisionLabel}
               </Label>
               <Input
                 id="edit-dailyRevision"
@@ -1265,8 +1274,8 @@ const QuranCircles = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-weeklyEvaluation" className="text-right">
-                التقييم الأسبوعي
+              <Label htmlFor="edit-weeklyEvaluation" className="text-end">
+                {qc.editCircleDialog.weeklyEvaluationLabel}
               </Label>
               <Input
                 id="edit-weeklyEvaluation"
@@ -1286,9 +1295,9 @@ const QuranCircles = () => {
               variant="outline"
               onClick={() => setIsEditCircleDialogOpen(false)}
             >
-              إلغاء
+              {qc.actions.cancel}
             </Button>
-            <Button onClick={handleEditCircle}>حفظ التعديلات</Button>
+            <Button onClick={handleEditCircle}>{qc.editCircleDialog.submit}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1300,10 +1309,9 @@ const QuranCircles = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle>{qc.deleteCircleDialog.title}</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد من حذف الحلقة "{selectedCircle?.name}"؟ لا يمكن
-              التراجع عن هذا الإجراء.
+              {tFunc('quranCircles.deleteCircleDialog.description', { name: selectedCircle?.name ?? '' })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1311,10 +1319,10 @@ const QuranCircles = () => {
               variant="outline"
               onClick={() => setIsDeleteCircleDialogOpen(false)}
             >
-              إلغاء
+              {qc.actions.cancel}
             </Button>
             <Button variant="destructive" onClick={handleDeleteCircle}>
-              حذف
+              {qc.deleteCircleDialog.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>

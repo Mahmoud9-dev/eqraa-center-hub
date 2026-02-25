@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDate } from "@/lib/i18n";
 
 interface Teacher {
   id: string;
@@ -71,6 +73,7 @@ const Quran = () => {
   const [audioUrl, setAudioUrl] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const { toast } = useToast();
+  const { t, tFunc, languageMeta } = useLanguage();
 
   const loadData = async () => {
     const { data: studentsData } = await getSupabase()
@@ -96,6 +99,7 @@ const Quran = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -107,7 +111,6 @@ const Quran = () => {
 
     let teacherId = selectedTeacher;
 
-    // إذا لم يكن هناك شيخ محدد ولكن هناك نص مكتوب، أضف الشيخ أولاً
     if (!teacherId && teacherSearchValue.trim()) {
       const { data: newTeacher, error: teacherError } = await getSupabase()
         .from("teachers")
@@ -122,17 +125,17 @@ const Quran = () => {
         .single();
 
       if (teacherError) {
-        toast({ title: "خطأ في إضافة الشيخ", variant: "destructive" });
+        toast({ title: t.quran.toast.teacherAddError, variant: "destructive" });
         setIsLoading(false);
         return;
       }
 
       teacherId = newTeacher.id;
-      toast({ title: "تم إضافة الشيخ الجديد" });
+      toast({ title: t.quran.toast.teacherAdded });
     }
 
     if (!teacherId) {
-      toast({ title: "الرجاء اختيار أو إضافة شيخ", variant: "destructive" });
+      toast({ title: t.quran.toast.selectTeacher, variant: "destructive" });
       setIsLoading(false);
       return;
     }
@@ -151,9 +154,9 @@ const Quran = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة الطالب", variant: "destructive" });
+      toast({ title: t.quran.toast.studentAddError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة الطالب بنجاح" });
+      toast({ title: t.quran.toast.studentAdded });
       setStudentName("");
       setStudentAge("");
       setSelectedTeacher("");
@@ -179,9 +182,9 @@ const Quran = () => {
     ]);
 
     if (error) {
-      toast({ title: "خطأ في إضافة الجلسة", variant: "destructive" });
+      toast({ title: t.quran.toast.sessionAddError, variant: "destructive" });
     } else {
-      toast({ title: "تم إضافة الجلسة بنجاح" });
+      toast({ title: t.quran.toast.sessionAdded });
       setSurahName("");
       setVersesFrom("");
       setVersesTo("");
@@ -213,11 +216,11 @@ const Quran = () => {
 
       mediaRecorder.start();
       setIsRecording(true);
-      toast({ title: "بدء التسجيل الصوتي" });
+      toast({ title: t.quran.toast.recordingStarted });
     } catch (error) {
       toast({
-        title: "خطأ في التسجيل",
-        description: "يرجى السماح بالوصول للميكروفون",
+        title: t.quran.toast.recordingError,
+        description: t.quran.toast.recordingErrorDescription,
         variant: "destructive",
       });
     }
@@ -225,7 +228,7 @@ const Quran = () => {
 
   const stopRecording = () => {
     setIsRecording(false);
-    toast({ title: "تم إيقاف التسجيل" });
+    toast({ title: t.quran.toast.recordingStopped });
   };
 
   const playAudio = () => {
@@ -247,18 +250,18 @@ const Quran = () => {
       const url = URL.createObjectURL(file);
       setAudioUrl(url);
       setAudioBlob(file);
-      toast({ title: "تم رفع الملف الصوتي" });
+      toast({ title: t.quran.toast.fileUploaded });
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="القرآن الكريم" />
+      <PageHeader title={t.quran.pageTitle} />
       <main className="container mx-auto px-4 py-12">
         <Tabs defaultValue="sessions" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="sessions">جلسات التحفيظ</TabsTrigger>
-            <TabsTrigger value="students">الطلاب</TabsTrigger>
+            <TabsTrigger value="sessions">{t.quran.tabs.sessions}</TabsTrigger>
+            <TabsTrigger value="students">{t.quran.tabs.students}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sessions">
@@ -266,14 +269,14 @@ const Quran = () => {
               <Card className="border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">
-                    تسجيل جلسة تحفيظ
+                    {t.quran.sessionForm.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddSession} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        الطالب
+                        {t.quran.sessionForm.studentLabel}
                       </label>
                       <select
                         value={selectedStudent}
@@ -281,7 +284,7 @@ const Quran = () => {
                         className="w-full p-2 border rounded-md bg-background"
                         required
                       >
-                        <option value="">اختر الطالب</option>
+                        <option value="">{t.quran.sessionForm.studentPlaceholder}</option>
                         {students.map((student) => (
                           <option key={student.id} value={student.id}>
                             {student.name}
@@ -291,19 +294,19 @@ const Quran = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        السورة
+                        {t.quran.sessionForm.surahLabel}
                       </label>
                       <Input
                         value={surahName}
                         onChange={(e) => setSurahName(e.target.value)}
-                        placeholder="مثال: البقرة"
+                        placeholder={t.quran.sessionForm.surahPlaceholder}
                         required
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          من آية
+                          {t.quran.sessionForm.fromVerse}
                         </label>
                         <Input
                           type="number"
@@ -315,7 +318,7 @@ const Quran = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          إلى آية
+                          {t.quran.sessionForm.toVerse}
                         </label>
                         <Input
                           type="number"
@@ -328,7 +331,7 @@ const Quran = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        التقييم (1-10): {rating}
+                        {t.quran.sessionForm.ratingLabel} {rating}
                       </label>
                       <input
                         type="range"
@@ -344,7 +347,7 @@ const Quran = () => {
                       disabled={isLoading}
                       className="w-full"
                     >
-                      {isLoading ? "جاري التسجيل..." : "تسجيل الجلسة"}
+                      {isLoading ? t.quran.sessionForm.submitting : t.quran.sessionForm.submit}
                     </Button>
                   </form>
                 </CardContent>
@@ -352,12 +355,12 @@ const Quran = () => {
 
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-primary">
-                  الجلسات الأخيرة
+                  {t.quran.sessionList.title}
                 </h3>
                 {sessions.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
-                      لا توجد جلسات مسجلة بعد
+                      {t.quran.sessionList.empty}
                     </CardContent>
                   </Card>
                 ) : (
@@ -376,13 +379,10 @@ const Quran = () => {
                           </span>
                         </div>
                         <p className="text-muted-foreground">
-                          {session.surah_name} - الآيات {session.verses_from}{" "}
-                          إلى {session.verses_to}
+                          {session.surah_name} - {tFunc('quran.sessionList.versesRange', { from: session.verses_from, to: session.verses_to })}
                         </p>
                         <p className="text-sm text-muted-foreground mt-2">
-                          {new Date(session.session_date).toLocaleDateString(
-                            "ar"
-                          )}
+                          {formatDate(new Date(session.session_date), languageMeta.code)}
                         </p>
                       </CardContent>
                     </Card>
@@ -397,31 +397,31 @@ const Quran = () => {
               <Card className="border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">
-                    إضافة طالب جديد
+                    {t.quran.studentForm.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddStudent} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        اسم الطالب
+                        {t.quran.studentForm.nameLabel}
                       </label>
                       <Input
                         value={studentName}
                         onChange={(e) => setStudentName(e.target.value)}
-                        placeholder="أدخل اسم الطالب"
+                        placeholder={t.quran.studentForm.namePlaceholder}
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        العمر
+                        {t.quran.studentForm.ageLabel}
                       </label>
                       <Input
                         type="number"
                         value={studentAge}
                         onChange={(e) => setStudentAge(e.target.value)}
-                        placeholder="أدخل عمر الطالب"
+                        placeholder={t.quran.studentForm.agePlaceholder}
                         min="5"
                         max="100"
                         required
@@ -429,7 +429,7 @@ const Quran = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        الشيخ المحفظ
+                        {t.quran.studentForm.teacherLabel}
                       </label>
                       <Popover
                         open={openTeacherCombo}
@@ -447,14 +447,14 @@ const Quran = () => {
                                   (teacher) => teacher.id === selectedTeacher
                                 )?.name
                               : teacherSearchValue ||
-                                "اختر الشيخ أو اكتب الاسم..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                t.quran.teacherCombobox.placeholder}
+                            <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0">
                           <Command shouldFilter={false}>
                             <CommandInput
-                              placeholder="ابحث عن الشيخ أو اكتب اسماً جديداً..."
+                              placeholder={t.quran.teacherCombobox.searchPlaceholder}
                               value={teacherSearchValue}
                               onValueChange={setTeacherSearchValue}
                             />
@@ -462,7 +462,7 @@ const Quran = () => {
                               <CommandEmpty>
                                 <div className="p-2 text-center">
                                   <p className="text-sm text-muted-foreground mb-2">
-                                    لا يوجد شيخ بهذا الاسم
+                                    {t.quran.teacherCombobox.noResults}
                                   </p>
                                   {teacherSearchValue && (
                                     <Button
@@ -473,7 +473,7 @@ const Quran = () => {
                                         setOpenTeacherCombo(false);
                                       }}
                                     >
-                                      إضافة "{teacherSearchValue}" كشيخ جديد
+                                      {tFunc('quran.teacherCombobox.addNew', { name: teacherSearchValue })}
                                     </Button>
                                   )}
                                 </div>
@@ -499,7 +499,7 @@ const Quran = () => {
                                     >
                                       <Check
                                         className={cn(
-                                          "mr-2 h-4 w-4",
+                                          "me-2 h-4 w-4",
                                           selectedTeacher === teacher.id
                                             ? "opacity-100"
                                             : "opacity-0"
@@ -519,7 +519,7 @@ const Quran = () => {
                       disabled={isLoading}
                       className="w-full"
                     >
-                      {isLoading ? "جاري الإضافة..." : "إضافة الطالب"}
+                      {isLoading ? t.quran.studentForm.submitting : t.quran.studentForm.submit}
                     </Button>
                   </form>
                 </CardContent>
@@ -527,18 +527,17 @@ const Quran = () => {
 
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-primary">
-                  قائمة الطلاب
+                  {t.quran.studentList.title}
                 </h3>
                 {students.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
-                      لا يوجد طلاب مسجلين بعد
+                      {t.quran.studentList.empty}
                     </CardContent>
                   </Card>
                 ) : (
                   students.map((student) => (
                     <div key={student.id} className="space-y-4">
-                      {/* المربع الرئيسي */}
                       <Card className="border-r-4 border-r-primary">
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start">
@@ -547,17 +546,17 @@ const Quran = () => {
                                 {student.name}
                               </h4>
                               <p className="text-sm text-muted-foreground">
-                                العمر: {student.age} سنة
+                                {tFunc('quran.studentList.age', { age: student.age })}
                               </p>
                               {student.teachers && (
                                 <p className="text-sm text-primary font-medium mt-1">
-                                  الشيخ: {student.teachers.name}
+                                  {tFunc('quran.studentList.teacher', { name: student.teachers.name })}
                                 </p>
                               )}
                             </div>
                             <div className="text-left">
                               <p className="text-sm font-medium">
-                                الأجزاء المحفوظة
+                                {t.quran.studentList.partsMemorized}
                               </p>
                               <p className="text-2xl font-bold text-primary">
                                 {student.parts_memorized}
@@ -570,67 +569,66 @@ const Quran = () => {
                         </CardContent>
                       </Card>
 
-                      {/* المربعات الفرعية */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* الماضي القريب */}
+                        {/* Recent review card */}
                         <Card className="border-r-4 border-r-blue-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-blue-700 mb-2">
-                              الماضي القريب
+                              {t.quran.reviewCards.recent}
                             </h5>
                             <div className="space-y-2">
                               <div className="text-sm">
-                                <span className="font-medium">السورة:</span>{" "}
+                                <span className="font-medium">{t.quran.reviewCards.surah}</span>{" "}
                                 البقرة
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">من آية:</span> 150
+                                <span className="font-medium">{t.quran.reviewCards.fromVerse}</span> 150
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">إلى آية:</span>{" "}
+                                <span className="font-medium">{t.quran.reviewCards.toVerse}</span>{" "}
                                 200
                               </div>
                             </div>
                           </CardContent>
                         </Card>
 
-                        {/* الماضي البعيد */}
+                        {/* Distant review card */}
                         <Card className="border-r-4 border-r-green-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-green-700 mb-2">
-                              الماضي البعيد
+                              {t.quran.reviewCards.distant}
                             </h5>
                             <div className="space-y-2">
                               <div className="text-sm">
-                                <span className="font-medium">السورة:</span>{" "}
+                                <span className="font-medium">{t.quran.reviewCards.surah}</span>{" "}
                                 الفاتحة
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">من آية:</span> 1
+                                <span className="font-medium">{t.quran.reviewCards.fromVerse}</span> 1
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">إلى آية:</span> 7
+                                <span className="font-medium">{t.quran.reviewCards.toVerse}</span> 7
                               </div>
                             </div>
                           </CardContent>
                         </Card>
 
-                        {/* الجديد */}
+                        {/* New card */}
                         <Card className="border-r-4 border-r-orange-500">
                           <CardContent className="p-4">
                             <h5 className="font-bold text-orange-700 mb-2">
-                              الجديد
+                              {t.quran.reviewCards.new}
                             </h5>
                             <div className="space-y-2">
                               <div className="text-sm">
-                                <span className="font-medium">السورة:</span> آل
+                                <span className="font-medium">{t.quran.reviewCards.surah}</span> آل
                                 عمران
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">من آية:</span> 50
+                                <span className="font-medium">{t.quran.reviewCards.fromVerse}</span> 50
                               </div>
                               <div className="text-sm">
-                                <span className="font-medium">إلى آية:</span>{" "}
+                                <span className="font-medium">{t.quran.reviewCards.toVerse}</span>{" "}
                                 100
                               </div>
                             </div>
