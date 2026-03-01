@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'إقراء',
   description: 'إقراء - لتحفيظ القرآن الكريم والعلوم الإسلامية',
   icons: {
-    icon: 'https://storage.googleapis.com/gpt-engineer-file-uploads/dhcNpa1gKFZ3DksMksiwOawAugs2/uploads/1762129696531-quran.png',
+    icon: '/icon.svg',
   },
 };
 
