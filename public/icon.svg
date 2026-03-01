@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Open book representing the Quran -->
+  <rect width="512" height="512" rx="80" fill="#56998E"/>
+  <!-- Left page -->
+  <path d="M80 140 C80 130 88 120 100 118 C160 108 220 108 255 120 L255 390 C220 378 160 378 100 388 C88 390 80 382 80 372 Z" fill="#F5F0E8"/>
+  <!-- Right page -->
+  <path d="M432 140 C432 130 424 120 412 118 C352 108 292 108 257 120 L257 390 C292 378 352 378 412 388 C424 390 432 382 432 372 Z" fill="#F5F0E8"/>
+  <!-- Spine -->
+  <rect x="250" y="118" width="12" height="275" rx="3" fill="#D4C9A8"/>
+  <!-- Lines on left page -->
+  <line x1="110" y1="165" x2="240" y2="161" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="195" x2="240" y2="191" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="225" x2="240" y2="221" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="255" x2="240" y2="251" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="285" x2="240" y2="281" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="315" x2="240" y2="311" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="110" y1="345" x2="240" y2="341" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <!-- Lines on right page -->
+  <line x1="272" y1="161" x2="402" y2="165" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="191" x2="402" y2="195" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="221" x2="402" y2="225" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="251" x2="402" y2="255" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="281" x2="402" y2="285" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="311" x2="402" y2="315" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+  <line x1="272" y1="341" x2="402" y2="345" stroke="#C5B99A" stroke-width="6" stroke-linecap="round"/>
+</svg>
